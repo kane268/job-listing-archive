@@ -51,7 +51,6 @@ Saved companies live in `data/job-sources.json` with `name`, jobs `url`, and `ho
 .github/workflows/        URL capture automation
 .pages.yml                Pages CMS source editor configuration
 archive/<id>/             generated web pages with captured text
-inbox/                    temporary drop zone and notes
 listings/YYYY/MM/DD/<slug>/ one folder per saved listing
 data/captures.json        saved capture attempts and failed capture backups
 data/index.csv            generated listing index

@@ -88,6 +88,7 @@ body.is-owner-mode .owner-inline { display: inline-block !important; }
 .markdown h3 { font-size: 1.08rem; }
 .markdown p { margin: 0 0 .9em; }
 .markdown ul { margin: .25em 0 1em; padding-left: 1.35em; }
+.markdown li > ul { margin: .35em 0 .15em; }
 .markdown li { margin: .3em 0; }
 @media (min-width: 720px) { body { padding: 28px 24px 56px; } .capture-form { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } button { width: auto; min-width: 160px; } .section-grid { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: start; } }
 """.strip()
@@ -322,7 +323,8 @@ def markdown_to_html(markdown: str) -> str:
     lines = markdown.splitlines()
     html_parts: list[str] = []
     paragraph: list[str] = []
-    list_open = False
+    list_levels: list[int] = []
+    list_items_open: list[bool] = []
 
     def close_paragraph() -> None:
         nonlocal paragraph
@@ -331,39 +333,67 @@ def markdown_to_html(markdown: str) -> str:
             html_parts.append(f"<p>{rendered}</p>")
             paragraph = []
 
-    def close_list() -> None:
-        nonlocal list_open
-        if list_open:
-            html_parts.append("</ul>")
-            list_open = False
+    def open_list(level: int) -> None:
+        html_parts.append("<ul>")
+        list_levels.append(level)
+        list_items_open.append(False)
+
+    def close_current_list_item() -> None:
+        if list_items_open and list_items_open[-1]:
+            html_parts.append("</li>")
+            list_items_open[-1] = False
+
+    def close_one_list() -> None:
+        close_current_list_item()
+        html_parts.append("</ul>")
+        list_levels.pop()
+        list_items_open.pop()
+
+    def close_lists() -> None:
+        while list_levels:
+            close_one_list()
+
+    def start_list_item(level: int, content: str) -> None:
+        close_paragraph()
+        if not list_levels:
+            open_list(level)
+        elif level > list_levels[-1]:
+            open_list(level)
+        else:
+            while list_levels and level < list_levels[-1]:
+                close_one_list()
+            if not list_levels:
+                open_list(level)
+            elif level == list_levels[-1]:
+                close_current_list_item()
+            else:
+                open_list(level)
+        html_parts.append(f"<li>{inline_markdown(content)}")
+        list_items_open[-1] = True
 
     for raw_line in lines:
         line = raw_line.rstrip()
         stripped = line.strip()
         if not stripped:
             close_paragraph()
-            close_list()
             continue
         heading = re.match(r"^(#{1,4})\s+(.+)$", stripped)
         if heading:
             close_paragraph()
-            close_list()
+            close_lists()
             level = min(4, len(heading.group(1)))
             html_parts.append(f"<h{level}>{inline_markdown(heading.group(2).strip())}</h{level}>")
             continue
-        item = re.match(r"^\s*-\s+(.+)$", line)
+        item = re.match(r"^([ \t]*)-\s+(.+)$", line)
         if item:
-            close_paragraph()
-            if not list_open:
-                html_parts.append("<ul>")
-                list_open = True
-            html_parts.append(f"<li>{inline_markdown(item.group(1).strip())}</li>")
+            indent = len(item.group(1).expandtabs(2))
+            start_list_item(indent, item.group(2).strip())
             continue
-        close_list()
+        close_lists()
         paragraph.append(stripped)
 
     close_paragraph()
-    close_list()
+    close_lists()
     return "\n".join(html_parts)
 
 

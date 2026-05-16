@@ -58,6 +58,7 @@ body.is-owner-mode .owner-inline { display: inline-block !important; }
 .markdown h3 { font-size: 1.08rem; }
 .markdown p { margin: 0 0 .9em; }
 .markdown ul { margin: .25em 0 1em; padding-left: 1.35em; }
+.markdown li > ul { margin: .35em 0 .15em; }
 .markdown li { margin: .3em 0; }
 @media (min-width: 720px) { body { padding: 28px 24px 56px; } .capture-form { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } button { width: auto; min-width: 160px; } .section-grid { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: start; } }</style>
 </head>
@@ -87,91 +88,143 @@ body.is-owner-mode .owner-inline { display: inline-block !important; }
 Meta: Engineering | Remote | Full time</p>
 <h3>What you&#x27;ll do</h3>
 <ul>
-<li>Build features/infra for <a href="https://readwise.io" target="_blank" rel="noreferrer">Readwise</a>, <a href="https://readwise.io/read" target="_blank" rel="noreferrer">Readwise Reader</a>, and our new (secret) product. Designing the APIs, data models, and backend systems that power our web, desktop, iOS, and Android apps.</li>
-<li>Tackle hard backend problems: building reliable ingestion and sync pipelines that move huge amounts of data, scaling our Postgres database (20TB and growing), integrating with dozens of external reading services, and keeping the whole system fast as we grow.</li>
-<li>Take on staff-scope work when you want it: leading architecture rewrites, owning cross-cutting platform decisions, or shaping our internal LLM/agent infra. There&#x27;s no shortage of meaty problems for engineers looking for them.</li>
-<li>Our developers operate with extreme autonomy: you&#x27;ll own new features, abstractions, infrastructure all the way from planning to building to shipping.</li>
+<li>Build features/infra for <a href="https://readwise.io" target="_blank" rel="noreferrer">Readwise</a>, <a href="https://readwise.io/read" target="_blank" rel="noreferrer">Readwise Reader</a>, and our new (secret) product. Designing the APIs, data models, and backend systems that power our web, desktop, iOS, and Android apps.
+</li>
+<li>Tackle hard backend problems: building reliable ingestion and sync pipelines that move huge amounts of data, scaling our Postgres database (20TB and growing), integrating with dozens of external reading services, and keeping the whole system fast as we grow.
+</li>
+<li>Take on staff-scope work when you want it: leading architecture rewrites, owning cross-cutting platform decisions, or shaping our internal LLM/agent infra. There&#x27;s no shortage of meaty problems for engineers looking for them.
+</li>
+<li>Our developers operate with extreme autonomy: you&#x27;ll own new features, abstractions, infrastructure all the way from planning to building to shipping.
+</li>
 </ul>
 <h3>Who you are</h3>
 <ul>
-<li>Reader &amp; Self-Learner — Everyone on our team is genuinely passionate about <a href="https://blog.readwise.io/readwise-reading-app/" target="_blank" rel="noreferrer">what we&#x27;re working on</a> and we hope you are too ;)</li>
-<li>Senior Engineer (or above) — You have at least a few years of shipping backend/infra code into production</li>
-<li>Experience with Python, Django, Postgres, Redis, Celery, and large-scale data systems a huge plus.</li>
-</ul>
+<li>Reader &amp; Self-Learner — Everyone on our team is genuinely passionate about <a href="https://blog.readwise.io/readwise-reading-app/" target="_blank" rel="noreferrer">what we&#x27;re working on</a> and we hope you are too ;)
+</li>
+<li>Senior Engineer (or above) — You have at least a few years of shipping backend/infra code into production
 <ul>
-<li>Available US or EU Hours — We&#x27;re distributed across America and Europe, so your working hours need to overlap meaningfully with your teammates.</li>
-<li>Agentic Engineering — Our engineering team has leaned heavily into using agents to ship higher quality code at a faster cadence.</li>
-<li>Not vibe-coding or slop, but rather applying LLMs (with off the shelf harnesses like Claude Code, but also increasingly our own infra) to work at higher levels of abstraction.</li>
-<li>Our view on AI in development is closely aligned with how Simon Willison describes it <a href="https://www.youtube.com/watch?v=wc8FBhQtdsA" target="_blank" rel="noreferrer">here</a>.</li>
-<li>You&#x27;ll thrive on our engineering team if you&#x27;re excited about this new frontier and eager to learn how best to leverage these new powerful tools.</li>
+<li>Experience with Python, Django, Postgres, Redis, Celery, and large-scale data systems a huge plus.
+</li>
 </ul>
+</li>
+<li>Available US or EU Hours — We&#x27;re distributed across America and Europe, so your working hours need to overlap meaningfully with your teammates.
+</li>
+<li>Agentic Engineering — Our engineering team has leaned heavily into using agents to ship higher quality code at a faster cadence.
 <ul>
-<li>Self-Starter — You&#x27;re comfortable building new things in a self-directed way, iterating quickly, and taking ownership (despite being on a remote team)</li>
-<li>Product Builder — You&#x27;re obsessed with the concept of user experience and building high quality product</li>
-<li>Hacker — You seek creative solutions to create the most amount of user value with the least amount of programming effort or complexity</li>
+<li>Not vibe-coding or slop, but rather applying LLMs (with off the shelf harnesses like Claude Code, but also increasingly our own infra) to work at higher levels of abstraction.
+</li>
+<li>Our view on AI in development is closely aligned with how Simon Willison describes it <a href="https://www.youtube.com/watch?v=wc8FBhQtdsA" target="_blank" rel="noreferrer">here</a>.
+</li>
+<li>You&#x27;ll thrive on our engineering team if you&#x27;re excited about this new frontier and eager to learn how best to leverage these new powerful tools.
+</li>
+</ul>
+</li>
+<li>Self-Starter — You&#x27;re comfortable building new things in a self-directed way, iterating quickly, and taking ownership (despite being on a remote team)
+</li>
+<li>Product Builder — You&#x27;re obsessed with the concept of user experience and building high quality product
+</li>
+<li>Hacker — You seek creative solutions to create the most amount of user value with the least amount of programming effort or complexity
+</li>
 </ul>
 <h3>Nice to have</h3>
 <ul>
-<li>Experience working on large-scale, complex apps.</li>
-<li>Our frontend is TypeScript/React on web and React Native on mobile — if you&#x27;re comfortable jumping into the frontend when something needs shipping end-to-end, that&#x27;s a huge plus!</li>
-<li>Although most of your focus will be backend, being able to think about the entire system holistically and improve our architecture is always valuable!</li>
+<li>Experience working on large-scale, complex apps.
+</li>
+<li>Our frontend is TypeScript/React on web and React Native on mobile — if you&#x27;re comfortable jumping into the frontend when something needs shipping end-to-end, that&#x27;s a huge plus!
+</li>
+<li>Although most of your focus will be backend, being able to think about the entire system holistically and improve our architecture is always valuable!
+</li>
 </ul>
 <h3>How to apply</h3>
 <ul>
-<li>If you&#x27;re interested, send an email with your resume/LinkedIn/Github/personal site/whatever to <a href="mailto:careers@readwise.io" target="_blank" rel="noreferrer">careers@readwise.io</a> :)</li>
-<li>Although certainly not required, we love seeing code or live demos!</li>
+<li>If you&#x27;re interested, send an email with your resume/LinkedIn/Github/personal site/whatever to <a href="mailto:careers@readwise.io" target="_blank" rel="noreferrer">careers@readwise.io</a> :)
+</li>
+<li>Although certainly not required, we love seeing code or live demos!
+</li>
 </ul>
 <h2>Why Readwise?</h2>
 <h3>Mission</h3>
 <ul>
-<li>What we&#x27;re about: We&#x27;re on a mission to 10x the practice of reading using software to help our users unlock humanity&#x27;s collective wisdom.</li>
-<li>Our opportunity: Software has revolutionized writing (you would never write a book by hand or on a typewriter) while most reading is still analog.</li>
-<li>Our position: We&#x27;ve started solving the problem of retention (remembering more of what you read) and now we&#x27;re moving into the actual reading experience itself.</li>
+<li>What we&#x27;re about: We&#x27;re on a mission to 10x the practice of reading using software to help our users unlock humanity&#x27;s collective wisdom.
+</li>
+<li>Our opportunity: Software has revolutionized writing (you would never write a book by hand or on a typewriter) while most reading is still analog.
+</li>
+<li>Our position: We&#x27;ve started solving the problem of retention (remembering more of what you read) and now we&#x27;re moving into the actual reading experience itself.
+</li>
 </ul>
 <h3>Delightful Product</h3>
 <ul>
-<li>Our product is loved by tens of thousands users around the world (<a href="https://twitter.com/ID_AA_Carmack/status/1356087080670134275" target="_blank" rel="noreferrer">including John Carmack</a>) See for yourself :)</li>
-<li><a href="https://readwise.io/#tweets" target="_blank" rel="noreferrer">https://readwise.io/#tweets</a></li>
-<li><a href="https://kk.org/cooltools/readwise/" target="_blank" rel="noreferrer">https://kk.org/cooltools/readwise/</a></li>
-<li><a href="https://toolsforgrowth.substack.com/p/a-readwise-review" target="_blank" rel="noreferrer">https://toolsforgrowth.substack.com/p/a-readwise-review</a></li>
-<li><a href="https://fernandogros.com/readwise/" target="_blank" rel="noreferrer">https://fernandogros.com/readwise/</a></li>
-<li><a href="https://lawsonblake.com/readwise-review/" target="_blank" rel="noreferrer">https://lawsonblake.com/readwise-review/</a></li>
-<li><a href="https://www.producthunt.com/posts/readwise/reviews" target="_blank" rel="noreferrer">https://www.producthunt.com/posts/readwise/reviews</a></li>
-<li><a href="https://www.grahamgnall.com/blog/2020/11/9/reading-wisely" target="_blank" rel="noreferrer">https://www.grahamgnall.com/blog/2020/11/9/reading-wisely</a></li>
-<li><a href="https://www.colemanm.org/post/readwise-books-and-spaced-repetition/" target="_blank" rel="noreferrer">https://www.colemanm.org/post/readwise-books-and-spaced-repetition/</a></li>
-<li><a href="https://jia-shing.com/supercharge-reading-with-readwise/" target="_blank" rel="noreferrer">https://jia-shing.com/supercharge-reading-with-readwise/</a></li>
-</ul>
+<li>Our product is loved by tens of thousands users around the world (<a href="https://twitter.com/ID_AA_Carmack/status/1356087080670134275" target="_blank" rel="noreferrer">including John Carmack</a>) See for yourself :)
 <ul>
-<li>Readwise is a product which aims to help people learn and better themselves — we&#x27;re not here to optimize ads or screen time.</li>
-<li>We are here to innovate entirely new ways of reading, writing, remembering, and improving.</li>
+<li><a href="https://readwise.io/#tweets" target="_blank" rel="noreferrer">https://readwise.io/#tweets</a>
+</li>
+<li><a href="https://kk.org/cooltools/readwise/" target="_blank" rel="noreferrer">https://kk.org/cooltools/readwise/</a>
+</li>
+<li><a href="https://toolsforgrowth.substack.com/p/a-readwise-review" target="_blank" rel="noreferrer">https://toolsforgrowth.substack.com/p/a-readwise-review</a>
+</li>
+<li><a href="https://fernandogros.com/readwise/" target="_blank" rel="noreferrer">https://fernandogros.com/readwise/</a>
+</li>
+<li><a href="https://lawsonblake.com/readwise-review/" target="_blank" rel="noreferrer">https://lawsonblake.com/readwise-review/</a>
+</li>
+<li><a href="https://www.producthunt.com/posts/readwise/reviews" target="_blank" rel="noreferrer">https://www.producthunt.com/posts/readwise/reviews</a>
+</li>
+<li><a href="https://www.grahamgnall.com/blog/2020/11/9/reading-wisely" target="_blank" rel="noreferrer">https://www.grahamgnall.com/blog/2020/11/9/reading-wisely</a>
+</li>
+<li><a href="https://www.colemanm.org/post/readwise-books-and-spaced-repetition/" target="_blank" rel="noreferrer">https://www.colemanm.org/post/readwise-books-and-spaced-repetition/</a>
+</li>
+<li><a href="https://jia-shing.com/supercharge-reading-with-readwise/" target="_blank" rel="noreferrer">https://jia-shing.com/supercharge-reading-with-readwise/</a>
+</li>
+</ul>
+</li>
+<li>Readwise is a product which aims to help people learn and better themselves — we&#x27;re not here to optimize ads or screen time.
+</li>
+<li>We are here to innovate entirely new ways of reading, writing, remembering, and improving.
+</li>
 </ul>
 <h3>Company</h3>
 <ul>
-<li>We&#x27;re a fast-growing startup with so many problems to solve and so little time.</li>
-<li>We&#x27;re self-funded (aka bootstrapped), sustainable, and profitable.</li>
-<li>Our existing niche product positions us to go after a massive adjacent market.</li>
-<li>Although we ship fast, we pride ourselves on building things &quot;right&quot;: debugging and adding new features should be a delightful experience for engineers. Engineering has a real voice when it comes to tradeoffs and implementation, ensuring we can ship well over the long term.</li>
+<li>We&#x27;re a fast-growing startup with so many problems to solve and so little time.
+</li>
+<li>We&#x27;re self-funded (aka bootstrapped), sustainable, and profitable.
+</li>
+<li>Our existing niche product positions us to go after a massive adjacent market.
+</li>
+<li>Although we ship fast, we pride ourselves on building things &quot;right&quot;: debugging and adding new features should be a delightful experience for engineers. Engineering has a real voice when it comes to tradeoffs and implementation, ensuring we can ship well over the long term.
+</li>
 </ul>
 <h3>Autonomy</h3>
 <ul>
-<li>We are still a small team of 20 (including 9 engineers) requiring ownership and self-direction.</li>
-<li>Everyone <a href="https://docs.readwise.io/changelog" target="_blank" rel="noreferrer">ships to production</a>, often multiple times a day :)</li>
-<li>We are distributed to the core: max 2 meetings a week with no bureaucracy or time-wasting.</li>
-<li>You will own the features and projects you take on — from shaping to shipping.</li>
-<li>Did we mention we ship, ship, and ship?</li>
+<li>We are still a small team of 20 (including 9 engineers) requiring ownership and self-direction.
+</li>
+<li>Everyone <a href="https://docs.readwise.io/changelog" target="_blank" rel="noreferrer">ships to production</a>, often multiple times a day :)
+</li>
+<li>We are distributed to the core: max 2 meetings a week with no bureaucracy or time-wasting.
+</li>
+<li>You will own the features and projects you take on — from shaping to shipping.
+</li>
+<li>Did we mention we ship, ship, and ship?
+</li>
 </ul>
 <h3>Benefits</h3>
 <ul>
-<li>Competitive salary &amp; meaningful equity.</li>
-<li>(Based on your experience, level i.e senior vs staff, and location.)</li>
-</ul>
+<li>Competitive salary &amp; meaningful equity.
 <ul>
-<li>Healthcare</li>
-<li>Remote first: you have the freedom to work from anywhere you want with a remote-first, mostly async organization.</li>
-<li>Biannual company offsite, <a href="https://blog.readwise.io/how-we-plan-offsites/" target="_blank" rel="noreferrer">here&#x27;s what they&#x27;re like</a></li>
-<li>Ad hoc get-togethers for smaller teams</li>
-<li>Generous time off</li>
-<li>The autonomy and fun of working at a no-nonsense, nimble startup</li>
+<li>(Based on your experience, level i.e senior vs staff, and location.)
+</li>
+</ul>
+</li>
+<li>Healthcare
+</li>
+<li>Remote first: you have the freedom to work from anywhere you want with a remote-first, mostly async organization.
+</li>
+<li>Biannual company offsite, <a href="https://blog.readwise.io/how-we-plan-offsites/" target="_blank" rel="noreferrer">here&#x27;s what they&#x27;re like</a>
+</li>
+<li>Ad hoc get-togethers for smaller teams
+</li>
+<li>Generous time off
+</li>
+<li>The autonomy and fun of working at a no-nonsense, nimble startup
+</li>
 </ul>
 </main>
 
