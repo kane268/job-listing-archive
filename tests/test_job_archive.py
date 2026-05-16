@@ -39,6 +39,7 @@ class JobArchiveTests(unittest.TestCase):
             "anthropic-staff-developer-productivity",
         )
         self.assertEqual(short_listing_slug("Apple", "Software Engineer, System Experience"), "apple-system-experience")
+        self.assertEqual(short_listing_slug("GitHub", "Staff Software Engineer"), "github-staff-software-engineer")
 
     def test_infer_metadata_from_plain_filenames(self) -> None:
         stripe = infer_metadata_from_filename("Stripe Staff Software Engineer, Data Movement.pdf")
@@ -129,6 +130,35 @@ class JobArchiveTests(unittest.TestCase):
             self.assertTrue((Path(result["destination"]) / "raw.html").exists())
             self.assertTrue((Path(result["destination"]) / "raw.md").exists())
             self.assertTrue((Path(result["destination"]) / "raw.txt").exists())
+
+    def test_extract_github_markdown_uses_job_posting_data(self) -> None:
+        markup = """
+        <!doctype html>
+        <html><head>
+          <script type="application/ld+json">
+          {
+            "@context": "http://schema.org",
+            "@type": "JobPosting",
+            "title": "Staff Software Engineer",
+            "description": "<strong>About GitHub</strong><br><br>GitHub builds developer tools.<br><br><strong>Locations</strong><br><br>In this role you can work from Remote, United States<br><br><strong>Responsibilities</strong><br><br><ul><li>Build billing systems</li></ul><br><strong>Compensation Range</strong><br><br>The base salary range for this job is USD $140,400.00 - USD $372,300.00 /Yr.",
+            "employmentType": "FULL_TIME",
+            "hiringOrganization": {"@type": "Organization", "name": "GitHub, Inc."},
+            "jobLocation": {"@type": "Place", "address": {"addressLocality": "UNAVAILABLE", "addressRegion": "UNAVAILABLE", "addressCountry": "United States"}}
+          }
+          </script>
+        </head><body><nav>Skip to Main Content</nav></body></html>
+        """
+        metadata = extract_html_capture_metadata(markup, "https://www.github.careers/careers-home/jobs/5369?lang=en-us")
+        text = html_capture_to_text(markup, metadata)
+        self.assertEqual(metadata["company"], "GitHub")
+        self.assertEqual(metadata["role_title"], "Staff Software Engineer")
+        self.assertEqual(metadata["location"], "Remote, United States")
+        self.assertEqual(metadata["employment_type"], "Full time")
+        self.assertEqual(metadata["compensation"], "USD $140,400.00 - USD $372,300.00 /Yr")
+        self.assertIn("# Staff Software Engineer - GitHub", text)
+        self.assertIn("## Responsibilities", text)
+        self.assertIn("- Build billing systems", text)
+        self.assertNotIn("Skip to Main Content", text)
 
     def test_extract_stripe_markdown_uses_job_content_not_navigation(self) -> None:
         markup = """

@@ -1,18 +1,18 @@
 ---
-id: "2026-05-16-github-inc-staff"
+id: "2026-05-16-github-staff-software-engineer"
 captured_at: "2026-05-16"
 source_url: "https://www.github.careers/careers-home/jobs/5369?lang=en-us"
 source_final_url: ""
 source_http_status: 200
 source_fetched_at: "2026-05-16T16:34:06+00:00"
-source_published_at: ""
-company: "GitHub, Inc."
+source_published_at: "2026-05-08T21:53:00+0000"
+company: "GitHub"
 role_title: "Staff Software Engineer"
 role_family: "software-engineering"
 seniority: "staff"
-location: "UNAVAILABLE, UNAVAILABLE, United States"
+location: "Remote, United States"
 employment_type: "Full time"
-compensation: ""
+compensation: "USD $140,400.00 - USD $372,300.00 /Yr"
 status: "extracted"
 source_type: "html"
 source_file_name: ""
@@ -26,13 +26,13 @@ tags:
   - "captured"
   - "software-engineering"
   - "staff"
-  - "github-inc"
+  - "github"
   - "html"
 requirements: []
 nice_to_haves: []
 ---
 
-# Staff Software Engineer - GitHub, Inc.
+# Staff Software Engineer - GitHub
 
 Source: https://www.github.careers/careers-home/jobs/5369?lang=en-us
 

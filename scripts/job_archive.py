@@ -671,7 +671,16 @@ class MarkdownHTMLConverter(HTMLParser):
 
 
 def html_to_markdown(markup: str) -> str:
-    markup = re.sub(r"<p([^>]*)>\s*<strong>(.*?)</strong>\s*</p>", r"<h2>\2</h2>", markup or "", flags=re.S | re.I)
+    markup = markup or ""
+    markup = re.sub(r"<p([^>]*)>\s*<strong>(.*?)</strong>\s*</p>", r"<h2>\2</h2>", markup, flags=re.S | re.I)
+
+    def strong_heading(match: re.Match[str]) -> str:
+        text = normalize_spaces(re.sub(r"<.*?>", "", html.unescape(match.group(1))))
+        if not text or len(text) > 90:
+            return match.group(0)
+        return f"<h2>{text}</h2>"
+
+    markup = re.sub(r"<strong>\s*(.*?)\s*</strong>\s*(?:<br\s*/?>\s*){1,2}", strong_heading, markup, flags=re.S | re.I)
     parser = MarkdownHTMLConverter()
     parser.feed(markup)
     parser.close()
@@ -726,6 +735,7 @@ def format_employment_type(value: Any) -> str:
 
 
 def format_job_location(value: Any, remote_hint: Any = None) -> str:
+    unavailable = {"", "n/a", "na", "none", "null", "unavailable", "undefined"}
     if isinstance(value, list):
         locations = [format_job_location(item) for item in value]
         return ", ".join(location for location in locations if location)
@@ -733,11 +743,11 @@ def format_job_location(value: Any, remote_hint: Any = None) -> str:
         address = value.get("address")
         if isinstance(address, dict):
             parts = [
-                address.get("addressLocality"),
-                address.get("addressRegion"),
-                address.get("addressCountry"),
+                normalize_spaces(str(part))
+                for part in [address.get("addressLocality"), address.get("addressRegion"), address.get("addressCountry")]
+                if normalize_spaces(str(part)).lower() not in unavailable
             ]
-            text = ", ".join(normalize_spaces(str(part)) for part in parts if part)
+            text = ", ".join(parts)
             if text:
                 return text
         for key in ("name", "addressLocality"):
@@ -787,6 +797,7 @@ def extract_jsonld_job_metadata(scripts: list[str]) -> dict[str, Any]:
                 "location": format_job_location(item.get("jobLocation"), item.get("applicantLocationRequirements")),
                 "employment_type": format_employment_type(item.get("employmentType")),
                 "compensation": format_compensation(item.get("baseSalary")),
+                "published_at": str(item.get("datePosted") or ""),
             }
     return {}
 
@@ -978,6 +989,15 @@ def strip_html_text(value: str) -> str:
     return normalize_spaces(re.sub(r"<.*?>", "", html.unescape(value or "")))
 
 
+def extract_compensation_range(text: str) -> str:
+    normalized = normalize_spaces(text)
+    match = re.search(
+        r"((?:[A-Z]{3}\s*)?\$[\d,]+(?:\.\d+)?\s*-\s*(?:[A-Z]{3}\s*)?\$[\d,]+(?:\.\d+)?(?:\s*/\s*[A-Za-z]+)?)",
+        normalized,
+    )
+    return normalize_spaces(match.group(1)) if match else ""
+
+
 def extract_line_section(lines: list[str], heading: str, stop_headings: set[str]) -> str:
     start = -1
     for index, line in enumerate(lines):
@@ -1066,8 +1086,48 @@ def extract_stripe_capture(markup: str, source_url: str) -> dict[str, Any]:
     }
 
 
+def extract_github_capture(markup: str, source_url: str) -> dict[str, Any]:
+    parser = HTMLMetadataExtractor()
+    parser.feed(markup)
+    parser.close()
+    jsonld = extract_jsonld_job_metadata(parser.scripts)
+    description_html = jsonld.get("description_html", "")
+    role_title = clean_role_title(str(jsonld.get("role_title") or parser.title), "GitHub")
+    if not role_title or not description_html:
+        return {}
+
+    description = html_to_markdown(description_html).strip()
+    location = ""
+    location_match = re.search(r"In this role you can work from\s+([^\n]+)", description, re.I)
+    if location_match:
+        location = normalize_spaces(location_match.group(1))
+    if not location:
+        location = normalize_spaces(str(jsonld.get("location") or ""))
+    compensation = jsonld.get("compensation") or extract_compensation_range(description)
+
+    meta_lines = [f"Source: {source_url}"]
+    if location:
+        meta_lines.append(f"Location: {location}")
+    if jsonld.get("employment_type"):
+        meta_lines.append(f"Job type: {jsonld['employment_type']}")
+    if compensation:
+        meta_lines.append(f"Compensation: {compensation}")
+
+    return {
+        "company": "GitHub",
+        "role_title": role_title,
+        "location": location,
+        "employment_type": jsonld.get("employment_type", ""),
+        "compensation": compensation,
+        "published_at": str(jsonld.get("published_at") or ""),
+        "markdown": markdown_join([f"# {role_title} - GitHub", "\n".join(meta_lines), description]),
+    }
+
+
 def extract_structured_capture(markup: str, source_url: str) -> dict[str, Any]:
     host = urlparse(source_url).netloc.lower()
+    if "github.careers" in host and "/jobs/" in urlparse(source_url).path:
+        return extract_github_capture(markup, source_url)
     if "stripe.com" in host and "/jobs/listing/" in urlparse(source_url).path:
         return extract_stripe_capture(markup, source_url)
     if "greenhouse.io" in host:
@@ -1397,6 +1457,9 @@ def short_listing_slug(company: str, role_title: str) -> str:
         "the",
     }
     concise_tokens = [token for token in role_tokens if token and token not in stopwords]
+    seniority_tokens = {"director", "head", "principal", "senior", "staff"}
+    if concise_tokens and all(token in seniority_tokens for token in concise_tokens):
+        concise_tokens = role_tokens
     role_slug = "-".join(concise_tokens[:4]) or "role"
     return f"{company_slug}-{role_slug}"
 
