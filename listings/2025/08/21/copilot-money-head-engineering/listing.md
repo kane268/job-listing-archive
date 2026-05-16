@@ -1,5 +1,5 @@
 ---
-id: "2025-08-21-copilot-money-head-of-engineering"
+id: "2025-08-21-copilot-money-head-engineering"
 captured_at: "2025-08-21"
 source_url: "https://jobs.ashbyhq.com/copilot-money/20a502a8-5260-4df3-a8ba-d0d5701bafc1"
 company: "Copilot Money"

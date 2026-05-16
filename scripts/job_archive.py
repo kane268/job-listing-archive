@@ -1281,9 +1281,50 @@ def render_listing(data: dict[str, Any], import_notes: list[str], why: str = "")
     return "\n".join(lines)
 
 
+def short_listing_slug(company: str, role_title: str) -> str:
+    company_slug = slugify(company) or "company"
+    role_tokens = slugify(clean_role_title(role_title, company)).split("-")
+    stopwords = {
+        "a",
+        "an",
+        "and",
+        "application",
+        "at",
+        "engineer",
+        "engineers",
+        "focus",
+        "for",
+        "job",
+        "of",
+        "software",
+        "the",
+    }
+    concise_tokens = [token for token in role_tokens if token and token not in stopwords]
+    role_slug = "-".join(concise_tokens[:5]) or "role"
+    return f"{company_slug}-{role_slug}"
+
+
 def make_listing_id(captured_at: str, company: str, role_title: str) -> str:
-    name = f"{company} {role_title}".strip() or "listing"
-    return f"{captured_at}-{slugify(name)}"
+    return f"{captured_at}-{short_listing_slug(company, role_title)}"
+
+
+def listing_date_parts(captured_at: str) -> tuple[str, str, str]:
+    try:
+        parsed = datetime.strptime(captured_at, "%Y-%m-%d")
+    except ValueError:
+        parsed = datetime.now().astimezone()
+    return f"{parsed.year:04d}", f"{parsed.month:02d}", f"{parsed.day:02d}"
+
+
+def listing_directory_slug(listing_id: str, captured_at: str) -> str:
+    prefix = f"{captured_at}-"
+    slug = listing_id[len(prefix) :] if listing_id.startswith(prefix) else listing_id
+    return slugify(slug) or "listing"
+
+
+def listing_destination(root: Path, captured_at: str, listing_id: str) -> Path:
+    year, month, day = listing_date_parts(captured_at)
+    return root / "listings" / year / month / day / listing_directory_slug(listing_id, captured_at)
 
 
 def parse_scalar(value: str) -> Any:
@@ -1333,7 +1374,7 @@ def parse_frontmatter(path: str | Path) -> dict[str, Any]:
 
 def listing_paths(root: str | Path = ROOT) -> list[Path]:
     listings_root = Path(root) / "listings"
-    return sorted(listings_root.glob("*/*/listing.md"))
+    return sorted(listings_root.glob("**/listing.md"))
 
 
 def existing_source_sha256s(root: str | Path = ROOT) -> dict[str, Path]:
@@ -1377,7 +1418,7 @@ def build_index(root: str | Path = ROOT, index_path: str | Path | None = None) -
                 row[column] = metadata.get(column, "")
         rows.append(row)
     with output_path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=INDEX_COLUMNS)
+        writer = csv.DictWriter(handle, fieldnames=INDEX_COLUMNS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     return output_path
@@ -1395,15 +1436,14 @@ def source_text_and_artifact(path: Path) -> tuple[str, str, str, dict[str, Any],
     return original if original.endswith("\n") else original + "\n", "source.txt", "text", {}, ""
 
 
-def unique_destination(root: Path, listing_id: str, force: bool) -> tuple[str, Path]:
-    year = listing_id[:4]
-    base = root / "listings" / year / listing_id
+def unique_destination(root: Path, captured_at: str, listing_id: str, force: bool) -> tuple[str, Path]:
+    base = listing_destination(root, captured_at, listing_id)
     if force or not base.exists():
         return listing_id, base
     counter = 2
     while True:
         candidate_id = f"{listing_id}-{counter}"
-        candidate = root / "listings" / year / candidate_id
+        candidate = listing_destination(root, captured_at, candidate_id)
         if not candidate.exists():
             return candidate_id, candidate
         counter += 1
@@ -1436,7 +1476,7 @@ def ingest_file(path: str | Path, root: str | Path = ROOT, force: bool = False, 
     company = inferred["company"]
     role_title = inferred["role_title"]
     listing_id = make_listing_id(captured_at, company, role_title)
-    listing_id, destination = unique_destination(root_path, listing_id, force)
+    listing_id, destination = unique_destination(root_path, captured_at, listing_id, force)
 
     location = infer_location(extracted_text)
     employment_type = infer_employment_type(extracted_text)
@@ -1580,7 +1620,7 @@ def ingest_url(
     compensation = page_metadata.get("compensation", "")
     captured_at = datetime.now().astimezone().date().isoformat()
     listing_id = make_listing_id(captured_at, company, role_title)
-    listing_id, destination = unique_destination(root_path, listing_id, force)
+    listing_id, destination = unique_destination(root_path, captured_at, listing_id, force)
 
     source_type = "html" if is_html else "text"
     raw_artifact_name = "raw.html" if is_html else "source.txt"

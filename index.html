@@ -24,6 +24,11 @@ input, button { width: 100%; border: 1px solid var(--border); border-radius: 8px
 input { color: var(--fg); background: var(--bg); }
 button { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 750; cursor: pointer; }
 .section-grid { display: grid; gap: 14px; margin-top: 14px; }
+body:not(.is-owner-mode) .section-grid { display: block; }
+.owner-only { display: none !important; }
+body.is-owner-mode .owner-block { display: block !important; }
+body.is-owner-mode .owner-flex { display: flex !important; }
+body.is-owner-mode .owner-inline { display: inline-block !important; }
 .stack { display: grid; gap: 10px; }
 .card { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; align-items: start; color: inherit; text-decoration: none; border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--bg); }
 .card:hover, .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -60,10 +65,10 @@ button { background: var(--accent); color: var(--accent-fg); border-color: var(-
 
 <header>
   <h1>Job listing archive</h1>
-  <p class="muted">URL capture, saved companies, and readable Markdown copies of saved listings.</p>
+  <p class="muted">Readable Markdown copies of saved job listings.</p>
 </header>
 
-<section class="panel" aria-labelledby="capture-title">
+<section class="panel owner-only owner-block" aria-labelledby="capture-title">
   <div class="panel-header"><h2 id="capture-title">Capture URL</h2></div>
   <form id="capture-form" class="capture-form">
     <label>Listing URL
@@ -74,10 +79,10 @@ button { background: var(--accent); color: var(--accent-fg); border-color: var(-
 </section>
 
 <div class="section-grid">
-  <section class="panel" aria-labelledby="sources-title">
+  <section class="panel owner-only owner-block" aria-labelledby="sources-title">
     <div class="panel-header">
       <h2 id="sources-title">Saved companies</h2>
-      <a class="action-link" href="https://app.pagescms.org/kane268/job-listing-archive/main/file/job_sources" target="_blank" rel="noreferrer">Edit</a>
+      <a class="action-link owner-only owner-inline" href="https://app.pagescms.org/kane268/job-listing-archive/main/file/job_sources" target="_blank" rel="noreferrer">Edit</a>
     </div>
     <div class="stack"><a class="card source-card" href="https://www.anthropic.com/careers/jobs" target="_blank" rel="noreferrer" title="https://www.anthropic.com/careers/jobs">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/anthropic.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
@@ -116,9 +121,9 @@ button { background: var(--accent); color: var(--accent-fg); border-color: var(-
 </a></div>
   </section>
 
-  <section class="panel" aria-labelledby="listings-title">
+  <section class="panel listings-panel" aria-labelledby="listings-title">
     <div class="panel-header"><h2 id="listings-title">Listings</h2></div>
-    <div class="stack"><a class="card listing-card" href="archive/2026-05-11-job-application-for-staff-software-engineer-developer-productivity-at-anthropi">
+    <div class="stack"><a class="card listing-card" href="archive/2026-05-11-anthropic-staff-developer-productivity">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/anthropic.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
     <span class="card-kicker">Anthropic</span>
@@ -126,7 +131,7 @@ button { background: var(--accent); color: var(--accent-fg); border-color: var(-
     <span class="card-meta-row"><span>Captured <relative-time datetime="2026-05-11" title="May 11, 2026">May 11, 2026</relative-time></span><span class="source-host">job-boards.greenhouse.io</span></span>
   </span>
 </a>
-<a class="card listing-card" href="archive/2026-05-09-readwise-senior-staff-engineer-backend-focus">
+<a class="card listing-card" href="archive/2026-05-09-readwise-senior-staff-backend">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/readwise.io.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
     <span class="card-kicker">Readwise</span>
@@ -134,7 +139,7 @@ button { background: var(--accent); color: var(--accent-fg); border-color: var(-
     <span class="card-meta-row"><span>Captured <relative-time datetime="2026-05-09" title="May 9, 2026">May 9, 2026</relative-time></span><span class="source-host">readwise.io</span></span>
   </span>
 </a>
-<a class="card listing-card" href="archive/2025-08-21-copilot-money-head-of-engineering">
+<a class="card listing-card" href="archive/2025-08-21-copilot-money-head-engineering">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/copilot.money.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
     <span class="card-kicker">Copilot Money</span>
@@ -142,7 +147,7 @@ button { background: var(--accent); color: var(--accent-fg); border-color: var(-
     <span class="card-meta-row"><span>Captured <relative-time datetime="2025-08-21" title="Aug 21, 2025">Aug 21, 2025</relative-time></span><span class="source-host">jobs.ashbyhq.com</span></span>
   </span>
 </a>
-<a class="card listing-card" href="archive/2025-08-15-apple-software-engineer-system-experience">
+<a class="card listing-card" href="archive/2025-08-15-apple-system-experience">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/apple.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
     <span class="card-kicker">Apple</span>
@@ -197,6 +202,52 @@ document.getElementById('capture-form').addEventListener('submit', event => {
     }
   }
   if (!customElements.get('relative-time')) customElements.define('relative-time', ArchiveRelativeTime);
+})();</script>
+<script>(() => {
+  const storageKey = 'kane:job-archive-manage';
+  const parameterName = 'manage';
+
+  const readMode = () => {
+    try {
+      return window.localStorage.getItem(storageKey) === '1';
+    } catch {
+      return false;
+    }
+  };
+
+  const setMode = isEnabled => {
+    try {
+      if (isEnabled) {
+        window.localStorage.setItem(storageKey, '1');
+      } else {
+        window.localStorage.removeItem(storageKey);
+      }
+    } catch {
+      // localStorage can fail in restricted browser contexts.
+    }
+  };
+
+  const removeManageParameter = url => {
+    url.searchParams.delete(parameterName);
+    const query = url.searchParams.toString();
+    return `${url.pathname}${query ? `?${query}` : ''}${url.hash}`;
+  };
+
+  const currentUrl = new URL(window.location.href);
+  const manageParameter = currentUrl.searchParams.get(parameterName);
+  if (['1', 'true', 'on'].includes((manageParameter || '').toLowerCase())) {
+    setMode(true);
+  } else if (['0', 'false', 'off'].includes((manageParameter || '').toLowerCase())) {
+    setMode(false);
+  }
+
+  if (manageParameter !== null) {
+    window.history.replaceState(window.history.state, '', removeManageParameter(currentUrl));
+  }
+
+  if (readMode()) {
+    document.body.classList.add('is-owner-mode');
+  }
 })();</script>
 </body>
 </html>

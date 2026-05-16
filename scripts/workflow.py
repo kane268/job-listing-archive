@@ -66,7 +66,7 @@ def cmd_help(_: list[str]) -> int:
 Job Listing Archive workflow
 
 Mobile:
-  1. Open the GitHub Pages capture UI.
+  1. Open the GitHub Pages capture UI in manage mode.
   2. Paste a listing URL.
   3. Create the prefilled GitHub issue so Actions can capture the page.
 
@@ -77,7 +77,7 @@ Laptop:
   mise run check           Run tests and archive checks.
   mise run site            Rebuild the static web site.
   mise run validate-capture Validate live URL capture against archived URLs.
-  mise run capture         Open the web listing capture UI.
+  mise run capture         Open the web listing capture UI in manage mode.
   mise run sources         List places to look for jobs.
   mise run browse          Open active job source URLs.
   mise run capture-source  Open the GitHub source capture form.
@@ -168,7 +168,7 @@ def open_issue_template(template: str) -> int:
 
 
 def cmd_capture(_: list[str]) -> int:
-    capture_url = "https://kane268.github.io/job-listing-archive/"
+    capture_url = "https://kane268.github.io/job-listing-archive/?manage=1"
     print(capture_url)
     webbrowser.open(capture_url)
     return 0

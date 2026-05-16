@@ -24,6 +24,11 @@ input, button { width: 100%; border: 1px solid var(--border); border-radius: 8px
 input { color: var(--fg); background: var(--bg); }
 button { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 750; cursor: pointer; }
 .section-grid { display: grid; gap: 14px; margin-top: 14px; }
+body:not(.is-owner-mode) .section-grid { display: block; }
+.owner-only { display: none !important; }
+body.is-owner-mode .owner-block { display: block !important; }
+body.is-owner-mode .owner-flex { display: flex !important; }
+body.is-owner-mode .owner-inline { display: inline-block !important; }
 .stack { display: grid; gap: 10px; }
 .card { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; align-items: start; color: inherit; text-decoration: none; border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--bg); }
 .card:hover, .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -70,11 +75,11 @@ button { background: var(--accent); color: var(--accent-fg); border-color: var(-
   </div>
 </header>
 
-<nav class="page-actions" aria-label="Listing links">
+<nav class="page-actions owner-only owner-flex" aria-label="Listing links">
   <a href="https://readwise.io/careers/senior-staff-engineer" target="_blank" rel="noreferrer">Source</a>
-  <a href="https://github.com/kane268/job-listing-archive/blob/main/listings/2026/2026-05-09-readwise-senior-staff-engineer-backend-focus/listing.md" target="_blank" rel="noreferrer">View in GitHub</a>
-  <a href="../../listings/2026/2026-05-09-readwise-senior-staff-engineer-backend-focus/raw.md">Raw capture</a>
-  <a href="https://github.com/kane268/job-listing-archive/issues/new?title=Extraction+issue%3A+Senior%2FStaff+Engineer+%28Backend+Focus%29+-+Readwise&amp;labels=bug%2Cneeds-text-extraction&amp;body=%23%23%23+Listing%0A%0Ahttps%3A%2F%2Fkane268.github.io%2Fjob-listing-archive%2Farchive%2F2026-05-09-readwise-senior-staff-engineer-backend-focus%0A%0A%23%23%23+Source+URL%0A%0Ahttps%3A%2F%2Freadwise.io%2Fcareers%2Fsenior-staff-engineer%0A%0A%23%23%23+GitHub+record%0A%0Ahttps%3A%2F%2Fgithub.com%2Fkane268%2Fjob-listing-archive%2Fblob%2Fmain%2Flistings%2F2026%2F2026-05-09-readwise-senior-staff-engineer-backend-focus%2Flisting.md%0A%0A%23%23%23+What+looks+wrong%3F%0A%0A" target="_blank" rel="noreferrer">Report extraction issue</a>
+  <a href="https://github.com/kane268/job-listing-archive/tree/main/listings/2026/05/09/readwise-senior-staff-backend" target="_blank" rel="noreferrer">View in GitHub</a>
+  <a href="../../listings/2026/05/09/readwise-senior-staff-backend/raw.md">Raw capture</a>
+  <a href="https://github.com/kane268/job-listing-archive/issues/new?title=Extraction+issue%3A+Senior%2FStaff+Engineer+%28Backend+Focus%29+-+Readwise&amp;labels=bug%2Cneeds-text-extraction&amp;body=%23%23%23+Listing%0A%0Ahttps%3A%2F%2Fkane268.github.io%2Fjob-listing-archive%2Farchive%2F2026-05-09-readwise-senior-staff-backend%0A%0A%23%23%23+Source+URL%0A%0Ahttps%3A%2F%2Freadwise.io%2Fcareers%2Fsenior-staff-engineer%0A%0A%23%23%23+GitHub+folder%0A%0Ahttps%3A%2F%2Fgithub.com%2Fkane268%2Fjob-listing-archive%2Ftree%2Fmain%2Flistings%2F2026%2F05%2F09%2Freadwise-senior-staff-backend%0A%0A%23%23%23+What+looks+wrong%3F%0A%0A" target="_blank" rel="noreferrer">Report extraction issue</a>
 </nav>
 
 <main class="markdown" aria-label="Rendered listing Markdown">
@@ -202,6 +207,52 @@ Meta: Engineering | Remote | Full time</p>
     }
   }
   if (!customElements.get('relative-time')) customElements.define('relative-time', ArchiveRelativeTime);
+})();</script>
+<script>(() => {
+  const storageKey = 'kane:job-archive-manage';
+  const parameterName = 'manage';
+
+  const readMode = () => {
+    try {
+      return window.localStorage.getItem(storageKey) === '1';
+    } catch {
+      return false;
+    }
+  };
+
+  const setMode = isEnabled => {
+    try {
+      if (isEnabled) {
+        window.localStorage.setItem(storageKey, '1');
+      } else {
+        window.localStorage.removeItem(storageKey);
+      }
+    } catch {
+      // localStorage can fail in restricted browser contexts.
+    }
+  };
+
+  const removeManageParameter = url => {
+    url.searchParams.delete(parameterName);
+    const query = url.searchParams.toString();
+    return `${url.pathname}${query ? `?${query}` : ''}${url.hash}`;
+  };
+
+  const currentUrl = new URL(window.location.href);
+  const manageParameter = currentUrl.searchParams.get(parameterName);
+  if (['1', 'true', 'on'].includes((manageParameter || '').toLowerCase())) {
+    setMode(true);
+  } else if (['0', 'false', 'off'].includes((manageParameter || '').toLowerCase())) {
+    setMode(false);
+  }
+
+  if (manageParameter !== null) {
+    window.history.replaceState(window.history.state, '', removeManageParameter(currentUrl));
+  }
+
+  if (readMode()) {
+    document.body.classList.add('is-owner-mode');
+  }
 })();</script>
 </body>
 </html>

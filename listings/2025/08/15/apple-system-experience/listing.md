@@ -1,5 +1,5 @@
 ---
-id: "2025-08-15-apple-software-engineer-system-experience"
+id: "2025-08-15-apple-system-experience"
 captured_at: "2025-08-15"
 source_url: "https://jobs.apple.com/en-us/details/200602358/software-engineer-system-experience"
 company: "Apple"

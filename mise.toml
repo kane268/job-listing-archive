@@ -54,7 +54,7 @@ description = "Show archive count and git status"
 run = "python3 scripts/workflow.py status"
 
 [tasks.capture]
-description = "Open the web listing capture UI"
+description = "Open the web listing capture UI in manage mode"
 run = "python3 scripts/workflow.py capture"
 
 [tasks.capture-source]

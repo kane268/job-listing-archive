@@ -49,6 +49,11 @@ input, button { width: 100%; border: 1px solid var(--border); border-radius: 8px
 input { color: var(--fg); background: var(--bg); }
 button { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 750; cursor: pointer; }
 .section-grid { display: grid; gap: 14px; margin-top: 14px; }
+body:not(.is-owner-mode) .section-grid { display: block; }
+.owner-only { display: none !important; }
+body.is-owner-mode .owner-block { display: block !important; }
+body.is-owner-mode .owner-flex { display: flex !important; }
+body.is-owner-mode .owner-inline { display: inline-block !important; }
 .stack { display: grid; gap: 10px; }
 .card { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; align-items: start; color: inherit; text-decoration: none; border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--bg); }
 .card:hover, .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -115,6 +120,55 @@ RELATIVE_TIME_JS = r"""
     }
   }
   if (!customElements.get('relative-time')) customElements.define('relative-time', ArchiveRelativeTime);
+})();
+""".strip()
+
+MANAGE_MODE_JS = r"""
+(() => {
+  const storageKey = 'kane:job-archive-manage';
+  const parameterName = 'manage';
+
+  const readMode = () => {
+    try {
+      return window.localStorage.getItem(storageKey) === '1';
+    } catch {
+      return false;
+    }
+  };
+
+  const setMode = isEnabled => {
+    try {
+      if (isEnabled) {
+        window.localStorage.setItem(storageKey, '1');
+      } else {
+        window.localStorage.removeItem(storageKey);
+      }
+    } catch {
+      // localStorage can fail in restricted browser contexts.
+    }
+  };
+
+  const removeManageParameter = url => {
+    url.searchParams.delete(parameterName);
+    const query = url.searchParams.toString();
+    return `${url.pathname}${query ? `?${query}` : ''}${url.hash}`;
+  };
+
+  const currentUrl = new URL(window.location.href);
+  const manageParameter = currentUrl.searchParams.get(parameterName);
+  if (['1', 'true', 'on'].includes((manageParameter || '').toLowerCase())) {
+    setMode(true);
+  } else if (['0', 'false', 'off'].includes((manageParameter || '').toLowerCase())) {
+    setMode(false);
+  }
+
+  if (manageParameter !== null) {
+    window.history.replaceState(window.history.state, '', removeManageParameter(currentUrl));
+  }
+
+  if (readMode()) {
+    document.body.classList.add('is-owner-mode');
+  }
 })();
 """.strip()
 
@@ -211,6 +265,7 @@ def listing_records() -> list[dict[str, Any]]:
                 "source_url": source_url,
                 "icon_url": icon_url_for_source(company, source_url),
                 "listing_path": listing_path.relative_to(ROOT).as_posix(),
+                "listing_dir_path": listing_path.parent.relative_to(ROOT).as_posix(),
                 "raw_text_path": raw_path.relative_to(ROOT).as_posix(),
                 "page_path": site_path("archive", listing_id, ""),
                 "text": read_listing_text(listing_path),
@@ -307,6 +362,7 @@ def layout(title: str, body: str, description: str = "Job listing archive") -> s
 <body>
 {body}
 <script>{RELATIVE_TIME_JS}</script>
+<script>{MANAGE_MODE_JS}</script>
 </body>
 </html>
 """
@@ -363,7 +419,7 @@ def build_index_page(sources: list[dict[str, str]], listings: list[dict[str, Any
     backup_html = ""
     if failed:
         backup_html = f"""
-<section class="panel" style="margin-top:14px" aria-labelledby="backup-title">
+<section class="panel owner-only owner-block" style="margin-top:14px" aria-labelledby="backup-title">
   <div class="panel-header"><h2 id="backup-title">Capture backups</h2></div>
   <p class="muted">These URLs were saved even though capture did not finish. Fix the parser, then re-run capture.</p>
   <div class="stack">{' '.join(backup_card(record) for record in failed)}</div>
@@ -372,10 +428,10 @@ def build_index_page(sources: list[dict[str, str]], listings: list[dict[str, Any
     body = f"""
 <header>
   <h1>Job listing archive</h1>
-  <p class="muted">URL capture, saved companies, and readable Markdown copies of saved listings.</p>
+  <p class="muted">Readable Markdown copies of saved job listings.</p>
 </header>
 
-<section class="panel" aria-labelledby="capture-title">
+<section class="panel owner-only owner-block" aria-labelledby="capture-title">
   <div class="panel-header"><h2 id="capture-title">Capture URL</h2></div>
   <form id="capture-form" class="capture-form">
     <label>Listing URL
@@ -386,15 +442,15 @@ def build_index_page(sources: list[dict[str, str]], listings: list[dict[str, Any
 </section>
 
 <div class="section-grid">
-  <section class="panel" aria-labelledby="sources-title">
+  <section class="panel owner-only owner-block" aria-labelledby="sources-title">
     <div class="panel-header">
       <h2 id="sources-title">Saved companies</h2>
-      <a class="action-link" href="{PAGES_CMS_SOURCES_URL}" target="_blank" rel="noreferrer">Edit</a>
+      <a class="action-link owner-only owner-inline" href="{PAGES_CMS_SOURCES_URL}" target="_blank" rel="noreferrer">Edit</a>
     </div>
     <div class="stack">{source_html}</div>
   </section>
 
-  <section class="panel" aria-labelledby="listings-title">
+  <section class="panel listings-panel" aria-labelledby="listings-title">
     <div class="panel-header"><h2 id="listings-title">Listings</h2></div>
     <div class="stack">{listing_html}</div>
   </section>
@@ -424,9 +480,9 @@ def report_issue_url(record: dict[str, Any]) -> str:
 
 {record.get('source_url') or '_No source URL captured_'}
 
-### GitHub record
+### GitHub folder
 
-{REPO_URL}/blob/main/{record['listing_path']}
+{REPO_URL}/tree/main/{record['listing_dir_path']}
 
 ### What looks wrong?
 
@@ -436,7 +492,7 @@ def report_issue_url(record: dict[str, Any]) -> str:
 
 def build_listing_page(record: dict[str, Any]) -> str:
     source_link = f'<a href="{esc(record["source_url"])}" target="_blank" rel="noreferrer">Source</a>' if record.get("source_url") else ""
-    github_link = f'{REPO_URL}/blob/main/{record["listing_path"]}'
+    github_link = f'{REPO_URL}/tree/main/{record["listing_dir_path"]}'
     raw_link = f'../../{esc(record["raw_text_path"])}'
     rendered_markdown = re.sub(r"^# .+\n+", "", record.get("text") or "No captured text available.", count=1)
     body = f"""
@@ -452,7 +508,7 @@ def build_listing_page(record: dict[str, Any]) -> str:
   </div>
 </header>
 
-<nav class="page-actions" aria-label="Listing links">
+<nav class="page-actions owner-only owner-flex" aria-label="Listing links">
   {source_link}
   <a href="{esc(github_link)}" target="_blank" rel="noreferrer">View in GitHub</a>
   <a href="{raw_link}">Raw capture</a>

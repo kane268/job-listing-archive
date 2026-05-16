@@ -22,6 +22,7 @@ from job_archive import (  # noqa: E402
     ingest_url,
     parse_frontmatter,
     parse_pdf_date,
+    short_listing_slug,
     slugify,
 )
 
@@ -30,6 +31,13 @@ class JobArchiveTests(unittest.TestCase):
     def test_slugify(self) -> None:
         self.assertEqual(slugify("Connect Risk & Compliance"), "connect-risk-and-compliance")
         self.assertEqual(slugify(" Senior Staff Engineer, Core Infrastructure "), "senior-staff-engineer-core-infrastructure")
+
+    def test_short_listing_slug(self) -> None:
+        self.assertEqual(
+            short_listing_slug("Anthropic", "Staff+ Software Engineer, Developer Productivity"),
+            "anthropic-staff-developer-productivity",
+        )
+        self.assertEqual(short_listing_slug("Apple", "Software Engineer, System Experience"), "apple-system-experience")
 
     def test_infer_metadata_from_plain_filenames(self) -> None:
         stripe = infer_metadata_from_filename("Stripe Staff Software Engineer, Data Movement.pdf")
@@ -108,6 +116,10 @@ class JobArchiveTests(unittest.TestCase):
 
             result = ingest_url(fetched.requested_url, root=root, fetched=fetched, overrides={"why": "Public note"})
             self.assertEqual(result["status"], "captured")
+            self.assertRegex(
+                Path(result["destination"]).relative_to(root).as_posix(),
+                r"^listings/\d{4}/\d{2}/\d{2}/anthropic-staff-developer-productivity$",
+            )
             listing_path = Path(result["destination"]) / "listing.md"
             metadata = parse_frontmatter(listing_path)
             self.assertEqual(metadata["company"], "Anthropic")

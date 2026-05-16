@@ -12,7 +12,9 @@ Use the mobile-friendly site when you find an interesting listing:
 
 [Open the job archive](https://kane268.github.io/job-listing-archive/)
 
-Paste the listing URL and open the prefilled GitHub issue. The site adds `inbox` and `capture` labels. The capture workflow only acts on owner-created issues with the `capture` label, fetches the page, writes `raw.html`, extracts `raw.md` and `raw.txt`, creates `listing.md`, rebuilds the index and static site, and commits back to the repo. Listings on the site render the captured Markdown and include links to GitHub and a prefilled extraction issue. If capture fails, the URL is saved in `data/captures.json` and shown on the site as a backup.
+Public visitors see only the listings. Owner tools are available in manage mode: visit the site with `?manage=1` to show capture, saved companies, GitHub links, raw captures, and extraction issue links. Disable manage mode with `?manage=0`.
+
+Paste the listing URL in manage mode and open the prefilled GitHub issue. The site adds `inbox` and `capture` labels. The capture workflow only acts on owner-created issues with the `capture` label, fetches the page, writes `raw.html`, extracts `raw.md` and `raw.txt`, creates `listing.md`, rebuilds the index and static site, and commits back to the repo. If capture fails, the URL is saved in `data/captures.json` and shown in manage mode as a backup.
 
 Legacy PDF import is still available for old saved files, but URL capture is the normal path now.
 
@@ -31,7 +33,7 @@ That imports any legacy iCloud files, skips files already imported, rebuilds `da
 ```bash
 mise run save            # test, commit, push current edits
 mise run import          # import legacy iCloud files only
-mise run capture         # open the web listing capture UI
+mise run capture         # open the web listing capture UI in manage mode
 mise run site            # rebuild the static site
 mise run validate-capture # test live URL capture in a temp repo
 mise run sources         # list places to look for jobs
@@ -50,7 +52,7 @@ Saved companies live in `data/job-sources.json` with only `name` and `url`. Sour
 .pages.yml                Pages CMS source editor configuration
 archive/<id>/             generated web pages with captured text
 inbox/                    temporary drop zone and notes
-listings/YYYY/<id>/       one folder per saved listing
+listings/YYYY/MM/DD/<slug>/ one folder per saved listing
 data/captures.json        saved capture attempts and failed capture backups
 data/index.csv            generated listing index
 data/job-sources.json     places to look for new listings
@@ -93,7 +95,7 @@ Open active job source URLs
 
 - **Usage**: `capture`
 
-Open the web listing capture UI
+Open the web listing capture UI in manage mode
 
 ## `capture-source`
 

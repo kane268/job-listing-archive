@@ -33,7 +33,7 @@ Those files were mostly Safari-generated PDFs, plus one saved Apple page. The im
 Each listing lives at:
 
 ```text
-listings/YYYY/<id>/listing.md
+listings/YYYY/MM/DD/<short-slug>/listing.md
 ```
 
 Optional raw files sit beside it:
@@ -62,7 +62,7 @@ Examples include company career pages such as Anthropic, GitHub, Stripe, Apple, 
 
 ### Generated data
 
-`data/index.csv` is generated from all `listing.md` files. `archive/<id>/index.html` pages and the home page are generated from source files and `raw.txt`.
+`data/index.csv` is generated from all `listing.md` files. `archive/<id>/index.html` pages and the home page are generated from source files and `raw.md` when available, falling back to `raw.txt`.
 
 Rebuild generated data with:
 
@@ -76,13 +76,15 @@ Do not hand-edit generated index rows, generated archive pages, or generated `ra
 
 ### Mobile capture
 
-Use the GitHub Pages web UI:
+Use the GitHub Pages web UI in manage mode:
 
 ```text
-https://kane268.github.io/job-listing-archive/
+https://kane268.github.io/job-listing-archive/?manage=1
 ```
 
-Paste a listing URL. The site opens a prefilled GitHub issue with an empty body, the URL in the title, and labels `inbox,capture`. GitHub Actions fetches the page, saves `raw.html`, extracts `raw.md` and `raw.txt`, creates `listing.md`, rebuilds `data/index.csv`, rebuilds the static site, commits the result, labels the issue `ingested`, and closes it. If capture fails, Actions saves the URL in `data/captures.json` and the live site shows it as a backup for later parser fixes and re-capture.
+Public visitors see only listings. Manage mode is stored per browser and shows capture, saved companies, GitHub links, raw captures, and extraction issue links. Disable it with `?manage=0`.
+
+Paste a listing URL. The site opens a prefilled GitHub issue with an empty body, the URL in the title, and labels `inbox,capture`. GitHub Actions fetches the page, saves `raw.html`, extracts `raw.md` and `raw.txt`, creates `listing.md`, rebuilds `data/index.csv`, rebuilds the static site, commits the result, labels the issue `ingested`, and closes it. If capture fails, Actions saves the URL in `data/captures.json` and manage mode shows it as a backup for later parser fixes and re-capture.
 
 Legacy PDF import remains available for old saved files, but PDF capture is no longer the normal path.
 
@@ -113,7 +115,7 @@ mise run browse          # open active job source pages
 mise run add-source      # add or update a source
 mise run site            # rebuild static GitHub Pages site
 mise run validate-capture # test live URL capture in a temp repo
-mise run capture         # open web listing capture UI
+mise run capture         # open web listing capture UI in manage mode
 mise run capture-source  # open source capture issue form
 ```
 
@@ -122,7 +124,7 @@ mise run capture-source  # open source capture issue form
 Important `listing.md` front matter fields:
 
 ```yaml
-id: "2026-05-09-readwise-senior-staff-engineer-backend-focus"
+id: "2026-05-09-readwise-senior-staff-backend"
 captured_at: "2026-05-09"
 source_url: "https://readwise.io/careers/senior-staff-engineer"
 company: "Readwise"

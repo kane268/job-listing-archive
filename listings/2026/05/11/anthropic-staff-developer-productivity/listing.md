@@ -1,9 +1,9 @@
 ---
-id: "2026-05-11-job-application-for-staff-software-engineer-developer-productivity-at-anthropi"
+id: "2026-05-11-anthropic-staff-developer-productivity"
 captured_at: "2026-05-11"
 source_url: "https://job-boards.greenhouse.io/anthropic/jobs/5110511008"
-company: ""
-role_title: "Job Application for Staff+ Software Engineer, Developer Productivity at Anthropi"
+company: "Anthropic"
+role_title: "Staff+ Software Engineer, Developer Productivity"
 role_family: "software-engineering"
 seniority: "staff"
 location: "Remote"
@@ -23,11 +23,12 @@ tags:
   - "software-engineering"
   - "staff"
   - "pdf"
+  - "anthropic"
 requirements: []
 nice_to_haves: []
 ---
 
-# Job Application for Staff+ Software Engineer, Developer Productivity at Anthropi - Unknown company
+# Staff+ Software Engineer, Developer Productivity - Anthropic
 
 Source: https://job-boards.greenhouse.io/anthropic/jobs/5110511008
 

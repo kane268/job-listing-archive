@@ -1,5 +1,5 @@
 ---
-id: "2026-05-09-readwise-senior-staff-engineer-backend-focus"
+id: "2026-05-09-readwise-senior-staff-backend"
 captured_at: "2026-05-09"
 source_url: "https://readwise.io/careers/senior-staff-engineer"
 company: "Readwise"

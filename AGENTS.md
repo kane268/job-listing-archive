@@ -12,7 +12,7 @@ This is a public-safe personal archive of job listings. It started as a formal v
 ## Source of truth
 
 - Always pull latest `main` with `git pull --ff-only` before making changes. New listings may be added through the web UI and GitHub Actions.
-- Listings live in `listings/YYYY/<id>/listing.md`.
+- Listings live in `listings/YYYY/MM/DD/<short-slug>/listing.md`.
 - Raw listing evidence lives beside `listing.md` as `raw.pdf`, `raw.html`, `source.txt`, generated `raw.md`, or generated `raw.txt`.
 - Recurring places to look for jobs live in `data/job-sources.json`, with only `name` and `url`. Source IDs are generated from names.
 - `data/index.csv` is generated from listing front matter. Do not hand-edit it.
@@ -40,7 +40,7 @@ mise run site            # rebuild static GitHub Pages site
 mise run validate-capture # test live URL capture in a temp repo
 mise run sources         # list job sources
 mise run browse          # open active job source URLs
-mise run capture         # open web listing capture UI
+mise run capture         # open web listing capture UI in manage mode
 mise run capture-source  # open source capture issue form
 ```
 

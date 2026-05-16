@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import saved job listing files into listings/YYYY/<id>/ folders."""
+"""Import saved job listing files into listings/YYYY/MM/DD/<short-slug>/ folders."""
 
 from job_archive import ingest_cli
 
