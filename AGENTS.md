@@ -14,7 +14,7 @@ This is a public-safe personal archive of job listings. It started as a formal v
 - Always pull latest `main` with `git pull --ff-only` before making changes. New listings may be added through the web UI and GitHub Actions.
 - Listings live in `listings/YYYY/MM/DD/<short-slug>/listing.md`.
 - Raw listing evidence lives beside `listing.md` as `raw.pdf`, `raw.html`, `source.txt`, generated `raw.md`, or generated `raw.txt`.
-- Recurring places to look for jobs live in `data/job-sources.json`, with only `name` and `url`. Source IDs are generated from names.
+- Recurring places to look for jobs live in `data/job-sources.json`, with `name`, jobs `url`, and `homepage_url` for favicon source. Source IDs are generated from names.
 - `data/index.csv` is generated from listing front matter. Do not hand-edit it.
 - `archive/<id>/index.html` and `index.html` are generated web pages. Do not hand-edit them. Regenerate with `mise run site` or `mise run check`.
 - `raw.md` and `raw.txt` are generated evidence. Do not hand-edit them. Regenerate from the source file instead.

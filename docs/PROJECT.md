@@ -56,7 +56,7 @@ Saved companies and recurring places to look for jobs live in:
 data/job-sources.json
 ```
 
-Each entry stores only `name` and `url`. Source IDs are generated from names, for example `If This Is Company Name` becomes `if-this-is-company-name`.
+Each entry stores `name`, jobs `url`, and `homepage_url` for favicon source. Source IDs are generated from names, for example `If This Is Company Name` becomes `if-this-is-company-name`.
 
 Examples include company career pages such as Anthropic, GitHub, Stripe, Apple, and Readwise.
 

@@ -1,44 +1,31 @@
 name: Job source capture
-description: Save a place to look for interesting job listings
+description: Save a company to check for interesting job listings
 labels: ["source"]
 body:
   - type: markdown
     attributes:
-      value: "This repository is public. Only include public-safe notes."
+      value: "This repository is public. Only include public-safe information."
+
+  - type: input
+    id: name
+    attributes:
+      label: Company name
+      placeholder: "Anthropic"
+    validations:
+      required: true
 
   - type: input
     id: url
     attributes:
-      label: Source URL
+      label: Jobs URL
       placeholder: "https://example.com/jobs"
     validations:
       required: true
 
   - type: input
-    id: name
+    id: homepage_url
     attributes:
-      label: Source name
-      placeholder: "Anthropic"
+      label: Company home page
+      placeholder: "https://example.com"
     validations:
       required: true
-
-  - type: dropdown
-    id: source_type
-    attributes:
-      label: Source type
-      options:
-        - company-careers
-        - job-board
-        - aggregator
-        - newsletter
-        - other
-    validations:
-      required: false
-
-  - type: textarea
-    id: notes
-    attributes:
-      label: Notes
-      placeholder: "Why is this worth checking? Any filters or role families to watch?"
-    validations:
-      required: false

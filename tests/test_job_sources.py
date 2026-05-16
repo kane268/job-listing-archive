@@ -24,6 +24,7 @@ class JobSourceTests(unittest.TestCase):
             status, row = add_or_update_source(
                 "If This Is Company Name",
                 "https://example.com/jobs",
+                "https://example.com",
                 path=path,
             )
             self.assertEqual(status, "added")
@@ -32,6 +33,7 @@ class JobSourceTests(unittest.TestCase):
             status, row = add_or_update_source(
                 "If This Is Company Name",
                 "https://example.com/careers",
+                "https://example.com",
                 path=path,
             )
             self.assertEqual(status, "updated")
@@ -39,7 +41,18 @@ class JobSourceTests(unittest.TestCase):
             self.assertEqual(len(read_sources(path)), 1)
 
             stored = json.loads(path.read_text(encoding="utf-8"))
-            self.assertEqual(stored, {"sources": [{"name": "If This Is Company Name", "url": "https://example.com/careers"}]})
+            self.assertEqual(
+                stored,
+                {
+                    "sources": [
+                        {
+                            "name": "If This Is Company Name",
+                            "url": "https://example.com/careers",
+                            "homepage_url": "https://example.com",
+                        }
+                    ]
+                },
+            )
 
     def test_match_sources_defaults_to_all_saved_companies(self) -> None:
         rows = [
@@ -51,11 +64,12 @@ class JobSourceTests(unittest.TestCase):
 
     def test_format_sources(self) -> None:
         rows = [
-            {"name": "Stripe", "url": "https://stripe.com/jobs/search"},
+            {"name": "Stripe", "url": "https://stripe.com/jobs/search", "homepage_url": "https://stripe.com"},
         ]
         table = format_sources(rows)
         self.assertIn("Stripe", table)
         self.assertIn("https://stripe.com/jobs/search", table)
+        self.assertIn("https://stripe.com", table)
         self.assertNotIn("status", table)
 
 

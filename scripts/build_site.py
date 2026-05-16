@@ -9,7 +9,7 @@ import re
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 from urllib.parse import urlencode, urlparse
 
 from job_archive import ROOT, clean_role_title, infer_company_from_url, listing_paths, parse_frontmatter
@@ -27,6 +27,7 @@ COMPANY_ICON_HOSTS = {
     "Copilot Money": "copilot.money",
     "GitHub": "github.com",
     "Readwise": "readwise.io",
+    "Reddit": "reddit.com",
     "Stripe": "stripe.com",
 }
 
@@ -203,12 +204,21 @@ def icon_url_for_host(host: str) -> str:
     return f"https://icons.duckduckgo.com/ip3/{esc(host)}.ico" if host else ""
 
 
-def icon_url_for_source(name: str, url: str) -> str:
+def icon_url_for_source(name: str, url: str, homepage_url: str = "") -> str:
+    icon_source = homepage_url or ""
     override = COMPANY_ICON_HOSTS.get(name.strip())
-    if override:
-        return icon_url_for_host(override)
-    host = urlparse(url).netloc
+    if not icon_source and override:
+        icon_source = f"https://{override}"
+    host = urlparse(icon_source or url).netloc
     return icon_url_for_host(host)
+
+
+def company_homepage_map(sources: Iterable[dict[str, str]]) -> dict[str, str]:
+    return {
+        source.get("name", "").casefold(): source.get("homepage_url", "")
+        for source in active_sources(sources)
+        if source.get("name") and source.get("homepage_url")
+    }
 
 
 def url_label(url: str, *, include_path: bool = False) -> str:
@@ -244,7 +254,8 @@ def read_listing_text(listing_path: Path) -> str:
     return text[end + 5 :].strip() if end != -1 else text.strip()
 
 
-def listing_records() -> list[dict[str, Any]]:
+def listing_records(company_homepages: dict[str, str] | None = None) -> list[dict[str, Any]]:
+    company_homepages = company_homepages or {}
     records = []
     for listing_path in listing_paths(ROOT):
         metadata = parse_frontmatter(listing_path)
@@ -263,7 +274,7 @@ def listing_records() -> list[dict[str, Any]]:
                 "captured_time_html": capture_time_html(str(metadata.get("captured_at") or "")),
                 "status": str(metadata.get("status") or ""),
                 "source_url": source_url,
-                "icon_url": icon_url_for_source(company, source_url),
+                "icon_url": icon_url_for_source(company, source_url, company_homepages.get(company.casefold(), "")),
                 "listing_path": listing_path.relative_to(ROOT).as_posix(),
                 "listing_dir_path": listing_path.parent.relative_to(ROOT).as_posix(),
                 "raw_text_path": raw_path.relative_to(ROOT).as_posix(),
@@ -371,7 +382,7 @@ def layout(title: str, body: str, description: str = "Job listing archive") -> s
 def source_card(source: dict[str, str]) -> str:
     name = source.get("name") or source.get("id") or "Saved company"
     url = source.get("url", "")
-    icon_url = icon_url_for_source(name, url)
+    icon_url = icon_url_for_source(name, url, source.get("homepage_url", ""))
     return f"""<a class="card source-card" href="{esc(url)}" target="_blank" rel="noreferrer" title="{esc(url)}">
   <img class="icon" src="{icon_url}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
@@ -525,8 +536,8 @@ def build_listing_page(record: dict[str, Any]) -> str:
 
 def build_site(root: str | Path = ROOT) -> None:
     root_path = Path(root)
-    listings = listing_records()
     sources = read_sources(root_path / "data" / "job-sources.json")
+    listings = listing_records(company_homepage_map(sources))
     captures = read_capture_records()
 
     if ARCHIVE_DIR.exists():

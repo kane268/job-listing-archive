@@ -190,7 +190,7 @@ def cmd_browse(args: list[str]) -> int:
 
 def cmd_add_source(args: list[str]) -> int:
     if len(args) < 2:
-        raise SystemExit('Usage: mise run add-source "Name" "https://example.com/jobs"')
+        raise SystemExit('Usage: mise run add-source "Name" "https://example.com/jobs" --homepage-url "https://example.com"')
     run([sys.executable, "scripts/job_sources.py", "add", *args])
     return 0
 

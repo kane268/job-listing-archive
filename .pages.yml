@@ -25,6 +25,10 @@ content:
                 label: Jobs URL
                 type: string
                 required: true
+              - name: homepage_url
+                label: Company home page
+                type: string
+                required: true
 
 settings:
   content:

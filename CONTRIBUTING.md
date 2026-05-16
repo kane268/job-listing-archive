@@ -24,7 +24,7 @@ mise run import
 
 ## Add a place to look for jobs
 
-Use `data/job-sources.json` for saved companies worth checking. Each entry should only include `name` and `url`. The source ID is generated from the name, for example `If This Is Company Name` becomes `if-this-is-company-name`.
+Use `data/job-sources.json` for saved companies worth checking. Each entry should include `name`, jobs `url`, and `homepage_url` for favicon source. The source ID is generated from the name, for example `If This Is Company Name` becomes `if-this-is-company-name`.
 
 ```bash
 mise run sources

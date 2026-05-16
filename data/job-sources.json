@@ -2,27 +2,33 @@
   "sources": [
     {
       "name": "Anthropic",
-      "url": "https://www.anthropic.com/careers/jobs"
+      "url": "https://www.anthropic.com/careers/jobs",
+      "homepage_url": "https://www.anthropic.com"
     },
     {
       "name": "Apple",
-      "url": "https://jobs.apple.com/en-us/search"
+      "url": "https://jobs.apple.com/en-us/search",
+      "homepage_url": "https://www.apple.com"
     },
     {
       "name": "GitHub",
-      "url": "https://www.github.careers/careers-home/jobs"
+      "url": "https://www.github.careers/careers-home/jobs",
+      "homepage_url": "https://github.com"
     },
     {
       "name": "Readwise",
-      "url": "https://readwise.io/careers"
-    },
-    {
-      "name": "Stripe",
-      "url": "https://stripe.com/jobs/search"
+      "url": "https://readwise.io/careers",
+      "homepage_url": "https://readwise.io"
     },
     {
       "name": "Reddit",
-      "url": "https://job-boards.greenhouse.io/reddit"
+      "url": "https://job-boards.greenhouse.io/reddit",
+      "homepage_url": "https://www.reddit.com"
+    },
+    {
+      "name": "Stripe",
+      "url": "https://stripe.com/jobs/search",
+      "homepage_url": "https://stripe.com"
     }
   ]
 }

@@ -42,7 +42,7 @@ mise run capture-source  # open the job source issue form
 mise run                 # show workflow help
 ```
 
-Saved companies live in `data/job-sources.json` with only `name` and `url`. Source IDs are generated from names, for example `If This Is Company Name` becomes `if-this-is-company-name`. Pages CMS can edit this file through `.pages.yml` when you want a structured web editor.
+Saved companies live in `data/job-sources.json` with `name`, jobs `url`, and `homepage_url` for favicon source. Source IDs are generated from names, for example `If This Is Company Name` becomes `if-this-is-company-name`. Pages CMS can edit this file through `.pages.yml` when you want a structured web editor.
 
 ## Structure
 

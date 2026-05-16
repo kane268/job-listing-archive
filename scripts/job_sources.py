@@ -13,7 +13,7 @@ from typing import Iterable
 from job_archive import ROOT, slugify
 
 SOURCE_INDEX = ROOT / "data" / "job-sources.json"
-STORED_COLUMNS = ["name", "url"]
+STORED_COLUMNS = ["name", "url", "homepage_url"]
 RUNTIME_COLUMNS = ["id", *STORED_COLUMNS]
 
 
@@ -27,6 +27,7 @@ def normalize_source_row(row: dict[str, str]) -> dict[str, str]:
         "id": make_source_id(name),
         "name": name,
         "url": (row.get("url") or "").strip(),
+        "homepage_url": (row.get("homepage_url") or row.get("homepage") or "").strip(),
     }
 
 
@@ -69,10 +70,16 @@ def write_sources(rows: Iterable[dict[str, str]], path: str | Path = SOURCE_INDE
     return source_path
 
 
-def add_or_update_source(name: str, url: str, *, path: str | Path = SOURCE_INDEX) -> tuple[str, dict[str, str]]:
+def add_or_update_source(
+    name: str,
+    url: str,
+    homepage_url: str = "",
+    *,
+    path: str | Path = SOURCE_INDEX,
+) -> tuple[str, dict[str, str]]:
     rows = read_sources(path)
     source_id = make_source_id(name)
-    new_row = normalize_source_row({"name": name, "url": url})
+    new_row = normalize_source_row({"name": name, "url": url, "homepage_url": homepage_url})
 
     for index, row in enumerate(rows):
         if row.get("id") == source_id:
@@ -98,7 +105,9 @@ def match_sources(rows: Iterable[dict[str, str]], selectors: list[str]) -> list[
     for selector in selectors:
         normalized = selector.lower()
         for row in source_rows:
-            haystack = " ".join([row.get("id", ""), row.get("name", ""), row.get("url", "")]).lower()
+            haystack = " ".join(
+                [row.get("id", ""), row.get("name", ""), row.get("url", ""), row.get("homepage_url", "")]
+            ).lower()
             if normalized in haystack and row not in matches:
                 matches.append(row)
     return matches
@@ -109,7 +118,7 @@ def format_sources(rows: Iterable[dict[str, str]]) -> str:
     if not source_rows:
         return "No saved companies yet."
 
-    columns = ["name", "url"]
+    columns = ["name", "url", "homepage_url"]
     widths = {
         column: max(len(column), *(len(row.get(column, "")) for row in source_rows))
         for column in columns
@@ -129,7 +138,7 @@ def list_cli(args: argparse.Namespace) -> int:
 
 
 def add_cli(args: argparse.Namespace) -> int:
-    status, row = add_or_update_source(args.name, args.url, path=args.file)
+    status, row = add_or_update_source(args.name, args.url, args.homepage_url, path=args.file)
     print(f"{status}: {row['id']} -> {row['url']}")
     return 0
 
@@ -155,6 +164,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_parser = subparsers.add_parser("add", help="Add or update a saved company")
     add_parser.add_argument("name", help="Company name")
     add_parser.add_argument("url", help="Jobs or careers URL")
+    add_parser.add_argument("--homepage-url", default="", help="Company home page URL for icons")
     add_parser.set_defaults(func=add_cli)
 
     open_parser = subparsers.add_parser("open", help="Open saved companies")
