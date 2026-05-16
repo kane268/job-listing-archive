@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import sys
 import tempfile
 import unittest
@@ -113,7 +114,32 @@ class JobArchiveTests(unittest.TestCase):
             self.assertEqual(metadata["role_title"], "Staff+ Software Engineer, Developer Productivity")
             self.assertEqual(metadata["source_type"], "html")
             self.assertTrue((Path(result["destination"]) / "raw.html").exists())
+            self.assertTrue((Path(result["destination"]) / "raw.md").exists())
             self.assertTrue((Path(result["destination"]) / "raw.txt").exists())
+
+    def test_extract_apple_markdown_includes_posted_date(self) -> None:
+        payload = {
+            "loaderData": {
+                "jobDetails": {
+                    "jobsData": {
+                        "postingTitle": "Software Engineer, System Experience",
+                        "jobNumber": "200602358",
+                        "postingDate": "Oct 31, 2025",
+                        "jobSummary": "Build future system experiences.",
+                        "description": "Implement features and improve performance.",
+                        "minimumQualifications": "Excellent Swift programming\\nDebugging skills",
+                        "preferredQualifications": "Reusable APIs",
+                        "locations": [
+                            {"city": "Cupertino", "stateProvince": "California", "countryName": "United States"}
+                        ],
+                    }
+                }
+            }
+        }
+        markup = f'<script>window.__staticRouterHydrationData = JSON.parse({json.dumps(json.dumps(payload))});</script>'
+        metadata = extract_html_capture_metadata(markup, "https://jobs.apple.com/en-us/details/200602358/software-engineer-system-experience")
+        self.assertIn("Posted: Oct 31, 2025", metadata["markdown"])
+        self.assertEqual(metadata["published_at"], "Oct 31, 2025")
 
     def test_parse_pdf_date(self) -> None:
         self.assertEqual(parse_pdf_date("D:20250815165320Z00'00'"), "2025-08-15T16:53:20+00:00")

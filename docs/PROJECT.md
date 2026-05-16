@@ -154,10 +154,12 @@ GitHub Issues are an inbox, not the permanent archive.
 
 Listing issues:
 
-1. New issue starts with `inbox` and keeps the URL in the title.
-2. GitHub Actions captures the URL or records a failed attempt in `data/captures.json`.
-3. Successful or duplicate captures get label `ingested`.
-4. Failed captures stay open with `needs-text-extraction` until the parser is fixed and the URL is re-run.
+1. New capture issues start with `inbox` and `capture`, and keep the URL in the title.
+2. GitHub Actions only acts on owner-created issues with the `capture` label.
+3. Bug reports and markdown extraction issues should not use the `capture` label.
+4. GitHub Actions captures the URL or records a failed attempt in `data/captures.json`.
+5. Successful or duplicate captures get label `ingested`.
+6. Failed captures stay open with `needs-text-extraction` until the parser is fixed and the URL is re-run.
 
 Source issues:
 

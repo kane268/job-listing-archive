@@ -46,6 +46,7 @@ FRONTMATTER_ORDER = [
     "source_final_url",
     "source_http_status",
     "source_fetched_at",
+    "source_published_at",
     "company",
     "role_title",
     "role_family",
@@ -566,6 +567,114 @@ def normalize_text_block(value: str) -> str:
     return "\n".join(lines).strip() + ("\n" if lines else "")
 
 
+class MarkdownHTMLConverter(HTMLParser):
+    """Small HTML to Markdown converter for job listing content blocks."""
+
+    SKIP_TAGS = {"script", "style", "noscript", "svg"}
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.parts: list[str] = []
+        self.list_depth = 0
+        self.skip_depth = 0
+        self.href = ""
+        self.link_parts: list[str] = []
+        self.li_depth = 0
+
+    def emit(self, value: str) -> None:
+        self.parts.append(value)
+
+    def ensure_newlines(self, count: int) -> None:
+        text = "".join(self.parts)
+        existing = len(text) - len(text.rstrip("\n"))
+        if existing < count:
+            self.parts.append("\n" * (count - existing))
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        attrs_dict = {name.lower(): value or "" for name, value in attrs}
+        if tag in self.SKIP_TAGS:
+            self.skip_depth += 1
+            return
+        if self.skip_depth:
+            return
+        if tag in {"h1", "h2"}:
+            self.ensure_newlines(2)
+            self.emit("## ")
+        elif tag == "h3":
+            self.ensure_newlines(2)
+            self.emit("### ")
+        elif tag == "h4":
+            self.ensure_newlines(2)
+            self.emit("#### ")
+        elif tag == "p":
+            if not self.li_depth:
+                self.ensure_newlines(2)
+        elif tag in {"ul", "ol"}:
+            self.list_depth += 1
+            self.ensure_newlines(1)
+        elif tag == "li":
+            self.ensure_newlines(1)
+            self.emit("  " * max(0, self.list_depth - 1) + "- ")
+            self.li_depth += 1
+        elif tag == "br":
+            self.ensure_newlines(1)
+        elif tag == "a":
+            self.href = attrs_dict.get("href", "")
+            self.link_parts = []
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in self.SKIP_TAGS and self.skip_depth:
+            self.skip_depth -= 1
+            return
+        if self.skip_depth:
+            return
+        if tag in {"h1", "h2", "h3", "h4"}:
+            self.ensure_newlines(2)
+        elif tag == "p":
+            if not self.li_depth:
+                self.ensure_newlines(2)
+        elif tag in {"ul", "ol"}:
+            self.list_depth = max(0, self.list_depth - 1)
+            self.ensure_newlines(2)
+        elif tag == "li":
+            self.li_depth = max(0, self.li_depth - 1)
+            self.ensure_newlines(1)
+        elif tag == "a":
+            text = normalize_spaces("".join(self.link_parts))
+            if text and self.href:
+                self.emit(f"[{text}]({self.href})")
+            elif text:
+                self.emit(text)
+            self.href = ""
+            self.link_parts = []
+
+    def handle_data(self, data: str) -> None:
+        if self.skip_depth:
+            return
+        text = re.sub(r"\s+", " ", html.unescape(data).replace("\xa0", " "))
+        if not text.strip():
+            return
+        if self.href:
+            self.link_parts.append(text)
+        else:
+            self.emit(text)
+
+    def text(self) -> str:
+        raw = "".join(self.parts)
+        lines = [re.sub(r"[ \t]+$", "", line) for line in raw.splitlines()]
+        text = "\n".join(lines)
+        text = re.sub(r"\n{3,}", "\n\n", text).strip()
+        return text + ("\n" if text else "")
+
+
+def html_to_markdown(markup: str) -> str:
+    markup = re.sub(r"<p([^>]*)>\s*<strong>(.*?)</strong>\s*</p>", r"<h2>\2</h2>", markup or "", flags=re.S | re.I)
+    parser = MarkdownHTMLConverter()
+    parser.feed(markup)
+    parser.close()
+    return parser.text()
+
+
 def decode_json_string(value: str) -> str:
     try:
         return json.loads(f'"{value}"')
@@ -679,11 +788,208 @@ def extract_jsonld_job_metadata(scripts: list[str]) -> dict[str, Any]:
     return {}
 
 
+def extract_balanced_json_after(markup: str, marker: str) -> dict[str, Any]:
+    start = markup.find(marker)
+    if start == -1:
+        return {}
+    brace = markup.find("{", start)
+    if brace == -1:
+        return {}
+    depth = 0
+    in_string = False
+    escape = False
+    for index in range(brace, len(markup)):
+        char = markup[index]
+        if in_string:
+            if escape:
+                escape = False
+            elif char == "\\":
+                escape = True
+            elif char == '"':
+                in_string = False
+        else:
+            if char == '"':
+                in_string = True
+            elif char == "{":
+                depth += 1
+            elif char == "}":
+                depth -= 1
+                if depth == 0:
+                    try:
+                        return json.loads(markup[brace : index + 1])
+                    except json.JSONDecodeError:
+                        return {}
+    return {}
+
+
+def markdown_join(parts: list[str]) -> str:
+    return "\n\n".join(part.strip() for part in parts if part and part.strip()).strip() + "\n"
+
+
+def extract_greenhouse_capture(markup: str, source_url: str) -> dict[str, Any]:
+    data = extract_balanced_json_after(markup, "window.__remixContext")
+    loader = data.get("state", {}).get("loaderData", {}) if isinstance(data, dict) else {}
+    route = next((value for value in loader.values() if isinstance(value, dict) and isinstance(value.get("jobPost"), dict)), {})
+    job = route.get("jobPost", {})
+    if not job:
+        return {}
+
+    company = normalize_spaces(str(job.get("company_name") or infer_company_from_url(source_url)))
+    role_title = clean_role_title(str(job.get("title") or ""), company)
+    location = normalize_spaces(str(job.get("job_post_location") or ""))
+    public_url = str(job.get("public_url") or source_url)
+    parts = [f"# {role_title} - {company}", f"Source: {public_url}  \nLocation: {location}".strip()]
+    for key in ("introduction", "content"):
+        converted = html_to_markdown(str(job.get(key) or "")).strip()
+        if converted:
+            parts.append(converted)
+    pay_ranges = job.get("pay_ranges") if isinstance(job.get("pay_ranges"), list) else []
+    if pay_ranges:
+        compensation_parts = ["## Compensation"]
+        compensation = ""
+        for pay_range in pay_ranges:
+            if not isinstance(pay_range, dict):
+                continue
+            description = html_to_markdown(str(pay_range.get("description") or "")).strip()
+            if description:
+                compensation_parts.append(description)
+            title = str(pay_range.get("title") or "Compensation").rstrip(":")
+            value = normalize_spaces(f"{pay_range.get('min', '')} - {pay_range.get('max', '')} {pay_range.get('currency_type', '')}")
+            if value != "-":
+                compensation = f"{title}: {value}"
+                compensation_parts.append(compensation)
+        parts.append(markdown_join(compensation_parts))
+    else:
+        compensation = ""
+    conclusion = html_to_markdown(str(job.get("conclusion") or "")).strip()
+    if conclusion:
+        parts.append(conclusion)
+    return {
+        "company": company,
+        "role_title": role_title,
+        "location": location,
+        "source_url": public_url,
+        "compensation": compensation,
+        "published_at": str(job.get("published_at") or ""),
+        "markdown": markdown_join(parts),
+    }
+
+
+def extract_ashby_capture(markup: str, source_url: str) -> dict[str, Any]:
+    data = extract_balanced_json_after(markup, "window.__appData")
+    if not data:
+        return {}
+    organization = data.get("organization", {}) if isinstance(data.get("organization"), dict) else {}
+    job = data.get("posting", {}) if isinstance(data.get("posting"), dict) else {}
+    if not job:
+        return {}
+    company = normalize_spaces(str(organization.get("name") or infer_company_from_url(source_url)))
+    role_title = clean_role_title(str(job.get("title") or ""), company)
+    location = normalize_spaces(str(job.get("locationName") or job.get("locationExternalName") or ""))
+    description = html_to_markdown(str(job.get("descriptionHtml") or "")).strip()
+    if not description:
+        description = normalize_text_block(str(job.get("descriptionPlain") or "")).strip()
+    parts = [f"# {role_title} - {company}", f"Source: {source_url}  \nLocation: {location}".strip(), description]
+    return {
+        "company": company,
+        "role_title": role_title,
+        "location": location,
+        "employment_type": format_employment_type(job.get("employmentType", "")),
+        "published_at": str(job.get("publishedDate") or job.get("createdAt") or ""),
+        "markdown": markdown_join(parts),
+    }
+
+
+def extract_apple_capture(markup: str, source_url: str) -> dict[str, Any]:
+    match = re.search(r"window\.__staticRouterHydrationData\s*=\s*JSON\.parse\((\".*?\")\);", markup, re.S)
+    if not match:
+        return {}
+    try:
+        data = json.loads(json.loads(match.group(1)))
+    except json.JSONDecodeError:
+        return {}
+    job = data.get("loaderData", {}).get("jobDetails", {}).get("jobsData", {})
+    if not isinstance(job, dict) or not job:
+        return {}
+    role_title = clean_role_title(str(job.get("postingTitle") or ""), "Apple")
+    locations = []
+    for location in job.get("locations") or []:
+        if not isinstance(location, dict):
+            continue
+        value = ", ".join(str(part) for part in [location.get("city"), location.get("stateProvince"), location.get("countryName")] if part)
+        if value and value not in locations:
+            locations.append(value)
+    location_text = "; ".join(locations)
+    posted = str(job.get("postingDate") or job.get("postingDateMeta") or "")
+    parts = [
+        f"# {role_title} - Apple",
+        f"Source: {source_url}  \nRole number: {job.get('jobNumber', '')}  \nPosted: {posted}  \nLocation: {location_text}".strip(),
+    ]
+    if job.get("jobSummary"):
+        parts.append(f"## Summary\n\n{normalize_text_block(str(job['jobSummary'])).strip()}")
+    if job.get("description"):
+        parts.append(f"## Description\n\n{normalize_text_block(str(job['description'])).strip()}")
+    for key, heading in [("minimumQualifications", "Minimum Qualifications"), ("preferredQualifications", "Preferred Qualifications")]:
+        value = str(job.get(key) or "").strip()
+        if value:
+            items = [normalize_spaces(line) for line in value.splitlines() if normalize_spaces(line)]
+            parts.append(f"## {heading}\n\n" + "\n".join(f"- {item}" for item in items))
+    return {
+        "company": "Apple",
+        "role_title": role_title,
+        "location": location_text,
+        "employment_type": format_employment_type(job.get("employmentType", "")),
+        "published_at": posted,
+        "markdown": markdown_join(parts),
+    }
+
+
+def extract_readwise_capture(markup: str, source_url: str) -> dict[str, Any]:
+    match = re.search(r'<article[^>]*class="[^"]*posting[^"]*"[^>]*>(.*?)</article>', markup, re.S | re.I)
+    if not match:
+        return {}
+    article = match.group(1)
+    title_match = re.search(r"<h1[^>]*>(.*?)</h1>", article, re.S | re.I)
+    role_title = normalize_spaces(re.sub(r"<.*?>", "", html.unescape(title_match.group(1)))) if title_match else ""
+    meta_match = re.search(r'<div[^>]*class="[^"]*posting-meta[^"]*"[^>]*>(.*?)</div>', article, re.S | re.I)
+    meta_values: list[str] = []
+    if meta_match:
+        for value in re.findall(r"<span[^>]*>(.*?)</span>", meta_match.group(1), re.S | re.I):
+            meta_values.append(normalize_spaces(re.sub(r"<.*?>", "", html.unescape(value))))
+    body = re.sub(r"<h1[^>]*>.*?</h1>", "", article, flags=re.S | re.I)
+    body = re.sub(r'<div[^>]*class="[^"]*posting-meta[^"]*"[^>]*>.*?</div>', "", body, flags=re.S | re.I)
+    converted = html_to_markdown(body).strip()
+    meta_line = " | ".join(value for value in meta_values if value)
+    parts = [f"# {role_title} - Readwise", f"Source: {source_url}" + (f"  \nMeta: {meta_line}" if meta_line else ""), converted]
+    return {
+        "company": "Readwise",
+        "role_title": role_title,
+        "role_family": "backend" if "backend" in role_title.lower() else "",
+        "location": next((value for value in meta_values if value.lower() == "remote"), ""),
+        "employment_type": next((value for value in meta_values if "time" in value.lower()), ""),
+        "markdown": markdown_join(parts),
+    }
+
+
+def extract_structured_capture(markup: str, source_url: str) -> dict[str, Any]:
+    host = urlparse(source_url).netloc.lower()
+    if "greenhouse.io" in host:
+        return extract_greenhouse_capture(markup, source_url)
+    if "ashbyhq.com" in host:
+        return extract_ashby_capture(markup, source_url)
+    if "jobs.apple.com" in host:
+        return extract_apple_capture(markup, source_url)
+    if "readwise.io" in host:
+        return extract_readwise_capture(markup, source_url)
+    return {}
+
+
 def extract_html_capture_metadata(markup: str, source_url: str = "") -> dict[str, Any]:
     parser = HTMLMetadataExtractor()
     parser.feed(markup)
     parser.close()
 
+    structured = extract_structured_capture(markup, source_url)
     jsonld = extract_jsonld_job_metadata(parser.scripts)
     title = parser.title or normalize_spaces(parser.meta.get("og:title", ""))
     description = parser.meta.get("description") or parser.meta.get("og:description") or ""
@@ -693,9 +999,9 @@ def extract_html_capture_metadata(markup: str, source_url: str = "") -> dict[str
     if canonical_url and source_url:
         canonical_url = urljoin(source_url, canonical_url)
 
-    company = jsonld.get("company") or infer_company_from_url(source_url)
-    role_title = jsonld.get("role_title") or clean_role_title(title, company)
-    location = jsonld.get("location") or find_embedded_json_string(markup, "locationName")
+    company = structured.get("company") or jsonld.get("company") or infer_company_from_url(source_url)
+    role_title = structured.get("role_title") or jsonld.get("role_title") or clean_role_title(title, company)
+    location = structured.get("location") or jsonld.get("location") or find_embedded_json_string(markup, "locationName")
 
     return {
         "title": title,
@@ -704,14 +1010,19 @@ def extract_html_capture_metadata(markup: str, source_url: str = "") -> dict[str
         "description": description,
         "description_plain": description_plain,
         "description_html": description_html,
-        "canonical_url": canonical_url,
+        "canonical_url": structured.get("source_url") or canonical_url,
         "location": normalize_spaces(location),
-        "employment_type": jsonld.get("employment_type", ""),
-        "compensation": jsonld.get("compensation", ""),
+        "employment_type": structured.get("employment_type") or jsonld.get("employment_type", ""),
+        "compensation": structured.get("compensation") or jsonld.get("compensation", ""),
+        "published_at": structured.get("published_at", ""),
+        "markdown": structured.get("markdown", ""),
     }
 
 
 def html_capture_to_text(markup: str, metadata: dict[str, Any]) -> str:
+    if metadata.get("markdown"):
+        markdown = str(metadata["markdown"]).strip()
+        return markdown + "\n"
     page_text = html_to_text(markup)
     embedded_parts = []
     for key in ("description_plain", "description_html", "description"):
@@ -1310,6 +1621,7 @@ def ingest_url(
         "source_final_url": fetch.final_url if fetch.final_url != requested_url else "",
         "source_http_status": fetch.status,
         "source_fetched_at": fetch.fetched_at,
+        "source_published_at": page_metadata.get("published_at", ""),
         "company": company,
         "role_title": role_title,
         "role_family": role_family,
@@ -1336,6 +1648,7 @@ def ingest_url(
         f"Fetched at: `{fetch.fetched_at}`",
         f"HTTP status: `{fetch.status}`",
         f"Raw artifact: `{raw_artifact_name}`",
+        "Extracted Markdown: `raw.md`" if is_html and extracted_text else "Extracted Markdown: not available",
         "Extracted text: `raw.txt`" if extracted_text else "Extracted text: not available",
     ]
     if fetch.final_url != requested_url:
@@ -1351,6 +1664,7 @@ def ingest_url(
         "listing_path": relative_to_root(destination / "listing.md", root_path),
         "source_type": source_type,
         "raw_artifact": raw_artifact_name,
+        "raw_markdown": "raw.md" if is_html and extracted_text else "",
         "raw_text": "raw.txt" if extracted_text else "",
         "source_final_url": fetch.final_url,
     }
@@ -1362,6 +1676,8 @@ def ingest_url(
     destination.mkdir(parents=True, exist_ok=True)
     (destination / raw_artifact_name).write_bytes(fetch.body)
     if extracted_text:
+        if is_html:
+            (destination / "raw.md").write_text(extracted_text, encoding="utf-8")
         (destination / "raw.txt").write_text(extracted_text, encoding="utf-8")
     (destination / "listing.md").write_text(render_listing(metadata, import_notes, overrides.get("why", "")), encoding="utf-8")
     return result

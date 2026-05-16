@@ -67,6 +67,9 @@ def read_capture_records() -> list[dict[str, Any]]:
 
 
 def read_listing_text(listing_path: Path) -> str:
+    raw_md = listing_path.parent / "raw.md"
+    if raw_md.exists():
+        return raw_md.read_text(encoding="utf-8", errors="replace").strip()
     raw_txt = listing_path.parent / "raw.txt"
     if raw_txt.exists():
         return raw_txt.read_text(encoding="utf-8", errors="replace").strip()
@@ -93,7 +96,7 @@ def listing_records() -> list[dict[str, Any]]:
                 "status": str(metadata.get("status") or ""),
                 "source_url": source_url,
                 "listing_path": listing_path.relative_to(ROOT).as_posix(),
-                "raw_text_path": (listing_path.parent / "raw.txt").relative_to(ROOT).as_posix(),
+                "raw_text_path": ((listing_path.parent / "raw.md") if (listing_path.parent / "raw.md").exists() else (listing_path.parent / "raw.txt")).relative_to(ROOT).as_posix(),
                 "page_path": site_path("archive", listing_id, ""),
                 "text": read_listing_text(listing_path),
             }
@@ -198,7 +201,7 @@ document.getElementById('capture-form').addEventListener('submit', event => {{
   event.preventDefault();
   const url = document.getElementById('source-url').value.trim();
   if (!url) return;
-  const params = new URLSearchParams({{ title: 'Capture: ' + url, labels: 'inbox', body: '' }});
+  const params = new URLSearchParams({{ title: 'Capture: ' + url, labels: 'inbox,capture', body: '' }});
   window.location.href = REPO_URL + '/issues/new?' + params.toString();
 }});
 </script>

@@ -12,7 +12,7 @@ Use the mobile-friendly site when you find an interesting listing:
 
 [Open the job archive](https://kane268.github.io/job-listing-archive/)
 
-Paste the listing URL and open the prefilled GitHub issue. The capture workflow fetches the page, writes `raw.html`, extracts `raw.txt`, creates `listing.md`, rebuilds the index and static site, and commits back to the repo. If capture fails, the URL is saved in `data/captures.json` and shown on the site as a backup.
+Paste the listing URL and open the prefilled GitHub issue. The site adds `inbox` and `capture` labels. The capture workflow only acts on owner-created issues with the `capture` label, fetches the page, writes `raw.html`, extracts `raw.md` and `raw.txt`, creates `listing.md`, rebuilds the index and static site, and commits back to the repo. If capture fails, the URL is saved in `data/captures.json` and shown on the site as a backup.
 
 Legacy PDF import is still available for old saved files, but URL capture is the normal path now.
 
