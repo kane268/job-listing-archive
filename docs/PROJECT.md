@@ -2,7 +2,7 @@
 
 ## Origin
 
-This repo started as a formal version of a personal habit: saving interesting tech job listings from Safari on phone and laptop for later reference.
+This repo started as a formal version of a personal habit: saving interesting tech job listings from Safari for later reference.
 
 The goal is not to build a job-search CRM, scraper, or application tracker. The goal is a durable public-safe archive where interesting roles can be captured quickly, normalized later, and analyzed only when there is enough data.
 
@@ -13,7 +13,7 @@ The goal is not to build a job-search CRM, scraper, or application tracker. The 
 - Keep capture notes public-safe because the workflow uses public GitHub Pages, GitHub Issues, and a public repository.
 - Treat fetched HTML and extracted Markdown as evidence.
 - Use GitHub Issues as the mobile URL queue.
-- Use Pages CMS for structured source maintenance, not primary quick capture.
+- Use Pages CMS for structured source maintenance.
 - Avoid scraping unless explicitly requested.
 - Prefer small scripts and generated CSVs over a database.
 - Keep metadata useful but not burdensome.
@@ -75,34 +75,22 @@ Public visitors see only listings. Manage mode is stored per browser and shows c
 
 Paste a listing URL. The site opens a prefilled GitHub issue with an empty body, the URL in the title, and the `capture` label. GitHub Actions fetches the page, saves `raw.html`, extracts `raw.md`, creates `listing.md`, rebuilds `data/index.csv`, commits the result, labels the issue `ingested`, and closes it. If capture fails, Actions saves the URL in `data/captures.json` and manage mode shows it as a backup for later parser fixes and re-capture.
 
-For a new source page, use the job source issue form:
+### Source maintenance
+
+Use Pages CMS from the manage-mode **Saved companies** editor link, or use the job source issue form:
 
 ```text
 https://github.com/kane268/job-listing-archive/issues/new?template=job-source.yml
 ```
 
-### Laptop sync
+Local operator workflows are not supported for archive maintenance. Local commands are only for development validation and CI parity.
 
-Most routine work should use:
-
-```bash
-mise run save
-```
-
-That rebuilds `data/index.csv`, builds the local `_site/` artifact, runs tests and archive validation, commits, rebases, and pushes.
-
-Useful commands:
+## Developer validation commands
 
 ```bash
-mise run save             # check, commit, and push current changes
 mise run check            # validate mise tasks, rebuild index/site artifact, run tests
-mise run sources          # list job source pages
-mise run browse           # open active job source pages
-mise run add-source       # add or update a source
 mise run site             # rebuild the local static site artifact
 mise run validate-capture # test live URL capture in a temp repo
-mise run capture          # open web listing capture UI in manage mode
-mise run capture-source   # open source capture issue form
 ```
 
 ## Data model
@@ -127,7 +115,7 @@ compensation: ""
 status: "reviewed"
 source_type: "markdown"
 source_file_name: ""
-source_file_sha256: "..."
+source_file_sha256: ""
 tags:
   - "captured"
   - "backend"
@@ -174,8 +162,8 @@ scripts/capture_url.py          CLI wrapper used by GitHub Actions URL capture a
 scripts/build_site.py           static GitHub Pages artifact generator
 scripts/build_index.py          CLI wrapper for rebuilding data/index.csv
 scripts/validation.py           archive and JSON data validation helpers
-scripts/job_sources.py          CLI for data/job-sources.json
-scripts/workflow.py             mise task wrapper for common workflows
+scripts/job_sources.py          job source data readers used by the site generator
+scripts/workflow.py             validation wrapper for mise check/index tasks
 assets/                         site CSS and JavaScript copied into _site/
 ```
 

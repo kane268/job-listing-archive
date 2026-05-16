@@ -1,16 +1,14 @@
 [tools]
 python = "3.12"
 
-
 [tasks.default]
-description = "Show the simple workflow"
+description = "Show validation help"
 run = "python3 scripts/workflow.py help"
 
 [tasks.help]
-description = "Show the simple workflow"
+description = "Show validation help"
 alias = ["h"]
 run = "python3 scripts/workflow.py help"
-
 
 [tasks.index]
 description = "Rebuild data/index.csv"
@@ -28,34 +26,3 @@ run = "python3 scripts/validate_url_capture.py"
 description = "Run tests and archive checks"
 alias = ["c"]
 run = "python3 scripts/workflow.py check"
-
-[tasks.save]
-description = "Test, commit all changes, and push to GitHub"
-alias = ["s"]
-run = "python3 scripts/workflow.py save"
-
-
-[tasks.status]
-description = "Show archive count and git status"
-run = "python3 scripts/workflow.py status"
-
-[tasks.capture]
-description = "Open the web listing capture UI in manage mode"
-run = "python3 scripts/workflow.py capture"
-
-[tasks.capture-source]
-description = "Open the GitHub job source capture form"
-run = "python3 scripts/workflow.py capture-source"
-
-[tasks.sources]
-description = "List places to look for jobs"
-alias = ["src"]
-run = "python3 scripts/workflow.py sources"
-
-[tasks.browse]
-description = "Open active job source URLs"
-run = "python3 scripts/workflow.py browse"
-
-[tasks.add-source]
-description = "Add or update a job source"
-run = "python3 scripts/workflow.py add-source"

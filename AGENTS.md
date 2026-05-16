@@ -1,6 +1,6 @@
 # Agent Instructions
 
-This is a public-safe personal archive of job listings. It started as a formal version of saving interesting tech job listings from Safari on phone and laptop. See `docs/PROJECT.md` for project background, workflow, data model, and known limitations.
+This is a public-safe personal archive of job listings. It started as a formal version of saving interesting tech job listings from Safari. See `docs/PROJECT.md` for project background, workflow, data model, and known limitations.
 
 ## Project intent
 
@@ -28,19 +28,20 @@ This is a public-safe personal archive of job listings. It started as a formal v
 - Avoid adding large binaries. `mise run check` fails on files over 50 MiB in `listings/`.
 - Do not attribute AI tools in commits, PRs, issues, discussions, or release notes.
 
-## Routine commands
+## Supported workflow
 
-Prefer mise tasks for normal workflows:
+- URL capture through the GitHub Pages UI is the supported archive workflow.
+- Source maintenance happens through Pages CMS or the job source issue form.
+- Local operator workflows are not supported for archive maintenance. Do not add tasks that commit, push, open browser flows, or mutate archive data as an operator workflow.
+
+## Validation commands
+
+Use these only to validate repository changes and CI parity:
 
 ```bash
-mise run save             # check, commit, push current changes
 mise run check            # validate tasks, rebuild index/site artifact, run tests
 mise run site             # rebuild the local static GitHub Pages artifact
 mise run validate-capture # test live URL capture in a temp repo
-mise run sources          # list job sources
-mise run browse           # open active job source URLs
-mise run capture          # open web listing capture UI in manage mode
-mise run capture-source   # open source capture issue form
 ```
 
 Run `mise run check` after changing scripts, metadata, templates, issue forms, generated site inputs, or docs that mention tasks.

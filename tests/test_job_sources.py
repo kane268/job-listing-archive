@@ -10,57 +10,44 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 from job_sources import (  # noqa: E402
-    add_or_update_source,
+    active_sources,
     format_sources,
-    match_sources,
+    make_source_id,
     read_sources,
 )
 
 
 class JobSourceTests(unittest.TestCase):
-    def test_add_and_update_source_generates_id_without_storing_it(self) -> None:
+    def test_read_sources_generates_runtime_id_without_storing_it(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "sources.json"
-            status, row = add_or_update_source(
-                "If This Is Company Name",
-                "https://example.com/jobs",
-                "https://example.com",
-                path=path,
+            path.write_text(
+                json.dumps(
+                    {
+                        "sources": [
+                            {
+                                "name": "If This Is Company Name",
+                                "url": "https://example.com/jobs",
+                                "homepage_url": "https://example.com",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
             )
-            self.assertEqual(status, "added")
-            self.assertEqual(row["id"], "if-this-is-company-name")
-
-            status, row = add_or_update_source(
-                "If This Is Company Name",
-                "https://example.com/careers",
-                "https://example.com",
-                path=path,
-            )
-            self.assertEqual(status, "updated")
-            self.assertEqual(row["url"], "https://example.com/careers")
-            self.assertEqual(len(read_sources(path)), 1)
+            rows = read_sources(path)
+            self.assertEqual(rows[0]["id"], "if-this-is-company-name")
+            self.assertEqual(make_source_id(rows[0]["name"]), "if-this-is-company-name")
 
             stored = json.loads(path.read_text(encoding="utf-8"))
-            self.assertEqual(
-                stored,
-                {
-                    "sources": [
-                        {
-                            "name": "If This Is Company Name",
-                            "url": "https://example.com/careers",
-                            "homepage_url": "https://example.com",
-                        }
-                    ]
-                },
-            )
+            self.assertNotIn("id", stored["sources"][0])
 
-    def test_match_sources_defaults_to_all_saved_companies(self) -> None:
+    def test_active_sources_filters_incomplete_sources(self) -> None:
         rows = [
-            {"name": "Active", "url": "https://example.com"},
-            {"name": "Inactive", "url": "https://inactive.example.com"},
+            {"name": "Active", "url": "https://example.com", "homepage_url": "https://example.com"},
+            {"name": "Missing URL", "url": "", "homepage_url": "https://example.com"},
         ]
-        self.assertEqual([row["id"] for row in match_sources(rows, [])], ["active", "inactive"])
-        self.assertEqual([row["id"] for row in match_sources(rows, ["inactive"])], ["inactive"])
+        self.assertEqual([row["id"] for row in active_sources(rows)], ["active"])
 
     def test_format_sources(self) -> None:
         rows = [

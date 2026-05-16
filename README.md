@@ -16,30 +16,15 @@ Public visitors see only the listings. Owner tools are available in manage mode:
 
 Paste the listing URL in manage mode and open the prefilled GitHub issue. The site adds the `capture` label. The capture workflow only acts on owner-created issues with the `capture` label, fetches the page, writes `raw.html`, extracts `raw.md`, creates `listing.md`, rebuilds the generated index, and commits back to the repo. If capture fails, the URL is saved in `data/captures.json` and shown in manage mode as a backup.
 
-### Maintain from the laptop
+### Review or maintain data
 
-Most day-to-day capture should happen through the web UI and GitHub Actions. Use the laptop workflow for manual cleanup or source maintenance:
+Use GitHub, Pages CMS, and issue forms for archive maintenance:
 
-```bash
-mise run save
-```
+- Review captured listing files in GitHub and keep notes public-safe.
+- Edit saved companies through the manage-mode **Saved companies** editor link.
+- Use the GitHub **Job source capture** issue form for new source pages.
 
-That rebuilds `data/index.csv`, builds the static site artifact under `_site/`, runs tests and archive validation, commits changes, rebases, and pushes to GitHub.
-
-### Other common commands
-
-```bash
-mise run save             # check, commit, push current edits
-mise run capture          # open the web listing capture UI in manage mode
-mise run site             # rebuild the local _site artifact
-mise run validate-capture # test live URL capture in a temp repo
-mise run sources          # list places to look for jobs
-mise run browse           # open active job source URLs
-mise run capture-source   # open the job source issue form
-mise run                  # show workflow help
-```
-
-Saved companies live in `data/job-sources.json` with `name`, jobs `url`, and `homepage_url` for favicon source. Source IDs are generated from names, for example `If This Is Company Name` becomes `if-this-is-company-name`. Pages CMS can edit this file through `.pages.yml` when you want a structured web editor.
+Saved companies live in `data/job-sources.json` with `name`, jobs `url`, and `homepage_url` for favicon source. Source IDs are generated from names, for example `If This Is Company Name` becomes `if-this-is-company-name`.
 
 ## Structure
 
@@ -53,7 +38,7 @@ listings/YYYY/MM/DD/<slug>/ one folder per saved listing
 data/captures.json        failed or pending capture backups only
 data/index.csv            generated listing index
 data/job-sources.json     places to look for new listings
-scripts/                  capture, site, source, validation, and indexing helpers
+scripts/                  capture, site, validation, and indexing helpers
 templates/                Markdown template
 ```
 
@@ -67,33 +52,19 @@ raw.md        generated readable Markdown extraction
 
 GitHub Pages is deployed from a generated artifact containing only the static site files, not from the repository root.
 
+## Developer validation
+
+These commands are for validating repository changes, not for routine archive maintenance:
+
+```bash
+mise run check            # validate tasks, rebuild generated data/site artifact, run tests
+mise run site             # rebuild the local _site artifact
+mise run validate-capture # test live URL capture in a temp repo
+```
+
 ## Task reference
 
 <!-- mise-tasks -->
-## `add-source`
-
-- **Usage**: `add-source`
-
-Add or update a job source
-
-## `browse`
-
-- **Usage**: `browse`
-
-Open active job source URLs
-
-## `capture`
-
-- **Usage**: `capture`
-
-Open the web listing capture UI in manage mode
-
-## `capture-source`
-
-- **Usage**: `capture-source`
-
-Open the GitHub job source capture form
-
 ## `check`
 
 - **Usage**: `check`
@@ -105,14 +76,14 @@ Run tests and archive checks
 
 - **Usage**: `default`
 
-Show the simple workflow
+Show validation help
 
 ## `help`
 
 - **Usage**: `help`
 - **Aliases**: `h`
 
-Show the simple workflow
+Show validation help
 
 ## `index`
 
@@ -120,31 +91,11 @@ Show the simple workflow
 
 Rebuild data/index.csv
 
-## `save`
-
-- **Usage**: `save`
-- **Aliases**: `s`
-
-Test, commit all changes, and push to GitHub
-
 ## `site`
 
 - **Usage**: `site`
 
 Rebuild static GitHub Pages site artifact
-
-## `sources`
-
-- **Usage**: `sources`
-- **Aliases**: `src`
-
-List places to look for jobs
-
-## `status`
-
-- **Usage**: `status`
-
-Show archive count and git status
 
 ## `validate-capture`
 
