@@ -50,19 +50,26 @@ input { color: var(--fg); background: var(--bg); }
 button { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 750; cursor: pointer; }
 .section-grid { display: grid; gap: 14px; margin-top: 14px; }
 .stack { display: grid; gap: 10px; }
-.card { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; color: inherit; text-decoration: none; border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--bg); }
+.card { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; align-items: start; color: inherit; text-decoration: none; border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--bg); }
 .card:hover, .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.icon { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); object-fit: contain; padding: 3px; }
-.card-title { display: block; margin-bottom: 3px; font-weight: 750; }
+.icon { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 10px; background: #fff; object-fit: contain; padding: 5px; }
+.attention-icon { display: grid; place-items: center; color: var(--danger); font-weight: 900; }
 .card-content { min-width: 0; }
+.card-kicker { display: block; margin-bottom: 3px; color: var(--muted); font-size: .78rem; font-weight: 800; letter-spacing: .04em; line-height: 1.15; text-transform: uppercase; }
+.card-title { display: block; color: var(--fg); font-size: 1.03rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; }
+.source-card .card-title { font-size: 1.08rem; }
+.card-subtitle { display: block; margin-top: 4px; color: var(--muted); font-size: .92rem; line-height: 1.25; overflow-wrap: anywhere; }
+.card-meta-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 7px; color: var(--muted); font-size: .86rem; line-height: 1.2; }
+.source-host { border: 1px solid var(--border); border-radius: 999px; padding: 2px 7px; font-size: .78rem; line-height: 1.1; }
 .url, .meta { display: block; color: var(--muted); font-size: .92rem; overflow-wrap: anywhere; }
 .empty { color: var(--muted); padding: 4px 0; }
 .backup { border-color: var(--danger); }
 .backup .card-title { color: var(--danger); }
 .action-link, .page-actions a { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; text-decoration: none; background: var(--bg); white-space: nowrap; }
 .page-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
-.title-row { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; align-items: start; }
-.title-row .icon { width: 40px; height: 40px; border-radius: 10px; }
+.title-row { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: start; }
+.title-row .icon { width: 50px; height: 50px; border-radius: 12px; }
+.title-row .card-kicker { margin-top: 2px; }
 .markdown { border: 1px solid var(--border); border-radius: 10px; padding: 14px; background: var(--surface); }
 .markdown h1, .markdown h2, .markdown h3, .markdown h4 { line-height: 1.18; margin: 1.2em 0 .45em; }
 .markdown h1:first-child, .markdown h2:first-child, .markdown h3:first-child { margin-top: 0; }
@@ -105,6 +112,19 @@ def icon_url_for_source(name: str, url: str) -> str:
         return icon_url_for_host(override)
     host = urlparse(url).netloc
     return icon_url_for_host(host)
+
+
+def url_label(url: str, *, include_path: bool = False) -> str:
+    if not url:
+        return ""
+    parsed = urlparse(url)
+    host = parsed.netloc.lower().removeprefix("www.")
+    if not host:
+        return url.replace("https://", "").replace("http://", "").rstrip("/")
+    if not include_path:
+        return host
+    path = parsed.path.rstrip("/")
+    return f"{host}{path}" if path else host
 
 
 def read_capture_records() -> list[dict[str, Any]]:
@@ -249,25 +269,30 @@ def layout(title: str, body: str, description: str = "Job listing archive") -> s
 
 
 def source_card(source: dict[str, str]) -> str:
-    icon_url = icon_url_for_source(source.get("name", ""), source.get("url", ""))
-    return f"""<a class="card" href="{esc(source.get('url'))}" target="_blank" rel="noreferrer">
+    name = source.get("name") or source.get("id") or "Saved company"
+    url = source.get("url", "")
+    icon_url = icon_url_for_source(name, url)
+    return f"""<a class="card source-card" href="{esc(url)}" target="_blank" rel="noreferrer" title="{esc(url)}">
   <img class="icon" src="{icon_url}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
-    <span class="card-title">{esc(source.get('name') or source.get('id'))}</span>
-    <span class="url">{esc(source.get('url'))}</span>
+    <span class="card-title">{esc(name)}</span>
+    <span class="card-subtitle">{esc(url_label(url, include_path=True))}</span>
   </span>
 </a>"""
 
 
 def listing_card(record: dict[str, Any]) -> str:
     href = site_path(record["page_path"])
-    source = record.get("source_url") or "No source URL captured"
-    return f"""<a class="card" href="{esc(href)}">
+    source_label = url_label(record.get("source_url", ""))
+    meta_html = f"<span>{esc(record['captured_label'])}</span>"
+    if source_label:
+        meta_html += f"<span class=\"source-host\">{esc(source_label)}</span>"
+    return f"""<a class="card listing-card" href="{esc(href)}">
   <img class="icon" src="{record['icon_url']}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
-    <span class="card-title">{esc(record['title'])}</span>
-    <span class="url">{esc(source)}</span>
-    <span class="meta">{esc(record['captured_label'])}</span>
+    <span class="card-kicker">{esc(record['company'])}</span>
+    <span class="card-title">{esc(record['role'])}</span>
+    <span class="card-meta-row">{meta_html}</span>
   </span>
 </a>"""
 
@@ -278,9 +303,12 @@ def backup_card(record: dict[str, Any]) -> str:
     href = issue or source or REPO_URL
     reason = record.get("reason") or "Capture did not produce a listing yet."
     return f"""<a class="card backup" href="{esc(href)}" target="_blank" rel="noreferrer">
-  <span class="card-title">Capture needs attention</span>
-  <span class="url">{esc(source)}</span>
-  <span class="meta">{esc(reason)}</span>
+  <span class="icon attention-icon" aria-hidden="true">!</span>
+  <span class="card-content">
+    <span class="card-title">Capture needs attention</span>
+    <span class="card-subtitle">{esc(url_label(source, include_path=True) or source)}</span>
+    <span class="card-meta-row"><span>{esc(reason)}</span></span>
+  </span>
 </a>"""
 
 
@@ -373,7 +401,8 @@ def build_listing_page(record: dict[str, Any]) -> str:
   <div class="title-row">
     <img class="icon" src="{record['icon_url']}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
     <div>
-      <h1>{esc(record['title'])}</h1>
+      <span class="card-kicker">{esc(record['company'])}</span>
+      <h1>{esc(record['role'])}</h1>
       <p class="muted">{esc(record['captured_label'])}</p>
     </div>
   </div>

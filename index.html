@@ -25,19 +25,26 @@ input { color: var(--fg); background: var(--bg); }
 button { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 750; cursor: pointer; }
 .section-grid { display: grid; gap: 14px; margin-top: 14px; }
 .stack { display: grid; gap: 10px; }
-.card { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; color: inherit; text-decoration: none; border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--bg); }
+.card { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; align-items: start; color: inherit; text-decoration: none; border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: var(--bg); }
 .card:hover, .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.icon { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); object-fit: contain; padding: 3px; }
-.card-title { display: block; margin-bottom: 3px; font-weight: 750; }
+.icon { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 10px; background: #fff; object-fit: contain; padding: 5px; }
+.attention-icon { display: grid; place-items: center; color: var(--danger); font-weight: 900; }
 .card-content { min-width: 0; }
+.card-kicker { display: block; margin-bottom: 3px; color: var(--muted); font-size: .78rem; font-weight: 800; letter-spacing: .04em; line-height: 1.15; text-transform: uppercase; }
+.card-title { display: block; color: var(--fg); font-size: 1.03rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; }
+.source-card .card-title { font-size: 1.08rem; }
+.card-subtitle { display: block; margin-top: 4px; color: var(--muted); font-size: .92rem; line-height: 1.25; overflow-wrap: anywhere; }
+.card-meta-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 7px; color: var(--muted); font-size: .86rem; line-height: 1.2; }
+.source-host { border: 1px solid var(--border); border-radius: 999px; padding: 2px 7px; font-size: .78rem; line-height: 1.1; }
 .url, .meta { display: block; color: var(--muted); font-size: .92rem; overflow-wrap: anywhere; }
 .empty { color: var(--muted); padding: 4px 0; }
 .backup { border-color: var(--danger); }
 .backup .card-title { color: var(--danger); }
 .action-link, .page-actions a { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; text-decoration: none; background: var(--bg); white-space: nowrap; }
 .page-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
-.title-row { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; align-items: start; }
-.title-row .icon { width: 40px; height: 40px; border-radius: 10px; }
+.title-row { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: start; }
+.title-row .icon { width: 50px; height: 50px; border-radius: 12px; }
+.title-row .card-kicker { margin-top: 2px; }
 .markdown { border: 1px solid var(--border); border-radius: 10px; padding: 14px; background: var(--surface); }
 .markdown h1, .markdown h2, .markdown h3, .markdown h4 { line-height: 1.18; margin: 1.2em 0 .45em; }
 .markdown h1:first-child, .markdown h2:first-child, .markdown h3:first-child { margin-top: 0; }
@@ -72,123 +79,123 @@ button { background: var(--accent); color: var(--accent-fg); border-color: var(-
       <h2 id="sources-title">Saved companies</h2>
       <a class="action-link" href="https://app.pagescms.org/kane268/job-listing-archive/main/file/job_sources" target="_blank" rel="noreferrer">Edit</a>
     </div>
-    <div class="stack"><a class="card" href="https://www.anthropic.com/careers/jobs" target="_blank" rel="noreferrer">
+    <div class="stack"><a class="card source-card" href="https://www.anthropic.com/careers/jobs" target="_blank" rel="noreferrer" title="https://www.anthropic.com/careers/jobs">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/anthropic.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
     <span class="card-title">Anthropic</span>
-    <span class="url">https://www.anthropic.com/careers/jobs</span>
+    <span class="card-subtitle">anthropic.com/careers/jobs</span>
   </span>
 </a>
-<a class="card" href="https://jobs.apple.com/en-us/search" target="_blank" rel="noreferrer">
+<a class="card source-card" href="https://jobs.apple.com/en-us/search" target="_blank" rel="noreferrer" title="https://jobs.apple.com/en-us/search">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/apple.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
     <span class="card-title">Apple</span>
-    <span class="url">https://jobs.apple.com/en-us/search</span>
+    <span class="card-subtitle">jobs.apple.com/en-us/search</span>
   </span>
 </a>
-<a class="card" href="https://www.github.careers/careers-home/jobs" target="_blank" rel="noreferrer">
+<a class="card source-card" href="https://www.github.careers/careers-home/jobs" target="_blank" rel="noreferrer" title="https://www.github.careers/careers-home/jobs">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/github.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
     <span class="card-title">GitHub</span>
-    <span class="url">https://www.github.careers/careers-home/jobs</span>
+    <span class="card-subtitle">github.careers/careers-home/jobs</span>
   </span>
 </a>
-<a class="card" href="https://readwise.io/careers" target="_blank" rel="noreferrer">
+<a class="card source-card" href="https://readwise.io/careers" target="_blank" rel="noreferrer" title="https://readwise.io/careers">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/readwise.io.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
     <span class="card-title">Readwise</span>
-    <span class="url">https://readwise.io/careers</span>
+    <span class="card-subtitle">readwise.io/careers</span>
   </span>
 </a>
-<a class="card" href="https://stripe.com/jobs/search" target="_blank" rel="noreferrer">
+<a class="card source-card" href="https://stripe.com/jobs/search" target="_blank" rel="noreferrer" title="https://stripe.com/jobs/search">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/stripe.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
     <span class="card-title">Stripe</span>
-    <span class="url">https://stripe.com/jobs/search</span>
+    <span class="card-subtitle">stripe.com/jobs/search</span>
   </span>
 </a></div>
   </section>
 
   <section class="panel" aria-labelledby="listings-title">
     <div class="panel-header"><h2 id="listings-title">Listings</h2></div>
-    <div class="stack"><a class="card" href="archive/2026-05-11-job-application-for-staff-software-engineer-developer-productivity-at-anthropi">
+    <div class="stack"><a class="card listing-card" href="archive/2026-05-11-job-application-for-staff-software-engineer-developer-productivity-at-anthropi">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/anthropic.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
-    <span class="card-title">Staff+ Software Engineer, Developer Productivity - Anthropic</span>
-    <span class="url">https://job-boards.greenhouse.io/anthropic/jobs/5110511008</span>
-    <span class="meta">Captured Mon May 11 2026.</span>
+    <span class="card-kicker">Anthropic</span>
+    <span class="card-title">Staff+ Software Engineer, Developer Productivity</span>
+    <span class="card-meta-row"><span>Captured Mon May 11 2026.</span><span class="source-host">job-boards.greenhouse.io</span></span>
   </span>
 </a>
-<a class="card" href="archive/2026-05-09-readwise-senior-staff-engineer-backend-focus">
+<a class="card listing-card" href="archive/2026-05-09-readwise-senior-staff-engineer-backend-focus">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/readwise.io.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
-    <span class="card-title">Senior/Staff Engineer (Backend Focus) - Readwise</span>
-    <span class="url">https://readwise.io/careers/senior-staff-engineer</span>
-    <span class="meta">Captured Sat May 9 2026.</span>
+    <span class="card-kicker">Readwise</span>
+    <span class="card-title">Senior/Staff Engineer (Backend Focus)</span>
+    <span class="card-meta-row"><span>Captured Sat May 9 2026.</span><span class="source-host">readwise.io</span></span>
   </span>
 </a>
-<a class="card" href="archive/2025-08-24-apple-specialist-full-time-part-time-and-part-time-temporary">
+<a class="card listing-card" href="archive/2025-08-24-apple-specialist-full-time-part-time-and-part-time-temporary">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/apple.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
-    <span class="card-title">Specialist: Full-Time, Part-Time, and Part-Time Temporary - Apple</span>
-    <span class="url">No source URL captured</span>
-    <span class="meta">Captured Sun Aug 24 2025.</span>
+    <span class="card-kicker">Apple</span>
+    <span class="card-title">Specialist: Full-Time, Part-Time, and Part-Time Temporary</span>
+    <span class="card-meta-row"><span>Captured Sun Aug 24 2025.</span></span>
   </span>
 </a>
-<a class="card" href="archive/2025-08-21-copilot-money-head-of-engineering">
+<a class="card listing-card" href="archive/2025-08-21-copilot-money-head-of-engineering">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/copilot.money.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
-    <span class="card-title">Head of Engineering - Copilot Money</span>
-    <span class="url">https://jobs.ashbyhq.com/copilot-money/20a502a8-5260-4df3-a8ba-d0d5701bafc1</span>
-    <span class="meta">Captured Thu Aug 21 2025.</span>
+    <span class="card-kicker">Copilot Money</span>
+    <span class="card-title">Head of Engineering</span>
+    <span class="card-meta-row"><span>Captured Thu Aug 21 2025.</span><span class="source-host">jobs.ashbyhq.com</span></span>
   </span>
 </a>
-<a class="card" href="archive/2025-08-15-stripe-staff-software-engineer-data-movement">
+<a class="card listing-card" href="archive/2025-08-15-stripe-staff-software-engineer-data-movement">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/stripe.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
-    <span class="card-title">Staff Software Engineer, Data Movement - Stripe</span>
-    <span class="url">No source URL captured</span>
-    <span class="meta">Captured Fri Aug 15 2025.</span>
+    <span class="card-kicker">Stripe</span>
+    <span class="card-title">Staff Software Engineer, Data Movement</span>
+    <span class="card-meta-row"><span>Captured Fri Aug 15 2025.</span></span>
   </span>
 </a>
-<a class="card" href="archive/2025-08-15-stripe-staff-engineer-experimentation-platform">
+<a class="card listing-card" href="archive/2025-08-15-stripe-staff-engineer-experimentation-platform">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/stripe.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
-    <span class="card-title">Staff Engineer, Experimentation Platform - Stripe</span>
-    <span class="url">No source URL captured</span>
-    <span class="meta">Captured Fri Aug 15 2025.</span>
+    <span class="card-kicker">Stripe</span>
+    <span class="card-title">Staff Engineer, Experimentation Platform</span>
+    <span class="card-meta-row"><span>Captured Fri Aug 15 2025.</span></span>
   </span>
 </a>
-<a class="card" href="archive/2025-08-15-stripe-staff-engineer-connect-risk-and-compliance">
+<a class="card listing-card" href="archive/2025-08-15-stripe-staff-engineer-connect-risk-and-compliance">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/stripe.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
-    <span class="card-title">Staff Engineer, Connect Risk &amp; Compliance - Stripe</span>
-    <span class="url">No source URL captured</span>
-    <span class="meta">Captured Fri Aug 15 2025.</span>
+    <span class="card-kicker">Stripe</span>
+    <span class="card-title">Staff Engineer, Connect Risk &amp; Compliance</span>
+    <span class="card-meta-row"><span>Captured Fri Aug 15 2025.</span></span>
   </span>
 </a>
-<a class="card" href="archive/2025-08-15-stripe-senior-staff-engineer-core-infrastructure">
+<a class="card listing-card" href="archive/2025-08-15-stripe-senior-staff-engineer-core-infrastructure">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/stripe.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
-    <span class="card-title">Senior Staff Engineer, Core Infrastructure - Stripe</span>
-    <span class="url">No source URL captured</span>
-    <span class="meta">Captured Fri Aug 15 2025.</span>
+    <span class="card-kicker">Stripe</span>
+    <span class="card-title">Senior Staff Engineer, Core Infrastructure</span>
+    <span class="card-meta-row"><span>Captured Fri Aug 15 2025.</span></span>
   </span>
 </a>
-<a class="card" href="archive/2025-08-15-stripe-developer-experience-engineer">
+<a class="card listing-card" href="archive/2025-08-15-stripe-developer-experience-engineer">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/stripe.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
-    <span class="card-title">Developer Experience Engineer - Stripe</span>
-    <span class="url">No source URL captured</span>
-    <span class="meta">Captured Fri Aug 15 2025.</span>
+    <span class="card-kicker">Stripe</span>
+    <span class="card-title">Developer Experience Engineer</span>
+    <span class="card-meta-row"><span>Captured Fri Aug 15 2025.</span></span>
   </span>
 </a>
-<a class="card" href="archive/2025-08-15-apple-software-engineer-system-experience">
+<a class="card listing-card" href="archive/2025-08-15-apple-software-engineer-system-experience">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/apple.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
-    <span class="card-title">Software Engineer, System Experience - Apple</span>
-    <span class="url">https://jobs.apple.com/en-us/details/200602358/software-engineer-system-experience</span>
-    <span class="meta">Captured Fri Aug 15 2025.</span>
+    <span class="card-kicker">Apple</span>
+    <span class="card-title">Software Engineer, System Experience</span>
+    <span class="card-meta-row"><span>Captured Fri Aug 15 2025.</span><span class="source-host">jobs.apple.com</span></span>
   </span>
 </a></div>
   </section>
