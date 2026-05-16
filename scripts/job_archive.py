@@ -188,6 +188,7 @@ class HTMLMetadataExtractor(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.in_title = False
+        self.seen_document_title = False
         self.in_json_script = False
         self.title_parts: list[str] = []
         self.current_script: list[str] = []
@@ -198,7 +199,9 @@ class HTMLMetadataExtractor(HTMLParser):
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         normalized_attrs = {name.lower(): value or "" for name, value in attrs}
         if tag == "title":
-            self.in_title = True
+            if not self.seen_document_title:
+                self.in_title = True
+                self.seen_document_title = True
             return
         if tag == "meta":
             key = normalized_attrs.get("name") or normalized_attrs.get("property")
@@ -971,8 +974,102 @@ def extract_readwise_capture(markup: str, source_url: str) -> dict[str, Any]:
     }
 
 
+def strip_html_text(value: str) -> str:
+    return normalize_spaces(re.sub(r"<.*?>", "", html.unescape(value or "")))
+
+
+def extract_line_section(lines: list[str], heading: str, stop_headings: set[str]) -> str:
+    start = -1
+    for index, line in enumerate(lines):
+        if line == heading:
+            start = index + 1
+            break
+    if start == -1:
+        return ""
+    collected: list[str] = []
+    for line in lines[start:]:
+        if line in stop_headings:
+            break
+        if line:
+            collected.append(line)
+    return normalize_text_block("\n".join(collected)).strip()
+
+
+def extract_stripe_details(markup: str) -> dict[str, str]:
+    details: dict[str, str] = {}
+    for match in re.finditer(r'<div class="JobDetailCardProperty">(.*?)</div>\s*</div>', markup, re.S):
+        block = match.group(1)
+        title_match = re.search(r'<p class="JobDetailCardProperty__title">(.*?)</p>', block, re.S)
+        if not title_match:
+            continue
+        title = strip_html_text(title_match.group(1))
+        values = [strip_html_text(value) for value in re.findall(r'<p(?:\s[^>]*)?>(.*?)</p>', block, re.S)]
+        value = next((item for item in values if item and item != title), "")
+        if title and value:
+            details[title] = value
+    return details
+
+
+def extract_stripe_capture(markup: str, source_url: str) -> dict[str, Any]:
+    role_title = ""
+    for pattern in [
+        r'data-page-title="([^"]+)"',
+        r'<meta\s+property="og:title"\s+content="([^"]+)"',
+        r"<title>(.*?)</title>",
+    ]:
+        match = re.search(pattern, markup, re.S | re.I)
+        if match:
+            role_title = clean_role_title(strip_html_text(match.group(1)), "Stripe")
+            break
+    if not role_title:
+        return {}
+
+    details = extract_stripe_details(markup)
+    article = ""
+    article_match = re.search(r'<div class="ArticleMarkdown">\s*(.*?)\s*</div>', markup, re.S | re.I)
+    if article_match:
+        article = html_to_markdown(article_match.group(1)).strip()
+
+    page_lines = [normalize_spaces(line) for line in html_to_text(markup).splitlines() if normalize_spaces(line)]
+    in_office = extract_line_section(page_lines, "In-office expectations", {"Pay and benefits", "Office locations", "Apply for this role"})
+    pay = extract_line_section(page_lines, "Pay and benefits", {"Office locations", "Team", "Job type", "Apply for this role"})
+    closing = extract_line_section(page_lines, "We look forward to hearing from you", {"Apply Now", "United States (English)"})
+
+    compensation = ""
+    compensation_match = re.search(r"([A-Z]{1,3}\$[\d,]+\s*-\s*[A-Z]{0,3}\$?[\d,]+)", pay)
+    if compensation_match:
+        compensation = compensation_match.group(1)
+
+    meta_lines = [f"Source: {source_url}"]
+    if details.get("Office locations"):
+        meta_lines.append(f"Location: {details['Office locations']}")
+    if details.get("Team"):
+        meta_lines.append(f"Team: {details['Team']}")
+    if details.get("Job type"):
+        meta_lines.append(f"Job type: {details['Job type']}")
+
+    parts = [f"# {role_title} - Stripe", "  \n".join(meta_lines), article]
+    if in_office:
+        parts.append(f"## In-office expectations\n\n{in_office}")
+    if pay:
+        parts.append(f"## Pay and benefits\n\n{pay}")
+    if closing:
+        parts.append(f"## We look forward to hearing from you\n\n{closing}")
+
+    return {
+        "company": "Stripe",
+        "role_title": role_title,
+        "location": details.get("Office locations", ""),
+        "employment_type": details.get("Job type", ""),
+        "compensation": compensation,
+        "markdown": markdown_join(parts),
+    }
+
+
 def extract_structured_capture(markup: str, source_url: str) -> dict[str, Any]:
     host = urlparse(source_url).netloc.lower()
+    if "stripe.com" in host and "/jobs/listing/" in urlparse(source_url).path:
+        return extract_stripe_capture(markup, source_url)
     if "greenhouse.io" in host:
         return extract_greenhouse_capture(markup, source_url)
     if "ashbyhq.com" in host:
@@ -1300,7 +1397,7 @@ def short_listing_slug(company: str, role_title: str) -> str:
         "the",
     }
     concise_tokens = [token for token in role_tokens if token and token not in stopwords]
-    role_slug = "-".join(concise_tokens[:5]) or "role"
+    role_slug = "-".join(concise_tokens[:4]) or "role"
     return f"{company_slug}-{role_slug}"
 
 

@@ -15,6 +15,7 @@ from job_archive import (  # noqa: E402
     build_index,
     discover_source_url,
     extract_html_capture_metadata,
+    html_capture_to_text,
     html_to_text,
     infer_company_from_url,
     infer_metadata_from_filename,
@@ -128,6 +129,46 @@ class JobArchiveTests(unittest.TestCase):
             self.assertTrue((Path(result["destination"]) / "raw.html").exists())
             self.assertTrue((Path(result["destination"]) / "raw.md").exists())
             self.assertTrue((Path(result["destination"]) / "raw.txt").exists())
+
+    def test_extract_stripe_markdown_uses_job_content_not_navigation(self) -> None:
+        markup = """
+        <!doctype html>
+        <html data-page-title="Full Stack Engineer, Developer Experience &amp; Product Platform">
+          <head>
+            <title>Full Stack Engineer, Developer Experience &amp; Product Platform</title>
+            <meta property="og:title" content="Full Stack Engineer, Developer Experience &amp; Product Platform">
+          </head>
+          <body>
+            <svg><title>Stripe logo</title></svg>
+            <button>Open mobile navigation</button>
+            <div class="ArticleMarkdown">
+              <h2>Who we are</h2>
+              <p>Stripe builds financial infrastructure.</p>
+              <h3>Responsibilities</h3>
+              <ul><li>Build developer platforms</li></ul>
+            </div>
+            <div class="JobDetailCardProperty">
+              <p class="JobDetailCardProperty__title">Office locations</p>
+              <p>Toronto</p>
+            </div></div>
+            <div class="JobDetailCardProperty">
+              <p class="JobDetailCardProperty__title">Job type</p>
+              <p>Full time</p>
+            </div></div>
+          </body>
+        </html>
+        """
+        metadata = extract_html_capture_metadata(
+            markup,
+            "https://stripe.com/jobs/listing/full-stack-engineer-developer-experience-product-platform/6567104",
+        )
+        text = html_capture_to_text(markup, metadata)
+        self.assertEqual(metadata["role_title"], "Full Stack Engineer, Developer Experience & Product Platform")
+        self.assertEqual(metadata["location"], "Toronto")
+        self.assertNotIn("Stripe logo", metadata["role_title"])
+        self.assertNotIn("Open mobile navigation", text)
+        self.assertIn("## Who we are", text)
+        self.assertIn("- Build developer platforms", text)
 
     def test_extract_apple_markdown_includes_posted_date(self) -> None:
         payload = {

@@ -8,14 +8,14 @@ on:
         required: true
         type: string
   issues:
-    types: [opened, edited, labeled]
+    types: [opened]
 
 permissions:
   contents: write
   issues: write
 
 concurrency:
-  group: capture-listing-${{ github.event.issue.number || github.run_id }}
+  group: capture-listing-main
   cancel-in-progress: false
 
 jobs:

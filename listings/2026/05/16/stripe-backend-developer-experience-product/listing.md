@@ -1,5 +1,5 @@
 ---
-id: "2026-05-16-stripe-backend-developer-experience-product-platformstripe"
+id: "2026-05-16-stripe-backend-developer-experience-product"
 captured_at: "2026-05-16"
 source_url: "https://stripe.com/jobs/listing/backend-engineer-developer-experience-product-platform/7292520"
 source_final_url: ""
@@ -7,12 +7,12 @@ source_http_status: 200
 source_fetched_at: "2026-05-16T15:52:18+00:00"
 source_published_at: ""
 company: "Stripe"
-role_title: "Backend Engineer, Developer Experience & Product PlatformStripe logoOpen mobile navigationClose mobile navigationStripe logo"
+role_title: "Backend Engineer, Developer Experience & Product Platform"
 role_family: "developer-experience"
 seniority: ""
 location: "Toronto"
 employment_type: "Full time"
-compensation: ""
+compensation: "CA$135,200 - CA$202,800"
 status: "extracted"
 source_type: "html"
 source_file_name: ""
@@ -32,7 +32,7 @@ requirements: []
 nice_to_haves: []
 ---
 
-# Backend Engineer, Developer Experience & Product PlatformStripe logoOpen mobile navigationClose mobile navigationStripe logo - Stripe
+# Backend Engineer, Developer Experience & Product Platform - Stripe
 
 Source: https://stripe.com/jobs/listing/backend-engineer-developer-experience-product-platform/7292520
 

@@ -123,19 +123,19 @@ body.is-owner-mode .owner-inline { display: inline-block !important; }
 
   <section class="panel listings-panel" aria-labelledby="listings-title">
     <div class="panel-header"><h2 id="listings-title">Listings</h2></div>
-    <div class="stack"><a class="card listing-card" href="archive/2026-05-16-stripe-full-stack-developer-experience-product">
+    <div class="stack"><a class="card listing-card" href="archive/2026-05-16-stripe-full-stack-developer-experience">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/stripe.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
     <span class="card-kicker">Stripe</span>
-    <span class="card-title">Full Stack Engineer, Developer Experience &amp; Product PlatformStripe logoOpen mobile navigationClose mobile navigationStripe logo</span>
+    <span class="card-title">Full Stack Engineer, Developer Experience &amp; Product Platform</span>
     <span class="card-meta-row"><span>Captured <relative-time datetime="2026-05-16" title="May 16, 2026">May 16, 2026</relative-time></span><span class="source-host">stripe.com</span></span>
   </span>
 </a>
-<a class="card listing-card" href="archive/2026-05-16-stripe-backend-developer-experience-product-platformstripe">
+<a class="card listing-card" href="archive/2026-05-16-stripe-backend-developer-experience-product">
   <img class="icon" src="https://icons.duckduckgo.com/ip3/stripe.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
   <span class="card-content">
     <span class="card-kicker">Stripe</span>
-    <span class="card-title">Backend Engineer, Developer Experience &amp; Product PlatformStripe logoOpen mobile navigationClose mobile navigationStripe logo</span>
+    <span class="card-title">Backend Engineer, Developer Experience &amp; Product Platform</span>
     <span class="card-meta-row"><span>Captured <relative-time datetime="2026-05-16" title="May 16, 2026">May 16, 2026</relative-time></span><span class="source-host">stripe.com</span></span>
   </span>
 </a>
@@ -182,7 +182,8 @@ document.getElementById('capture-form').addEventListener('submit', event => {
   const url = document.getElementById('source-url').value.trim();
   if (!url) return;
   const params = new URLSearchParams({ title: 'Capture: ' + url, labels: 'inbox,capture', body: '' });
-  window.location.href = REPO_URL + '/issues/new?' + params.toString();
+  window.open(REPO_URL + '/issues/new?' + params.toString(), '_blank', 'noopener,noreferrer');
+  event.currentTarget.reset();
 });
 </script>
 

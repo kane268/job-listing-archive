@@ -464,7 +464,8 @@ document.getElementById('capture-form').addEventListener('submit', event => {{
   const url = document.getElementById('source-url').value.trim();
   if (!url) return;
   const params = new URLSearchParams({{ title: 'Capture: ' + url, labels: 'inbox,capture', body: '' }});
-  window.location.href = REPO_URL + '/issues/new?' + params.toString();
+  window.open(REPO_URL + '/issues/new?' + params.toString(), '_blank', 'noopener,noreferrer');
+  event.currentTarget.reset();
 }});
 </script>
 """
