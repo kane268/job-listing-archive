@@ -30,6 +30,10 @@ COMPANY_ICON_HOSTS = {
     "Reddit": "reddit.com",
     "Stripe": "stripe.com",
 }
+ICON_URL_OVERRIDES = {
+    "apple.com": "https://www.apple.com/apple-touch-icon.png",
+    "github.com": "https://icon.horse/icon/github.com",
+}
 
 CSS = """
 :root { color-scheme: light dark; --bg: #fff; --fg: #111; --muted: #5f5f5f; --border: #d7d7d7; --surface: #f7f7f7; --accent: #111; --accent-fg: #fff; --danger: #9c5a00; }
@@ -199,9 +203,13 @@ def capture_time_html(value: str) -> str:
     return f"Captured {esc(fallback)}"
 
 
-def icon_url_for_host(host: str) -> str:
+def icon_url_for_host(host: str, size: int = 256) -> str:
     host = host.lower().removeprefix("www.").strip()
-    return f"https://icons.duckduckgo.com/ip3/{esc(host)}.ico" if host else ""
+    if not host:
+        return ""
+    if host in ICON_URL_OVERRIDES:
+        return ICON_URL_OVERRIDES[host]
+    return f"https://www.google.com/s2/favicons?{urlencode({'domain': host, 'sz': size})}"
 
 
 def icon_url_for_source(name: str, url: str, homepage_url: str = "") -> str:
@@ -384,7 +392,7 @@ def source_card(source: dict[str, str]) -> str:
     url = source.get("url", "")
     icon_url = icon_url_for_source(name, url, source.get("homepage_url", ""))
     return f"""<a class="card source-card" href="{esc(url)}" target="_blank" rel="noreferrer" title="{esc(url)}">
-  <img class="icon" src="{icon_url}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+  <img class="icon" src="{esc(icon_url)}" alt="" loading="lazy" decoding="async" onerror="this.style.visibility='hidden'">
   <span class="card-content">
     <span class="card-title">{esc(name)}</span>
     <span class="card-subtitle">{esc(url_label(url, include_path=True))}</span>
@@ -399,7 +407,7 @@ def listing_card(record: dict[str, Any]) -> str:
     if source_label:
         meta_html += f"<span class=\"source-host\">{esc(source_label)}</span>"
     return f"""<a class="card listing-card" href="{esc(href)}">
-  <img class="icon" src="{record['icon_url']}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+  <img class="icon" src="{esc(record['icon_url'])}" alt="" loading="lazy" decoding="async" onerror="this.style.visibility='hidden'">
   <span class="card-content">
     <span class="card-kicker">{esc(record['company'])}</span>
     <span class="card-title">{esc(record['role'])}</span>
@@ -511,7 +519,7 @@ def build_listing_page(record: dict[str, Any]) -> str:
 <header>
   <p><a href="../../">Job listing archive</a></p>
   <div class="title-row">
-    <img class="icon" src="{record['icon_url']}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+    <img class="icon" src="{esc(record['icon_url'])}" alt="" loading="lazy" decoding="async" onerror="this.style.visibility='hidden'">
     <div>
       <span class="card-kicker">{esc(record['company'])}</span>
       <h1>{esc(record['role'])}</h1>
