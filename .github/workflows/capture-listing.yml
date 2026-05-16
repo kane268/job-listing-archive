@@ -21,7 +21,7 @@ concurrency:
 jobs:
   capture:
     name: Capture listing
-    if: github.event_name == 'workflow_dispatch' || (github.actor == 'kane268' && (contains(github.event.issue.title, 'http') || contains(github.event.issue.body, 'http')))
+    if: github.event_name == 'workflow_dispatch' || (github.actor == 'kane268' && github.event.issue.user.login == 'kane268' && (contains(github.event.issue.title, 'http') || contains(github.event.issue.body, 'http')))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
