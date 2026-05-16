@@ -7,9 +7,10 @@ import html
 import json
 import re
 import shutil
+from datetime import datetime
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 
 from job_archive import ROOT, clean_role_title, infer_company_from_url, listing_paths, parse_frontmatter
 from job_sources import active_sources, read_sources
@@ -20,6 +21,14 @@ PAGES_CMS_SOURCES_URL = "https://app.pagescms.org/kane268/job-listing-archive/ma
 ARCHIVE_DIR = ROOT / "archive"
 CAPTURE_LEDGER = ROOT / "data" / "captures.json"
 URL_RE = re.compile(r"https?://[^\s<>)]+")
+COMPANY_ICON_HOSTS = {
+    "Anthropic": "anthropic.com",
+    "Apple": "apple.com",
+    "Copilot Money": "copilot.money",
+    "GitHub": "github.com",
+    "Readwise": "readwise.io",
+    "Stripe": "stripe.com",
+}
 
 CSS = """
 :root { color-scheme: light dark; --bg: #fff; --fg: #111; --muted: #5f5f5f; --border: #d7d7d7; --surface: #f7f7f7; --accent: #111; --accent-fg: #fff; --danger: #9c5a00; }
@@ -41,15 +50,19 @@ input { color: var(--fg); background: var(--bg); }
 button { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 750; cursor: pointer; }
 .section-grid { display: grid; gap: 14px; margin-top: 14px; }
 .stack { display: grid; gap: 10px; }
-.card { display: block; color: inherit; text-decoration: none; border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--bg); }
+.card { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; color: inherit; text-decoration: none; border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--bg); }
 .card:hover, .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.icon { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); object-fit: contain; padding: 3px; }
 .card-title { display: block; margin-bottom: 3px; font-weight: 750; }
+.card-content { min-width: 0; }
 .url, .meta { display: block; color: var(--muted); font-size: .92rem; overflow-wrap: anywhere; }
 .empty { color: var(--muted); padding: 4px 0; }
 .backup { border-color: var(--danger); }
 .backup .card-title { color: var(--danger); }
 .action-link, .page-actions a { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; text-decoration: none; background: var(--bg); white-space: nowrap; }
 .page-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.title-row { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; align-items: start; }
+.title-row .icon { width: 40px; height: 40px; border-radius: 10px; }
 .markdown { border: 1px solid var(--border); border-radius: 10px; padding: 14px; background: var(--surface); }
 .markdown h1, .markdown h2, .markdown h3, .markdown h4 { line-height: 1.18; margin: 1.2em 0 .45em; }
 .markdown h1:first-child, .markdown h2:first-child, .markdown h3:first-child { margin-top: 0; }
@@ -69,6 +82,29 @@ def esc(value: Any) -> str:
 
 def site_path(*parts: str) -> str:
     return "/".join(part.strip("/") for part in parts if part)
+
+
+def format_captured_at(value: str) -> str:
+    if not value:
+        return "Capture date unknown."
+    try:
+        parsed = datetime.strptime(value, "%Y-%m-%d")
+    except ValueError:
+        return f"Captured {value}."
+    return f"Captured {parsed:%a} {parsed:%b} {parsed.day} {parsed:%Y}."
+
+
+def icon_url_for_host(host: str) -> str:
+    host = host.lower().removeprefix("www.").strip()
+    return f"https://icons.duckduckgo.com/ip3/{esc(host)}.ico" if host else ""
+
+
+def icon_url_for_source(name: str, url: str) -> str:
+    override = COMPANY_ICON_HOSTS.get(name.strip())
+    if override:
+        return icon_url_for_host(override)
+    host = urlparse(url).netloc
+    return icon_url_for_host(host)
 
 
 def read_capture_records() -> list[dict[str, Any]]:
@@ -107,8 +143,10 @@ def listing_records() -> list[dict[str, Any]]:
                 "role": role,
                 "company": company,
                 "captured_at": str(metadata.get("captured_at") or ""),
+                "captured_label": format_captured_at(str(metadata.get("captured_at") or "")),
                 "status": str(metadata.get("status") or ""),
                 "source_url": source_url,
+                "icon_url": icon_url_for_source(company, source_url),
                 "listing_path": listing_path.relative_to(ROOT).as_posix(),
                 "raw_text_path": raw_path.relative_to(ROOT).as_posix(),
                 "page_path": site_path("archive", listing_id, ""),
@@ -211,20 +249,26 @@ def layout(title: str, body: str, description: str = "Job listing archive") -> s
 
 
 def source_card(source: dict[str, str]) -> str:
+    icon_url = icon_url_for_source(source.get("name", ""), source.get("url", ""))
     return f"""<a class="card" href="{esc(source.get('url'))}" target="_blank" rel="noreferrer">
-  <span class="card-title">{esc(source.get('name') or source.get('id'))}</span>
-  <span class="url">{esc(source.get('url'))}</span>
+  <img class="icon" src="{icon_url}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+  <span class="card-content">
+    <span class="card-title">{esc(source.get('name') or source.get('id'))}</span>
+    <span class="url">{esc(source.get('url'))}</span>
+  </span>
 </a>"""
 
 
 def listing_card(record: dict[str, Any]) -> str:
     href = site_path(record["page_path"])
     source = record.get("source_url") or "No source URL captured"
-    meta_parts = [part for part in [record.get("captured_at"), record.get("status")] if part]
     return f"""<a class="card" href="{esc(href)}">
-  <span class="card-title">{esc(record['title'])}</span>
-  <span class="url">{esc(source)}</span>
-  <span class="meta">{esc(' · '.join(meta_parts))}</span>
+  <img class="icon" src="{record['icon_url']}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+  <span class="card-content">
+    <span class="card-title">{esc(record['title'])}</span>
+    <span class="url">{esc(source)}</span>
+    <span class="meta">{esc(record['captured_label'])}</span>
+  </span>
 </a>"""
 
 
@@ -326,8 +370,13 @@ def build_listing_page(record: dict[str, Any]) -> str:
     body = f"""
 <header>
   <p><a href="../../">Job listing archive</a></p>
-  <h1>{esc(record['title'])}</h1>
-  <p class="muted">{esc(record.get('captured_at'))} {esc(record.get('status'))}</p>
+  <div class="title-row">
+    <img class="icon" src="{record['icon_url']}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+    <div>
+      <h1>{esc(record['title'])}</h1>
+      <p class="muted">{esc(record['captured_label'])}</p>
+    </div>
+  </div>
 </header>
 
 <nav class="page-actions" aria-label="Listing links">

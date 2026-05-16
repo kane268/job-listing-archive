@@ -25,15 +25,19 @@ input { color: var(--fg); background: var(--bg); }
 button { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 750; cursor: pointer; }
 .section-grid { display: grid; gap: 14px; margin-top: 14px; }
 .stack { display: grid; gap: 10px; }
-.card { display: block; color: inherit; text-decoration: none; border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--bg); }
+.card { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; color: inherit; text-decoration: none; border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--bg); }
 .card:hover, .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.icon { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); object-fit: contain; padding: 3px; }
 .card-title { display: block; margin-bottom: 3px; font-weight: 750; }
+.card-content { min-width: 0; }
 .url, .meta { display: block; color: var(--muted); font-size: .92rem; overflow-wrap: anywhere; }
 .empty { color: var(--muted); padding: 4px 0; }
 .backup { border-color: var(--danger); }
 .backup .card-title { color: var(--danger); }
 .action-link, .page-actions a { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; text-decoration: none; background: var(--bg); white-space: nowrap; }
 .page-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.title-row { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; align-items: start; }
+.title-row .icon { width: 40px; height: 40px; border-radius: 10px; }
 .markdown { border: 1px solid var(--border); border-radius: 10px; padding: 14px; background: var(--surface); }
 .markdown h1, .markdown h2, .markdown h3, .markdown h4 { line-height: 1.18; margin: 1.2em 0 .45em; }
 .markdown h1:first-child, .markdown h2:first-child, .markdown h3:first-child { margin-top: 0; }
@@ -49,8 +53,13 @@ button { background: var(--accent); color: var(--accent-fg); border-color: var(-
 
 <header>
   <p><a href="../../">Job listing archive</a></p>
-  <h1>Staff Engineer, Experimentation Platform - Stripe</h1>
-  <p class="muted">2025-08-15 extracted</p>
+  <div class="title-row">
+    <img class="icon" src="https://icons.duckduckgo.com/ip3/stripe.com.ico" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+    <div>
+      <h1>Staff Engineer, Experimentation Platform - Stripe</h1>
+      <p class="muted">Captured Fri Aug 15 2025.</p>
+    </div>
+  </div>
 </header>
 
 <nav class="page-actions" aria-label="Listing links">
