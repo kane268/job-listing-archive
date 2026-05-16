@@ -13,8 +13,7 @@ from typing import Iterable
 from job_archive import ROOT, slugify
 
 SOURCE_INDEX = ROOT / "data" / "job-sources.json"
-SOURCE_CSV_INDEX = ROOT / "data" / "job-sources.csv"
-COLUMNS = ["id", "name", "url", "type", "status", "tags", "notes"]
+COLUMNS = ["id", "name", "url", "type", "status", "notes"]
 DEFAULT_TYPE = "company-careers"
 DEFAULT_STATUS = "active"
 
@@ -25,8 +24,6 @@ def normalize_source_row(row: dict[str, str]) -> dict[str, str]:
 
 def read_sources(path: str | Path = SOURCE_INDEX) -> list[dict[str, str]]:
     source_path = Path(path)
-    if source_path == SOURCE_INDEX and not source_path.exists() and SOURCE_CSV_INDEX.exists():
-        source_path = SOURCE_CSV_INDEX
     if not source_path.exists():
         return []
 
@@ -42,17 +39,6 @@ def read_sources(path: str | Path = SOURCE_INDEX) -> list[dict[str, str]]:
         return [normalize_source_row(row) for row in reader]
 
 
-def write_sources_csv(rows: list[dict[str, str]], path: str | Path = SOURCE_CSV_INDEX) -> Path:
-    source_path = Path(path)
-    source_path.parent.mkdir(parents=True, exist_ok=True)
-    with source_path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=COLUMNS)
-        writer.writeheader()
-        for row in rows:
-            writer.writerow({column: row.get(column, "") for column in COLUMNS})
-    return source_path
-
-
 def write_sources(rows: Iterable[dict[str, str]], path: str | Path = SOURCE_INDEX) -> Path:
     source_path = Path(path)
     source_rows = [normalize_source_row(row) for row in rows]
@@ -63,23 +49,21 @@ def write_sources(rows: Iterable[dict[str, str]], path: str | Path = SOURCE_INDE
         source_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
         return source_path
 
-    return write_sources_csv(source_rows, source_path)
+    with source_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=COLUMNS)
+        writer.writeheader()
+        writer.writerows(source_rows)
+    return source_path
 
 
 def make_source_id(name: str) -> str:
     return slugify(name)
 
 
-def normalize_tags(tags: str) -> str:
-    parts = [slugify(part) for part in tags.replace(";", ",").split(",")]
-    return ",".join(part for part in parts if part)
-
-
 def add_or_update_source(
     name: str,
     url: str,
     *,
-    tags: str = "",
     notes: str = "",
     source_type: str = DEFAULT_TYPE,
     status: str = DEFAULT_STATUS,
@@ -93,7 +77,6 @@ def add_or_update_source(
         "url": url.strip(),
         "type": source_type.strip() or DEFAULT_TYPE,
         "status": status.strip() or DEFAULT_STATUS,
-        "tags": normalize_tags(tags),
         "notes": notes.strip(),
     }
 
@@ -136,7 +119,7 @@ def format_sources(rows: Iterable[dict[str, str]]) -> str:
     if not source_rows:
         return "No job sources yet."
 
-    columns = ["id", "name", "status", "url", "tags"]
+    columns = ["id", "name", "status", "url"]
     widths = {
         column: max(len(column), *(len(row.get(column, "")) for row in source_rows))
         for column in columns
@@ -162,7 +145,6 @@ def add_cli(args: argparse.Namespace) -> int:
     status, row = add_or_update_source(
         args.name,
         args.url,
-        tags=args.tags,
         notes=args.notes,
         source_type=args.type,
         status=args.status,
@@ -184,7 +166,7 @@ def open_cli(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Manage places to look for job listings.")
-    parser.add_argument("--file", default=str(SOURCE_INDEX), help="Source CSV path")
+    parser.add_argument("--file", default=str(SOURCE_INDEX), help="Source JSON or CSV path")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     list_parser = subparsers.add_parser("list", help="List job sources")
@@ -194,7 +176,6 @@ def build_parser() -> argparse.ArgumentParser:
     add_parser = subparsers.add_parser("add", help="Add or update a job source")
     add_parser.add_argument("name", help="Source name")
     add_parser.add_argument("url", help="Source URL")
-    add_parser.add_argument("tags", nargs="?", default="", help="Comma separated tags")
     add_parser.add_argument("--notes", default="", help="Notes")
     add_parser.add_argument("--type", default=DEFAULT_TYPE, help="Source type")
     add_parser.add_argument("--status", default=DEFAULT_STATUS, help="Source status")

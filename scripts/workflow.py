@@ -10,6 +10,7 @@ import sys
 import webbrowser
 from pathlib import Path
 
+from build_site import build_site
 from job_archive import ROOT, build_index, ingest_paths, listing_paths, print_ingest_results
 
 DEFAULT_SOURCE = Path.home() / "Library/Mobile Documents/com~apple~CloudDocs/Job Listings"
@@ -66,14 +67,16 @@ Job Listing Archive workflow
 
 Mobile:
   1. Open the GitHub Pages capture UI.
-  2. Paste a listing URL and optional public-safe context.
+  2. Paste a listing URL.
   3. Create the prefilled GitHub issue so Actions can capture the page.
 
 Laptop:
-  mise run update          Import legacy iCloud files, rebuild the index, test, commit, and push.
-  mise run save            Rebuild the index, test, commit current changes, and push.
+  mise run update          Import legacy iCloud files, rebuild the index, site, test, commit, and push.
+  mise run save            Rebuild the index and site, test, commit current changes, and push.
   mise run import          Only import legacy iCloud files.
   mise run check           Run tests and archive checks.
+  mise run site            Rebuild the static web site.
+  mise run validate-capture Validate live URL capture against archived URLs.
   mise run capture         Open the web listing capture UI.
   mise run sources         List places to look for jobs.
   mise run browse          Open active job source URLs.
@@ -110,6 +113,7 @@ def cmd_check(_: list[str]) -> int:
     if shutil.which("mise"):
         run(["mise", "tasks", "validate", "--errors-only"])
     cmd_index([])
+    build_site(ROOT)
     run([sys.executable, "-m", "unittest", "discover", "-s", "tests"])
     verify_archive()
     return 0
@@ -186,7 +190,7 @@ def cmd_browse(args: list[str]) -> int:
 
 def cmd_add_source(args: list[str]) -> int:
     if len(args) < 2:
-        raise SystemExit('Usage: mise run add-source "Name" "https://example.com/jobs" "optional,tags"')
+        raise SystemExit('Usage: mise run add-source "Name" "https://example.com/jobs"')
     run([sys.executable, "scripts/job_sources.py", "add", *args])
     return 0
 

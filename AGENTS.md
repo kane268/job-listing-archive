@@ -15,6 +15,7 @@ This is a public-safe personal archive of job listings. It started as a formal v
 - Raw listing evidence lives beside `listing.md` as `raw.pdf`, `raw.html`, `source.txt`, or generated `raw.txt`.
 - Recurring places to look for jobs live in `data/job-sources.json`.
 - `data/index.csv` is generated from listing front matter. Do not hand-edit it.
+- `archive/<id>/index.html` and `index.html` are generated web pages. Do not hand-edit them. Regenerate with `mise run site` or `mise run check`.
 - `raw.txt` is generated evidence. Do not hand-edit it. Regenerate from the source file instead.
 
 ## Privacy and safety
@@ -33,14 +34,16 @@ Prefer mise tasks for normal workflows:
 mise run update          # import legacy iCloud files, check, commit, push
 mise run import          # import legacy iCloud files only
 mise run save            # check, commit, push current changes
-mise run check           # validate tasks, rebuild index, run tests
+mise run check           # validate tasks, rebuild index and site, run tests
+mise run site            # rebuild static GitHub Pages site
+mise run validate-capture # test live URL capture in a temp repo
 mise run sources         # list job sources
 mise run browse          # open active job source URLs
 mise run capture         # open web listing capture UI
 mise run capture-source  # open source capture issue form
 ```
 
-Run `mise run check` after changing scripts, metadata, templates, issue forms, or docs that mention tasks.
+Run `mise run check` after changing scripts, metadata, templates, issue forms, generated site inputs, or docs that mention tasks.
 
 ## Import behavior
 
@@ -55,10 +58,10 @@ GitHub Issues are an inbox, not the permanent archive.
 
 Listing issues:
 
-1. New issues use the `inbox` label.
-2. Create or import the matching listing folder.
-3. Change label to `ingested`.
-4. Close the issue with a comment pointing to the `listing.md` path.
+1. New issues use the `inbox` label and keep the URL in the title.
+2. GitHub Actions captures the URL or records a failed attempt in `data/captures.json`.
+3. Successful or duplicate captures get label `ingested` and close with a comment pointing to the listing path.
+4. Failed captures stay open with `needs-text-extraction` until the parser is fixed and the URL is re-run.
 
 Source issues:
 

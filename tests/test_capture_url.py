@@ -7,7 +7,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
-from capture_url import fields_from_issue_body  # noqa: E402
+from capture_url import fields_from_issue_body, first_url  # noqa: E402
 
 
 class CaptureURLTests(unittest.TestCase):
@@ -17,24 +17,12 @@ class CaptureURLTests(unittest.TestCase):
 ### Source URL
 
 https://example.com/job
-
-### Company
-
-Example
-
-### Role title
-
-_No response_
-
-### Public note
-
-Interesting platform role.
 """
         )
         self.assertEqual(fields["source_url"], "https://example.com/job")
-        self.assertEqual(fields["company"], "Example")
-        self.assertEqual(fields["role_title"], "")
-        self.assertEqual(fields["why"], "Interesting platform role.")
+
+    def test_first_url_from_issue_title(self) -> None:
+        self.assertEqual(first_url("Capture: https://example.com/job"), "https://example.com/job")
 
 
 if __name__ == "__main__":

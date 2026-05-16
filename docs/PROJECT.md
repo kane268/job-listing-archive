@@ -59,13 +59,15 @@ Examples include company career pages such as Anthropic, GitHub, Stripe, Apple, 
 
 ### Generated data
 
-`data/index.csv` is generated from all `listing.md` files. Rebuild it with:
+`data/index.csv` is generated from all `listing.md` files. `archive/<id>/index.html` pages and the home page are generated from source files and `raw.txt`.
+
+Rebuild generated data with:
 
 ```bash
-mise run index
+mise run check
 ```
 
-Do not hand-edit generated index rows. Edit the relevant `listing.md`, then rebuild the index.
+Do not hand-edit generated index rows, generated archive pages, or generated `raw.txt`. Edit the relevant `listing.md`, source artifact, or extraction script, then rebuild.
 
 ## Current workflow
 
@@ -77,7 +79,7 @@ Use the GitHub Pages web UI:
 https://kane268.github.io/job-listing-archive/
 ```
 
-Paste a listing URL and optional public-safe context. The site opens a prefilled GitHub issue. GitHub Actions fetches the page, saves `raw.html`, extracts `raw.txt`, creates `listing.md`, rebuilds `data/index.csv`, commits the result, labels the issue `ingested`, and closes it.
+Paste a listing URL. The site opens a prefilled GitHub issue with an empty body and the URL in the title. GitHub Actions fetches the page, saves `raw.html`, extracts `raw.txt`, creates `listing.md`, rebuilds `data/index.csv`, rebuilds the static site, commits the result, labels the issue `ingested`, and closes it. If capture fails, Actions saves the URL in `data/captures.json` and the live site shows it as a backup for later parser fixes and re-capture.
 
 Legacy PDF import remains available for old saved files, but PDF capture is no longer the normal path.
 
@@ -102,10 +104,12 @@ Useful commands:
 ```bash
 mise run import          # import legacy iCloud files only
 mise run save            # check, commit, and push current changes
-mise run check           # validate mise tasks, rebuild index, run tests
+mise run check           # validate mise tasks, rebuild index and site, run tests
 mise run sources         # list job source pages
 mise run browse          # open active job source pages
 mise run add-source      # add or update a source
+mise run site            # rebuild static GitHub Pages site
+mise run validate-capture # test live URL capture in a temp repo
 mise run capture         # open web listing capture UI
 mise run capture-source  # open source capture issue form
 ```
@@ -150,10 +154,10 @@ GitHub Issues are an inbox, not the permanent archive.
 
 Listing issues:
 
-1. New issue starts with `inbox`.
-2. Import or create the matching `listing.md`.
-3. Change label to `ingested`.
-4. Close the issue with a comment pointing to the listing path.
+1. New issue starts with `inbox` and keeps the URL in the title.
+2. GitHub Actions captures the URL or records a failed attempt in `data/captures.json`.
+3. Successful or duplicate captures get label `ingested`.
+4. Failed captures stay open with `needs-text-extraction` until the parser is fixed and the URL is re-run.
 
 Source issues:
 
@@ -167,7 +171,8 @@ The `[job]` title prefix is no longer used. Labels and issue forms provide the c
 
 ```text
 scripts/job_archive.py   core listing import, URL capture, extraction, metadata, index helpers
-scripts/capture_url.py   CLI wrapper used by GitHub Actions URL capture
+scripts/capture_url.py   CLI wrapper used by GitHub Actions URL capture and backup records
+scripts/build_site.py    static GitHub Pages site generator
 scripts/ingest_pdfs.py   CLI wrapper for importing saved files
 scripts/build_index.py   CLI wrapper for rebuilding data/index.csv
 scripts/job_sources.py   CLI for data/job-sources.json
@@ -193,7 +198,7 @@ mise run check
 - Metadata inference is best-effort and should be reviewed.
 - This repo intentionally does not scrape job boards.
 - Large PDFs should be avoided. The workflow checks for files over 50 MiB.
-- This repo is public for GitHub Pages, so capture only URL-first public-safe context and avoid personal notes in issues or listing bodies.
+- This repo is public for GitHub Pages, so capture URL-first and avoid personal notes in issues or listing bodies.
 
 ## Future directions
 

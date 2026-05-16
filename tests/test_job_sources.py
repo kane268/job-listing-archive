@@ -23,12 +23,10 @@ class JobSourceTests(unittest.TestCase):
             status, row = add_or_update_source(
                 "Anthropic",
                 "https://www.anthropic.com/careers/jobs",
-                tags="AI, research",
                 path=path,
             )
             self.assertEqual(status, "added")
             self.assertEqual(row["id"], "anthropic")
-            self.assertEqual(row["tags"], "ai,research")
 
             status, row = add_or_update_source(
                 "Anthropic",
@@ -42,15 +40,15 @@ class JobSourceTests(unittest.TestCase):
 
     def test_match_sources_defaults_to_active(self) -> None:
         rows = [
-            {"id": "active", "name": "Active", "url": "https://example.com", "status": "active", "tags": "", "type": "", "notes": ""},
-            {"id": "inactive", "name": "Inactive", "url": "https://inactive.example.com", "status": "inactive", "tags": "", "type": "", "notes": ""},
+            {"id": "active", "name": "Active", "url": "https://example.com", "status": "active", "type": "", "notes": ""},
+            {"id": "inactive", "name": "Inactive", "url": "https://inactive.example.com", "status": "inactive", "type": "", "notes": ""},
         ]
         self.assertEqual([row["id"] for row in match_sources(rows, [])], ["active"])
         self.assertEqual([row["id"] for row in match_sources(rows, ["inactive"])], ["inactive"])
 
     def test_format_sources(self) -> None:
         rows = [
-            {"id": "stripe", "name": "Stripe", "url": "https://stripe.com/jobs/search", "status": "active", "tags": "fintech", "type": "", "notes": ""},
+            {"id": "stripe", "name": "Stripe", "url": "https://stripe.com/jobs/search", "status": "active", "type": "", "notes": ""},
         ]
         table = format_sources(rows)
         self.assertIn("Stripe", table)

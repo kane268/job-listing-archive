@@ -4,7 +4,7 @@ Read `docs/PROJECT.md` first if you need the project origin, data model, issue w
 
 ## Add a listing quickly
 
-Use the GitHub Pages capture page and paste the URL, optional title/company, and a public-safe note about why it was interesting.
+Use the GitHub Pages capture page and paste only the listing URL. The site opens a prefilled GitHub issue with the URL in the title.
 
 ## Add a saved file
 
@@ -28,7 +28,7 @@ Use `data/job-sources.json` for company career pages, job boards, aggregators, a
 
 ```bash
 mise run sources
-mise run add-source "Anthropic" "https://www.anthropic.com/careers/jobs" "ai,research"
+mise run add-source "Anthropic" "https://www.anthropic.com/careers/jobs"
 ```
 
 On mobile, use the GitHub **Job source capture** issue form.
@@ -44,4 +44,4 @@ Open `listing.md` and fill in only what is useful:
 - nice-to-haves
 - public-safe notes
 
-Keep filtering fields in YAML. Keep interpretation and memory in the Markdown body. Avoid private notes because the repo and Pages site are public.
+Keep filtering fields in YAML. Keep interpretation and memory in the Markdown body. Avoid private notes because the repo and Pages site are public. Run `mise run site` after manual listing edits so the web copy stays current.

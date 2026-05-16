@@ -283,6 +283,14 @@ def clean_role_title(value: str, company: str = "") -> str:
         ]
         for pattern in patterns:
             title = re.sub(pattern, "", title, flags=re.IGNORECASE).strip()
+        if " at " in title:
+            role, trailing_company = [part.strip() for part in title.rsplit(" at ", 1)]
+            normalized_company = slugify(company)
+            normalized_trailing = slugify(trailing_company)
+            if normalized_trailing and (
+                normalized_company.startswith(normalized_trailing) or normalized_trailing.startswith(normalized_company)
+            ):
+                title = role
 
     return normalize_spaces(title)
 

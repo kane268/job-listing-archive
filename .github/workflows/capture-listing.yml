@@ -7,18 +7,6 @@ on:
         description: Job listing URL
         required: true
         type: string
-      company:
-        description: Optional company override
-        required: false
-        type: string
-      role_title:
-        description: Optional role title override
-        required: false
-        type: string
-      why:
-        description: Optional public-safe note
-        required: false
-        type: string
   issues:
     types: [opened, edited, labeled]
 
@@ -33,7 +21,7 @@ concurrency:
 jobs:
   capture:
     name: Capture listing
-    if: github.event_name == 'workflow_dispatch' || (github.actor == 'kane268' && contains(github.event.issue.body, 'Source URL'))
+    if: github.event_name == 'workflow_dispatch' || (github.actor == 'kane268' && (contains(github.event.issue.title, 'http') || contains(github.event.issue.body, 'http')))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -44,28 +32,27 @@ jobs:
         id: capture_dispatch
         env:
           CAPTURE_URL: ${{ inputs.url }}
-          CAPTURE_COMPANY: ${{ inputs.company }}
-          CAPTURE_ROLE_TITLE: ${{ inputs.role_title }}
-          CAPTURE_WHY: ${{ inputs.why }}
         run: |
           python3 scripts/capture_url.py "$CAPTURE_URL" \
-            --company "$CAPTURE_COMPANY" \
-            --role-title "$CAPTURE_ROLE_TITLE" \
-            --why "$CAPTURE_WHY" \
             --issue-url "workflow_dispatch:${{ github.run_id }}"
 
       - name: Capture issue
         if: github.event_name == 'issues'
         id: capture_issue
         env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_URL: ${{ github.event.issue.html_url }}
         run: |
           issue_body_file="$RUNNER_TEMP/issue-body.md"
           printf '%s' "$ISSUE_BODY" > "$issue_body_file"
           python3 scripts/capture_url.py \
+            --issue-title "$ISSUE_TITLE" \
             --issue-body-file "$issue_body_file" \
             --issue-url "$ISSUE_URL"
+
+      - name: Build site
+        run: python3 scripts/build_site.py
 
       - name: Test archive
         run: python3 -m unittest discover -s tests
@@ -82,7 +69,7 @@ jobs:
           git commit -m "Capture job listing"
           git push
 
-      - name: Close capture issue
+      - name: Update capture issue
         if: github.event_name == 'issues'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -93,10 +80,14 @@ jobs:
         run: |
           if [[ "$STATUS" == "captured" ]]; then
             message="Captured in \`$LISTING_PATH\`."
+            gh issue edit "$ISSUE_NUMBER" --add-label ingested --remove-label inbox || true
+            gh issue close "$ISSUE_NUMBER" --comment "$message"
           elif [[ -n "$LISTING_PATH" ]]; then
             message="Skipped: $REASON. Existing listing: \`$LISTING_PATH\`."
+            gh issue edit "$ISSUE_NUMBER" --add-label ingested --remove-label inbox || true
+            gh issue close "$ISSUE_NUMBER" --comment "$message"
           else
-            message="Skipped: $REASON."
+            message="Capture did not produce a listing yet: $REASON. The URL is saved in data/captures.json and shown on the site as a backup."
+            gh issue edit "$ISSUE_NUMBER" --add-label needs-text-extraction || true
+            gh issue comment "$ISSUE_NUMBER" --body "$message"
           fi
-          gh issue edit "$ISSUE_NUMBER" --add-label ingested --remove-label inbox || true
-          gh issue close "$ISSUE_NUMBER" --comment "$message"

@@ -35,15 +35,6 @@ body:
     validations:
       required: false
 
-  - type: input
-    id: tags
-    attributes:
-      label: Tags
-      description: Optional comma separated tags.
-      placeholder: "ai, infra, remote"
-    validations:
-      required: false
-
   - type: textarea
     id: notes
     attributes:

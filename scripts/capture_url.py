@@ -4,19 +4,31 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from job_archive import ROOT, build_index, ingest_url
+from job_archive import ROOT, URL_RE, build_index, clean_url, ingest_url, normalize_source_url, slugify
 
+CAPTURE_LEDGER = ROOT / "data" / "captures.json"
 NO_RESPONSE_VALUES = {"", "_No response_", "No response"}
+
+
+def now_iso() -> str:
+    return datetime.now().astimezone().replace(microsecond=0).isoformat()
 
 
 def clean_issue_value(value: str) -> str:
     value = value.strip()
     return "" if value in NO_RESPONSE_VALUES else value
+
+
+def first_url(value: str) -> str:
+    match = URL_RE.search(value or "")
+    return clean_url(match.group(0)) if match else ""
 
 
 def parse_issue_body(body: str) -> dict[str, str]:
@@ -36,22 +48,52 @@ def parse_issue_body(body: str) -> dict[str, str]:
 
 def fields_from_issue_body(body: str) -> dict[str, str]:
     raw = parse_issue_body(body)
+    source_url = ""
+    for label in ("Source URL", "URL", "Listing URL"):
+        source_url = raw.get(label, "")
+        if source_url:
+            break
+    if not source_url:
+        source_url = first_url(body)
+    return {"source_url": source_url}
 
-    def get(*labels: str) -> str:
-        for label in labels:
-            value = raw.get(label, "")
-            if value:
-                return value
-        return ""
 
-    return {
-        "source_url": get("Source URL", "URL", "Listing URL"),
-        "company": get("Company"),
-        "role_title": get("Role title", "Role"),
-        "role_family": get("Role family"),
-        "seniority": get("Seniority"),
-        "why": get("Why did this catch your eye?", "Public note", "Why I saved this"),
-    }
+def load_capture_records(path: str | Path = CAPTURE_LEDGER) -> list[dict[str, Any]]:
+    ledger_path = Path(path)
+    if not ledger_path.exists():
+        return []
+    payload = json.loads(ledger_path.read_text(encoding="utf-8"))
+    records = payload.get("captures", payload) if isinstance(payload, dict) else payload
+    return records if isinstance(records, list) else []
+
+
+def write_capture_records(records: list[dict[str, Any]], path: str | Path = CAPTURE_LEDGER) -> Path:
+    ledger_path = Path(path)
+    ledger_path.parent.mkdir(parents=True, exist_ok=True)
+    records = sorted(records, key=lambda item: item.get("submitted_at", ""), reverse=True)
+    ledger_path.write_text(json.dumps({"captures": records}, indent=2) + "\n", encoding="utf-8")
+    return ledger_path
+
+
+def capture_record_id(source_url: str) -> str:
+    normalized = normalize_source_url(source_url)
+    return slugify(normalized).removeprefix("https-").removeprefix("http-")[:96] or "capture"
+
+
+def upsert_capture_record(record: dict[str, Any], root: str | Path = ROOT) -> None:
+    path = Path(root) / "data" / "captures.json"
+    records = load_capture_records(path)
+    normalized = normalize_source_url(record.get("source_url", ""))
+    for index, existing in enumerate(records):
+        if existing.get("id") == record.get("id") or normalize_source_url(existing.get("source_url", "")) == normalized:
+            merged = dict(existing)
+            merged.update({key: value for key, value in record.items() if value != ""})
+            merged["updated_at"] = record.get("updated_at") or now_iso()
+            records[index] = merged
+            write_capture_records(records, path)
+            return
+    records.append(record)
+    write_capture_records(records, path)
 
 
 def write_github_outputs(path: str, values: dict[str, Any]) -> None:
@@ -70,13 +112,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Capture a job listing URL.")
     parser.add_argument("url", nargs="?", help="Job listing URL")
     parser.add_argument("--repo-root", default=str(ROOT), help="Repository root")
+    parser.add_argument("--issue-title", default="", help="GitHub issue title to parse")
     parser.add_argument("--issue-body-file", default="", help="Markdown issue body to parse")
     parser.add_argument("--issue-url", default="", help="GitHub issue URL for provenance")
-    parser.add_argument("--company", default="", help="Override company")
-    parser.add_argument("--role-title", default="", help="Override role title")
-    parser.add_argument("--role-family", default="", help="Override role family")
-    parser.add_argument("--seniority", default="", help="Override seniority")
-    parser.add_argument("--why", default="", help="Public-safe note for the listing")
     parser.add_argument("--force", action="store_true", help="Capture even if the URL or content already exists")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be captured without writing files")
     parser.add_argument("--github-output", default=os.environ.get("GITHUB_OUTPUT", ""), help="GitHub Actions output file")
@@ -86,36 +124,52 @@ def main(argv: list[str] | None = None) -> int:
     if args.issue_body_file:
         issue_fields = fields_from_issue_body(Path(args.issue_body_file).read_text(encoding="utf-8"))
 
-    source_url = args.url or issue_fields.get("source_url", "")
+    source_url = args.url or issue_fields.get("source_url", "") or first_url(args.issue_title)
     if not source_url:
-        raise SystemExit("No source URL provided.")
+        result = {"status": "failed", "reason": "No source URL provided."}
+    else:
+        submitted_at = now_iso()
+        record = {
+            "id": capture_record_id(source_url),
+            "source_url": source_url,
+            "submitted_at": submitted_at,
+            "updated_at": submitted_at,
+            "issue_url": args.issue_url,
+            "status": "started",
+            "reason": "",
+            "listing_path": "",
+            "listing_id": "",
+        }
+        try:
+            result = ingest_url(source_url, root=args.repo_root, issue_url=args.issue_url, force=args.force, dry_run=args.dry_run)
+        except Exception as exc:  # pragma: no cover - network and remote page behavior
+            result = {"source": source_url, "status": "failed", "reason": str(exc)}
 
-    overrides = {
-        "company": args.company or issue_fields.get("company", ""),
-        "role_title": args.role_title or issue_fields.get("role_title", ""),
-        "role_family": args.role_family or issue_fields.get("role_family", ""),
-        "seniority": args.seniority or issue_fields.get("seniority", ""),
-        "why": args.why or issue_fields.get("why", ""),
-    }
+        status = str(result.get("status", ""))
+        reason = str(result.get("reason", ""))
+        if status == "skipped" and reason.startswith("HTTP "):
+            status = "failed"
+        record.update(
+            {
+                "status": status,
+                "reason": reason,
+                "listing_path": result.get("listing_path", ""),
+                "listing_id": result.get("id", ""),
+                "updated_at": now_iso(),
+            }
+        )
+        if not args.dry_run:
+            upsert_capture_record(record, root=args.repo_root)
 
-    result = ingest_url(
-        source_url,
-        root=args.repo_root,
-        overrides=overrides,
-        issue_url=args.issue_url,
-        force=args.force,
-        dry_run=args.dry_run,
-    )
-
-    if result.get("status") in {"captured", "would-capture"} and not args.dry_run:
-        build_index(args.repo_root)
+        if result.get("status") == "captured" and not args.dry_run:
+            build_index(args.repo_root)
 
     if result.get("id"):
         print(f"{result['status']}: {source_url} -> {result['id']}")
     elif result.get("listing_path"):
         print(f"{result['status']}: {source_url} ({result.get('reason')}: {result['listing_path']})")
     else:
-        print(f"{result['status']}: {source_url} ({result.get('reason', '')})")
+        print(f"{result.get('status')}: {source_url} ({result.get('reason', '')})")
 
     write_github_outputs(
         args.github_output,

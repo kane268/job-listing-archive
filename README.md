@@ -12,7 +12,7 @@ Use the mobile-friendly site when you find an interesting listing:
 
 [Open the job archive](https://kane268.github.io/job-listing-archive/)
 
-Paste the listing URL, add optional public-safe context, and open the prefilled GitHub issue. The capture workflow fetches the page, writes `raw.html`, extracts `raw.txt`, creates `listing.md`, rebuilds the index, and commits back to the repo.
+Paste the listing URL and open the prefilled GitHub issue. The capture workflow fetches the page, writes `raw.html`, extracts `raw.txt`, creates `listing.md`, rebuilds the index and static site, and commits back to the repo. If capture fails, the URL is saved in `data/captures.json` and shown on the site as a backup.
 
 Legacy PDF import is still available for old saved files, but URL capture is the normal path now.
 
@@ -24,7 +24,7 @@ Most day-to-day capture should happen through the web UI and GitHub Actions. Use
 mise run update
 ```
 
-That imports any legacy iCloud files, skips files already imported, rebuilds `data/index.csv`, runs tests, commits changes, and pushes to GitHub.
+That imports any legacy iCloud files, skips files already imported, rebuilds `data/index.csv`, rebuilds the static site, runs tests, commits changes, and pushes to GitHub.
 
 ### Other common commands
 
@@ -32,6 +32,8 @@ That imports any legacy iCloud files, skips files already imported, rebuilds `da
 mise run save            # test, commit, push current edits
 mise run import          # import legacy iCloud files only
 mise run capture         # open the web listing capture UI
+mise run site            # rebuild the static site
+mise run validate-capture # test live URL capture in a temp repo
 mise run sources         # list places to look for jobs
 mise run browse          # open active job source URLs
 mise run capture-source  # open the job source issue form
@@ -43,14 +45,16 @@ Job sources live in `data/job-sources.json`. Seed examples include Anthropic, Gi
 ## Structure
 
 ```text
-.github/ISSUE_TEMPLATE/   GitHub issue forms for quick capture
+.github/ISSUE_TEMPLATE/   GitHub issue configuration and source form
 .github/workflows/        URL capture automation
 .pages.yml                Pages CMS source editor configuration
+archive/<id>/             generated web pages with captured text
 inbox/                    temporary drop zone and notes
 listings/YYYY/<id>/       one folder per saved listing
+data/captures.json        saved capture attempts and failed capture backups
 data/index.csv            generated listing index
 data/job-sources.json     places to look for new listings
-scripts/                  import, capture, and indexing helpers
+scripts/                  import, capture, site, and indexing helpers
 templates/                Markdown template
 ```
 
@@ -142,6 +146,12 @@ Test, commit all changes, and push to GitHub
 
 Install Python package requirements
 
+## `site`
+
+- **Usage**: `site`
+
+Rebuild static GitHub Pages site
+
 ## `sources`
 
 - **Usage**: `sources`
@@ -161,6 +171,12 @@ Show archive count and git status
 - **Aliases**: `u`
 
 Import legacy iCloud listings, test, commit, and push
+
+## `validate-capture`
+
+- **Usage**: `validate-capture`
+
+Validate live URL capture against archived source URLs
 <!-- /mise-tasks -->
 
 ## Statuses

@@ -58,11 +58,6 @@ content:
                       label: Active
                     - name: inactive
                       label: Inactive
-              - name: tags
-                label: Tags
-                type: string
-                description: Comma separated tags.
-                default: ""
               - name: notes
                 label: Notes
                 type: text
