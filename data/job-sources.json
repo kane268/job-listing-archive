@@ -19,6 +19,10 @@
     {
       "name": "Stripe",
       "url": "https://stripe.com/jobs/search"
+    },
+    {
+      "name": "Reddit",
+      "url": "https://job-boards.greenhouse.io/reddit"
     }
   ]
 }
