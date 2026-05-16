@@ -82,6 +82,42 @@ button { background: var(--accent); color: var(--accent-fg); border-color: var(-
 @media (min-width: 720px) { body { padding: 28px 24px 56px; } .capture-form { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } button { width: auto; min-width: 160px; } .section-grid { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: start; } }
 """.strip()
 
+RELATIVE_TIME_JS = r"""
+(() => {
+  const DAY = 24 * 60 * 60 * 1000;
+  const plural = (value, unit) => `${value} ${unit}${value === 1 ? '' : 's'}`;
+  const targetDate = element => {
+    const value = element.getAttribute('datetime') || '';
+    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!match) return null;
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  };
+  const relativeText = target => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    target.setHours(0, 0, 0, 0);
+    const days = Math.round((target - today) / DAY);
+    const past = days < 0;
+    const abs = Math.abs(days);
+    if (abs === 0) return 'today';
+    if (abs === 1) return past ? 'yesterday' : 'tomorrow';
+    if (abs < 14) return `${plural(abs, 'day')} ${past ? 'ago' : 'from now'}`;
+    if (abs < 60) return `${plural(Math.round(abs / 7), 'week')} ${past ? 'ago' : 'from now'}`;
+    if (abs < 730) return `${plural(Math.round(abs / 30), 'month')} ${past ? 'ago' : 'from now'}`;
+    return `${plural(Math.round(abs / 365), 'year')} ${past ? 'ago' : 'from now'}`;
+  };
+  class ArchiveRelativeTime extends HTMLElement {
+    connectedCallback() {
+      const target = targetDate(this);
+      if (!target) return;
+      if (!this.title) this.title = target.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+      this.textContent = relativeText(target);
+    }
+  }
+  if (!customElements.get('relative-time')) customElements.define('relative-time', ArchiveRelativeTime);
+})();
+""".strip()
+
 
 def esc(value: Any) -> str:
     return html.escape(str(value or ""), quote=True)
@@ -91,14 +127,21 @@ def site_path(*parts: str) -> str:
     return "/".join(part.strip("/") for part in parts if part)
 
 
-def format_captured_at(value: str) -> str:
+def format_absolute_date(value: str) -> str:
     if not value:
-        return "Capture date unknown."
+        return "unknown date"
     try:
         parsed = datetime.strptime(value, "%Y-%m-%d")
     except ValueError:
-        return f"Captured {value}."
-    return f"Captured {parsed:%a} {parsed:%b} {parsed.day} {parsed:%Y}."
+        return value
+    return f"{parsed:%b} {parsed.day}, {parsed:%Y}"
+
+
+def capture_time_html(value: str) -> str:
+    fallback = format_absolute_date(value)
+    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value or ""):
+        return f'Captured <relative-time datetime="{esc(value)}" title="{esc(fallback)}">{esc(fallback)}</relative-time>'
+    return f"Captured {esc(fallback)}"
 
 
 def icon_url_for_host(host: str) -> str:
@@ -163,7 +206,7 @@ def listing_records() -> list[dict[str, Any]]:
                 "role": role,
                 "company": company,
                 "captured_at": str(metadata.get("captured_at") or ""),
-                "captured_label": format_captured_at(str(metadata.get("captured_at") or "")),
+                "captured_time_html": capture_time_html(str(metadata.get("captured_at") or "")),
                 "status": str(metadata.get("status") or ""),
                 "source_url": source_url,
                 "icon_url": icon_url_for_source(company, source_url),
@@ -263,6 +306,7 @@ def layout(title: str, body: str, description: str = "Job listing archive") -> s
 </head>
 <body>
 {body}
+<script>{RELATIVE_TIME_JS}</script>
 </body>
 </html>
 """
@@ -284,7 +328,7 @@ def source_card(source: dict[str, str]) -> str:
 def listing_card(record: dict[str, Any]) -> str:
     href = site_path(record["page_path"])
     source_label = url_label(record.get("source_url", ""))
-    meta_html = f"<span>{esc(record['captured_label'])}</span>"
+    meta_html = f"<span>{record['captured_time_html']}</span>"
     if source_label:
         meta_html += f"<span class=\"source-host\">{esc(source_label)}</span>"
     return f"""<a class="card listing-card" href="{esc(href)}">
@@ -403,7 +447,7 @@ def build_listing_page(record: dict[str, Any]) -> str:
     <div>
       <span class="card-kicker">{esc(record['company'])}</span>
       <h1>{esc(record['role'])}</h1>
-      <p class="muted">{esc(record['captured_label'])}</p>
+      <p class="muted">{record['captured_time_html']}</p>
     </div>
   </div>
 </header>
