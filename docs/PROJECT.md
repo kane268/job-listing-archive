@@ -6,11 +6,7 @@ This repo started as a formal version of a personal habit: saving interesting te
 
 The goal is not to build a job-search CRM, scraper, or application tracker. The goal is a durable public-safe archive where interesting roles can be captured quickly, normalized later, and analyzed only when there is enough data.
 
-Initial imported files came from:
-
-```text
-a local import folder
-```
+Initial imported files came from a local import folder configured outside the repository.
 
 Those files were mostly Safari-generated PDFs, plus one saved Apple page. The import scripts preserve original file names, macOS file creation times when available, PDF metadata when available, raw artifacts, extracted text, and a generated listing record.
 
