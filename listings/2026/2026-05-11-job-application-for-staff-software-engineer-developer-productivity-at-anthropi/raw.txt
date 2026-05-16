@@ -1,0 +1,328 @@
+--- Page 1 ---
+Back to jobs
+Staff+ Software Engineer,
+Developer ProductivitySan Francisco, CA | New York City, NY | Seattle, WA
+About Anthropic
+Anthropic’s mission is to create reliable, interpretable, and steerable AI systems.
+We want AI to be safe and beneﬁcial for our users and for society as a whole. Our
+team is a quickly growing group of committed researchers, engineers, policy
+experts, and business leaders working together to build beneﬁcial AI systems.
+About the Role
+Anthropic's Infrastructure organization is foundational to our mission of
+developing AI systems that are reliable, interpretable, and steerable. The systems
+we build determine how quickly we can train new models, how reliably we can run
+safety experiments, and how effectively we can scale Claude to millions of users —
+demonstrating that safe, reliable infrastructure and frontier capabilities can go
+hand in hand.
+Developer Productivity owns the end-to-end experience of how engineers and
+Apply
+https://job-boards.greenhouse.io/anthropic/jobs/5110511008 5/11/26, 3:45 AM
+Page 1 of 13
+
+--- Page 2 ---
+researchers at Anthropic develop, build, test, and ship code at scale — from the
+source control and language ecosystems that underpin our monorepo, to the build
+and CI infrastructure that keeps thousands of daily builds running reliably across
+multiple cloud providers, to the developer acceleration tooling that deeply
+integrates Claude into engineering workﬂows.
+Team Matching: Team matching is determined after the interview process based on
+interview performance, interests, and business priorities. Please note we may also
+consider you for different Infrastructure teams. 
+Responsibilities:
+Own the technical strategy and roadmap for your area, translating team-level
+goals into concrete execution plans
+Deﬁne infrastructure architecture, ensuring the hardest problems get solved
+— whether by you directly or by working through others
+Design and build scalable, reliable distributed infrastructure and shared
+libraries that support high-volume workloads across all engineering teams
+Own and evolve build environments, package management, and dependency
+systems to enable fast, reproducible builds
+Deﬁne and implement language ecosystem standards, tooling, and
+frameworks that drive developer productivity across research and
+production workloads
+You may be a good ﬁt if you:
+Have deep experience with build systems, CI/CD pipelines, and/or developer
+tooling in a large monorepo environment
+Have strong proﬁciency in Python, Rust and/or Go
+Are obsessed with developer productivity and reducing friction in the
+software development lifecycle
+Have experience with container orchestration and infrastructure at scale
+Have excellent communication skills and enjoy supporting internal partners
+https://job-boards.greenhouse.io/anthropic/jobs/5110511008 5/11/26, 3:45 AM
+Page 2 of 13
+
+--- Page 3 ---
+to improve their development experience
+Are excited about designing foundational systems and are comfortable
+working independently on ambiguous, high-impact technical challenges
+Strong candidates may have:
+15+ years (not including internships or co-ops) of experience in a Software
+Engineer role, building and operating large-scale developer infrastructure
+3+ years (not including internships or co-ops) of experience leading large
+scale complex projects or teams as a tech lead
+Experience with CI orchestration tools (Buildkite, Jenkins, GitHub Actions, or
+similar) and merge queue management at scale
+Experience building or operating remote build execution systems (Bazel
+Remote Execution API, BuildBarn, BuildBuddy, or similar)
+Experience with Nix/NixOS/Docker and managing large image / package
+sets at scale
+Experience building CLI tools, developer-facing services, and GitHub API and
+automation workﬂows
+Deadline to apply: None. Applications will be reviewed on a rolling basis.
+The annual compensation range for this role is listed below. 
+For sales roles, the range provided is the role’s On Target Earnings ("OTE") range,
+meaning that the range includes both the sales commissions/sales bonuses target
+and annual base salary for the role.
+Annual Salary:
+$405,000 - $625,000 USD
+Logistics
+https://job-boards.greenhouse.io/anthropic/jobs/5110511008 5/11/26, 3:45 AM
+Page 3 of 13
+
+--- Page 4 ---
+Minimum education: Bachelor’s degree or an equivalent combination of
+education, training, and/or experience
+Required ﬁeld of study: A ﬁeld relevant to the role as demonstrated through
+coursework, training, or professional experience
+Minimum years of experience: Years of experience required will correlate with
+the internal job level requirements for the position
+Location-based hybrid policy: Currently, we expect all staff to be in one of our
+ofﬁces at least 25% of the time. However, some roles may require more time in our
+ofﬁces.
+Visa sponsorship: We do sponsor visas! However, we aren't able to successfully
+sponsor visas for every role and every candidate. But if we make you an offer, we
+will make every reasonable effort to get you a visa, and we retain an immigration
+lawyer to help with this.
+We encourage you to apply even if you do not believe you meet every single
+qualiﬁcation. Not all strong candidates will meet every single qualiﬁcation as
+listed.  Research shows that people who identify as being from underrepresented
+groups are more prone to experiencing imposter syndrome and doubting the
+strength of their candidacy, so we urge you not to exclude yourself prematurely
+and to submit an application if you're interested in this work. We think AI systems
+like the ones we're building have enormous social and ethical implications. We
+think this makes representation even more important, and we strive to include a
+range of diverse perspectives on our team.
+Your safety matters to us. To protect yourself from potential scams, remember
+that Anthropic recruiters only contact you from @anthropic.com email addresses.
+In some cases, we may partner with vetted recruiting agencies who will identify
+themselves as working on behalf of Anthropic. Be cautious of emails from other
+domains. Legitimate Anthropic recruiters will never ask for money, fees, or
+banking information before your ﬁrst day. If you're ever unsure about a
+communication, don't click any links—visit anthropic.com/careers directly for
+https://job-boards.greenhouse.io/anthropic/jobs/5110511008 5/11/26, 3:45 AM
+Page 4 of 13
+
+--- Page 5 ---
+conﬁrmed position openings.
+How we're different
+We believe that the highest-impact AI research will be big science. At Anthropic
+we work as a single cohesive team on just a few large-scale research efforts. And
+we value impact — advancing our long-term goals of steerable, trustworthy AI —
+rather than work on smaller and more speciﬁc puzzles. We view AI research as an
+empirical science, which has as much in common with physics and biology as with
+traditional efforts in computer science. We're an extremely collaborative group,
+and we host frequent research discussions to ensure that we are pursuing the
+highest-impact work at any given time. As such, we greatly value communication
+skills.
+The easiest way to understand our research directions is to read our recent
+research. This research continues many of the directions our team worked on
+prior to Anthropic, including: GPT-3, Circuit-Based Interpretability, Multimodal
+Neurons, Scaling Laws, AI & Compute, Concrete Problems in AI Safety, and
+Learning from Human Preferences.
+Come work with us!
+Anthropic is a public beneﬁt corporation headquartered in San Francisco. We offer
+competitive compensation and beneﬁts, optional equity donation matching,
+generous vacation and parental leave, ﬂexible working hours, and a lovely ofﬁce
+space in which to collaborate with colleagues. Guidance on Candidates' AI
+Usage: Learn about our policy for using AI in our application process
+Create a Job Alert
+Interested in building your career at Anthropic? Get future
+opportunities sent straight to your email.
+Create alert
+https://job-boards.greenhouse.io/anthropic/jobs/5110511008 5/11/26, 3:45 AM
+Page 5 of 13
+
+--- Page 6 ---
+Apply for this job
+*indicates a required ﬁeld
+Country
+Resume/CV*
+Accepted ﬁle types: pdf, doc, docx, txt, rtf
+First Name*
+Last Name*
+Email*
+Phone
+Attach
+Dropbox
+Google Drive
+Enter manually
+Where can we learn more about you?
+https://job-boards.greenhouse.io/anthropic/jobs/5110511008 5/11/26, 3:45 AM
+Page 6 of 13
+
+--- Page 7 ---
+LinkedIn, GitHub, Personal Websites, etc. 
+Are you open to relocation for this role? *
+Are you open to working in-person in one of our ofﬁces 25% of the time?*
+How do you pronounce your name?
+AI Policy for Application*
+We believe that AI will have a transformative impact on the world, and we’re seeking
+exceptional candidates who collaborate thoughtfully with Claude to realize this vision. At
+the same time, we want to understand your unique skills, expertise, and perspective
+through our hiring process. We invite you to review our AI partnership guidelines for
+candidates and conﬁrm your understanding by selecting “Yes.”
+Have you ever interviewed at Anthropic before?*
+When is the earliest you would want to start working with us?
+Do you have any deadlines or timeline considerations we should be aware of?
+Select...
+What is the address from which you plan on working? If you would need to relocate,
+please type "relocating".
+Select...
+(Optional) Personal Preferences
+Select...
+Select...
+https://job-boards.greenhouse.io/anthropic/jobs/5110511008 5/11/26, 3:45 AM
+Page 7 of 13
+
+--- Page 8 ---
+Do you require visa sponsorship?*
+Will you now or will you in the future require employment visa sponsorship to work in the
+country in which the job you're applying for is located? *
+Why do you want to work at Anthropic? (We value this response highly - great answers are
+often 200-400 words.). Before you click submit, here are some resources about our mission
+and approach to AI safety. We'd love to hear what resonates.
+Anthropic's commitment to American AI leadership
+Building Anthropic | A conversation with our co-founders
+Core Views on AI Safety
+Add a cover letter or anything else you want to share.
+How many years of industry experience in a full-time Software Engineer role (does not
+include internships and co-ops) do you have?*
+Select...
+Select...
+Why Anthropic?*
+Additional Information
+Select...
+Which programming language would you likely use for a coding interview? *
+https://job-boards.greenhouse.io/anthropic/jobs/5110511008 5/11/26, 3:45 AM
+Page 8 of 13
+
+--- Page 9 ---
+Note: we do NOT do LeetCode-style interviews here. Our coding interviews are designed to
+reﬂect the kind of work you'd actually do on the job, so please pick the language you know
+best and feel most conﬁdent in.
+Voluntary Self-Identification
+For government reporting purposes, we ask candidates to respond to the below
+self-identiﬁcation survey. Completion of the form is entirely voluntary. Whatever
+your decision, it will not be considered in the hiring process or thereafter. Any
+information that you do provide will be recorded and maintained in a conﬁdential
+ﬁle.
+As set forth in Anthropic’s Equal Employment Opportunity policy, we do not
+discriminate on the basis of any protected group status under any applicable law.
+Gender
+Are you Hispanic/Latino?
+Race & Ethnicity Deﬁnitions
+If you believe you belong to any of the categories of protected veterans listed
+below, please indicate by making the appropriate selection. As a government
+contractor subject to the Vietnam Era Veterans Readjustment Assistance Act
+(VEVRAA), we request this information in order to measure the effectiveness of the
+outreach and positive recruitment efforts we undertake pursuant to VEVRAA.
+Classiﬁcation of protected categories is as follows:
+Which programming language would you likely use for a coding interview? *
+Select...
+Select...
+https://job-boards.greenhouse.io/anthropic/jobs/5110511008 5/11/26, 3:45 AM
+Page 9 of 13
+
+--- Page 10 ---
+A "disabled veteran" is one of the following: a veteran of the U.S. military, ground,
+naval or air service who is entitled to compensation (or who but for the receipt of
+military retired pay would be entitled to compensation) under laws administered
+by the Secretary of Veterans Affairs; or a person who was discharged or released
+from active duty because of a service-connected disability.
+A "recently separated veteran" means any veteran during the three-year period
+beginning on the date of such veteran's discharge or release from active duty in
+the U.S. military, ground, naval, or air service.
+An "active duty wartime or campaign badge veteran" means a veteran who served
+on active duty in the U.S. military, ground, naval or air service during a war, or in a
+campaign or expedition for which a campaign badge has been authorized under
+the laws administered by the Department of Defense.
+An "Armed forces service medal veteran" means a veteran who, while serving on
+active duty in the U.S. military, ground, naval or air service, participated in a
+United States military operation for which an Armed Forces service medal was
+awarded pursuant to Executive Order 12985.
+Veteran Status
+Voluntary Self-Identification of Disability
+Form CC-305
+Page 1 of 1
+OMB Control Number 1250-0005
+Expires 04/30/2026
+Why are you being asked to complete this form?
+We are a federal contractor or subcontractor. The law requires us to provide equal
+employment opportunity to qualiﬁed people with disabilities. We have a goal of
+having at least 7% of our workers as people with disabilities. The law says we must
+Select...
+https://job-boards.greenhouse.io/anthropic/jobs/5110511008 5/11/26, 3:45 AM
+Page 10 of 13
+
+--- Page 11 ---
+measure our progress towards this goal. To do this, we must ask applicants and
+employees if they have a disability or have ever had one. People can become
+disabled, so we need to ask this question at least every ﬁve years.
+Completing this form is voluntary, and we hope that you will choose to do so. Your
+answer is conﬁdential. No one who makes hiring decisions will see it. Your decision
+to complete the form and your answer will not harm you in any way. If you want to
+learn more about the law or this form, visit the U.S. Department of Labor’s Ofﬁce
+of Federal Contract Compliance Programs (OFCCP) website at www.dol.gov/ofccp.
+How do you know if you have a disability?
+A disability is a condition that substantially limits one or more of your “major life
+activities.” If you have or have ever had such a condition, you are a person with a
+disability. Disabilities include, but are not limited to:
+Alcohol or other substance use disorder (not currently using drugs illegally)
+Autoimmune disorder, for example, lupus, ﬁbromyalgia, rheumatoid arthritis,
+HIV/AIDS
+Blind or low vision
+Cancer (past or present)
+Cardiovascular or heart disease
+Celiac disease
+Cerebral palsy
+Deaf or serious difﬁculty hearing
+Diabetes
+Disﬁgurement, for example, disﬁgurement caused by burns, wounds,
+accidents, or congenital disorders
+Epilepsy or other seizure disorder
+Gastrointestinal disorders, for example, Crohn's Disease, irritable bowel
+syndrome
+Intellectual or developmental disability
+Mental health conditions, for example, depression, bipolar disorder, anxiety
+disorder, schizophrenia, PTSD
+Missing limbs or partially missing limbs
+https://job-boards.greenhouse.io/anthropic/jobs/5110511008 5/11/26, 3:45 AM
+Page 11 of 13
+
+--- Page 12 ---
+Mobility impairment, beneﬁting from the use of a wheelchair, scooter, walker,
+leg brace(s) and/or other supports
+Nervous system condition, for example, migraine headaches, Parkinson’s
+disease, multiple sclerosis (MS)
+Neurodivergence, for example, attention-deﬁcit/hyperactivity disorder
+(ADHD), autism spectrum disorder, dyslexia, dyspraxia, other learning
+disabilities
+Partial or complete paralysis (any cause)
+Pulmonary or respiratory conditions, for example, tuberculosis, asthma,
+emphysema
+Short stature (dwarﬁsm)
+Traumatic brain injury
+Disability Status
+PUBLIC BURDEN STATEMENT: According to the Paperwork Reduction Act of 1995
+no persons are required to respond to a collection of information unless such
+collection displays a valid OMB control number. This survey should take about 5
+minutes to complete.
+Powered by
+Select...
+Submit application
+https://job-boards.greenhouse.io/anthropic/jobs/5110511008 5/11/26, 3:45 AM
+Page 12 of 13
+
+--- Page 13 ---
+https://job-boards.greenhouse.io/anthropic/jobs/5110511008 5/11/26, 3:45 AM
+Page 13 of 13

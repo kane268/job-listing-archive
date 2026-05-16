@@ -1,0 +1,207 @@
+--- Page 1 ---
+Roles at Stripe Role details/
+Developer Experience
+Engineer
+Who we are
+About Privy
+Our mission is to make privacy and user ownership the default
+online. We build simple, flexible developer tooling that make it easy
+to build products that put users first. By leveraging modern
+cryptography, we shift the status quo around digital ownership and
+protect the accounts and assets of millions of users.
+Engineering at Privy is not just about writing world-class code. We
+create software that turns complex technical systems into delightful
+Office locations
+New York Privy HQ
+Te a m
+Operations
+Job type
+Full time
+Apply for this role 
+JOBS
+
+--- Page 2 ---
+developer tools. We assemble tried-and-true primitives into intuitive,
+responsive APIs and beautiful interfaces. We believe in open-source
+work and transparency with our teammates and users. We
+encourage each other to think big, run experiments and follow our
+curiosity so we can build better tooling that lets developers shine
+and empower their users.
+Learn more about Privy: Privy and Stripe: Bringing crypto to
+everyone
+What you’ll do
+As our first Developer Experience Engineer hire at Privy, you will
+bridge the gaps between our product and developer community. You
+will be responsible for improving developer experience, reducing
+support burden through proactive education, and building
+developer advocacy initiatives to drive adoption and engagement of
+our product. Customer obsession is a core part of Privy’s culture.
+You’ll work closely with fellow engineers, product , and business
+teams to ensure Privy's customers needs are met. 
+Responsibilities
+Create and maintain code samples, starter repos, and recipes
+that help developers integrate our product effectively
+Establish and create a regular cadence of developer-focused
+content (blog posts, video tutorials, code samples)
+Collaborate with internal teams to organize our documentation,
+prioritize content gaps and improvements, and gather developer
+feedback on all content effectiveness.
+Engage with the developer community through industry events,
+hackathons, and other channels.
+
+--- Page 3 ---
+Who you are
+Minimum requirements
+Preferred qualifications
+Office-assigned Stripes spend at least 50% of the time in a
+given month in their local office or with users. This hits a
+balance between bringing people together for in-person
+collaboration and learning from each other, while supporting
+flexibility about how to do this in a way that makes sense for
+individuals and their teams.
+6+ years of experience in a developer advocacy, technical
+evangelism, technical writing or similar role.
+Adept programming skills and a deep understanding of the
+technologies the company uses. 
+Excellent written and verbal communication skills, with the ability
+to explain complex concepts in a clear and concise manner. 
+Passion for building and engaging with developer communities. 
+Strong problem solving skills, identify and solve technical
+challenges. 
+Ability to build relationships, collaborate with others, and work
+effectively in a team environment. 
+Strong preference for experience in an API-based business and
+in payments, fintech, or crypto.
+Hybrid work at Stripe
+Pay and benefits
+
+--- Page 4 ---
+The annual US base salary range for this role is $175,200 -
+$262,800. For sales roles, the range provided is the role’s On
+Target Earnings ("OTE") range, meaning that the range
+includes both the sales commissions/sales bonuses target
+and annual base salary for the role. This salary range may be
+inclusive of several career levels at Stripe and will be
+narrowed during the interview process based on a number of
+factors, including the candidate’s experience, qualifications,
+and location. Applicants interested in this role and who are
+not located in the US may request the annual salary range for
+their location during the interview process.
+Additional benefits for this role may include: equity, company
+bonus or sales commissions/bonuses; 401(k) plan; medical,
+dental, and vision benefits; and wellness stipends.
+Pay and benefits
+
+--- Page 5 ---
+At Stripe, we're looking for people with passion, grit, and
+integrity. You're encouraged to apply even if your
+experience doesn't precisely match the job description.
+Your skills and passion will stand out—and set you apar t—
+especially if your career has taken some extraordinary
+twists and turns. At Stripe, we welcome diverse
+perspectives and people who think rigorously and aren't
+afraid to challenge assumptions. Join us.
+Apply Now 
+We look forward to hearing from you
+United
+States
+(English)
+Products &
+pricing
+Pricing
+Atlas
+Billing
+Capital
+Checkout
+Climate
+Connect
+Data Pipeline
+Elements
+Financial
+Connections
+Identity
+Solutions
+Startups
+Enterprises
+SaaS
+Platforms
+Ecommerce
+Marketplaces
+Crypto
+Creator
+economy
+AI companies
+Embedded
+finance
+Global
+Resources
+Guides
+Customer
+stories
+Blog
+Annual
+conference
+Privacy & terms
+Prohibited &
+restricted
+businesses
+Licenses
+Sitemap
+Cookie settings
+Your privacy
+
+--- Page 6 ---
+Sign in 
+Invoicing
+Issuing
+Link
+Payments
+Payment Links
+Payouts
+Radar
+Revenue
+Recognition
+Sigma
+Ta x
+Te r m i n a l
+Treasur y
+businesses
+Finance
+automation
+Insurance
+Media and
+Entertainment
+Nonprofits
+Retail
+Integrations &
+custom
+solutions
+Stripe App
+Marketplace
+Partner
+ecosystem
+Professional
+services
+Developers
+Documentation
+API reference
+API status
+API changelog
+Stripe Apps
+choices
+Coverage
+transparency
+More resources
+Company
+Jobs
+Newsroom
+Stripe Press
+Contact sales
+Support
+Get support
+Managed
+support plans
+CA residents:
++1 888 926 2289
+© 2025 Stripe,
+Inc.

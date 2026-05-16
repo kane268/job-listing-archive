@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Job listing archive</title>
+  <style>
+    :root { color-scheme: light dark; --bg: #fff; --fg: #111; --muted: #666; --border: #d8d8d8; --surface: #f7f7f7; --accent: #111; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #111; --fg: #f2f2f2; --muted: #aaa; --border: #333; --surface: #1a1a1a; --accent: #f2f2f2; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 16px; max-width: 940px; font: 16px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--fg); background: var(--bg); }
+    header { margin-bottom: 20px; }
+    h1 { margin: 0 0 6px; font-size: 1.65rem; }
+    h2 { margin: 0 0 10px; font-size: 1.1rem; }
+    p { margin: 0 0 10px; }
+    a { color: inherit; }
+    .muted { color: var(--muted); }
+    .grid { display: grid; gap: 14px; }
+    .panel { border: 1px solid var(--border); border-radius: 8px; padding: 14px; background: var(--surface); }
+    label { display: grid; gap: 5px; margin-bottom: 10px; font-weight: 600; }
+    input, textarea, button { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 10px; font: inherit; color: var(--fg); background: var(--bg); }
+    textarea { min-height: 88px; resize: vertical; }
+    button { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; cursor: pointer; }
+    button.secondary { background: var(--bg); color: var(--fg); border-color: var(--border); }
+    .row { display: grid; gap: 10px; }
+    .source, .listing { display: grid; gap: 7px; padding: 12px 0; border-top: 1px solid var(--border); }
+    .source:first-child, .listing:first-child { border-top: 0; padding-top: 0; }
+    .source-title, .listing-title { font-weight: 700; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { border: 1px solid var(--border); border-radius: 999px; padding: 2px 7px; color: var(--muted); font-size: .82rem; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .actions a { border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px; text-decoration: none; background: var(--bg); }
+    .empty { color: var(--muted); padding: 8px 0; }
+    @media (min-width: 760px) { body { padding: 28px; } .grid.two { grid-template-columns: minmax(0, 1fr) minmax(280px, .75fr); align-items: start; } .row.two { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Job listing archive</h1>
+    <p class="muted">Quick capture and recurring sources. Keep notes public-safe.</p>
+  </header>
+
+  <main class="grid two">
+    <section class="panel" aria-labelledby="capture-title">
+      <h2 id="capture-title">Capture a listing</h2>
+      <p class="muted">This opens a prefilled GitHub issue. The workflow fetches the page and commits the listing.</p>
+      <form id="capture-form">
+        <label>Listing URL
+          <input id="source-url" name="url" type="url" inputmode="url" autocomplete="url" placeholder="https://..." required>
+        </label>
+        <div class="row two">
+          <label>Company, optional
+            <input id="company" name="company" autocomplete="organization" placeholder="Anthropic">
+          </label>
+          <label>Role, optional
+            <input id="role-title" name="role" placeholder="Staff Software Engineer">
+          </label>
+        </div>
+        <label>Public-safe note, optional
+          <textarea id="why" name="why" placeholder="Why this is interesting. Do not paste private notes or full listing text."></textarea>
+        </label>
+        <button type="submit">Open capture issue</button>
+      </form>
+    </section>
+
+    <section class="panel" aria-labelledby="recent-title">
+      <h2 id="recent-title">Recent captures</h2>
+      <div id="recent-listings" class="muted">Loading...</div>
+    </section>
+  </main>
+
+  <section class="panel" style="margin-top:14px" aria-labelledby="sources-title">
+    <h2 id="sources-title">Places to look</h2>
+    <label>Filter sources
+      <input id="source-filter" type="search" placeholder="company, tag, URL">
+    </label>
+    <div id="sources" class="muted">Loading...</div>
+  </section>
+
+  <script>
+    const REPO_URL = 'https://github.com/kane268/job-listing-archive';
+
+    function esc(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    }
+
+    function parseCsv(text) {
+      const rows = [];
+      let row = [], value = '', quoted = false;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i], next = text[i + 1];
+        if (quoted) {
+          if (ch === '"' && next === '"') { value += '"'; i++; }
+          else if (ch === '"') quoted = false;
+          else value += ch;
+        } else if (ch === '"') quoted = true;
+        else if (ch === ',') { row.push(value); value = ''; }
+        else if (ch === '\n') { row.push(value); rows.push(row); row = []; value = ''; }
+        else if (ch !== '\r') value += ch;
+      }
+      if (value || row.length) { row.push(value); rows.push(row); }
+      const header = rows.shift() || [];
+      return rows.filter(r => r.length && r.some(Boolean)).map(r => Object.fromEntries(header.map((key, i) => [key, r[i] || ''])));
+    }
+
+    function buildIssueBody(fields) {
+      return [
+        ['Source URL', fields.url],
+        ['Company', fields.company],
+        ['Role title', fields.roleTitle],
+        ['Public note', fields.why]
+      ].map(([label, value]) => `### ${label}\n\n${value?.trim() || '_No response_'}`).join('\n\n');
+    }
+
+    document.getElementById('capture-form').addEventListener('submit', event => {
+      event.preventDefault();
+      const fields = {
+        url: document.getElementById('source-url').value,
+        company: document.getElementById('company').value,
+        roleTitle: document.getElementById('role-title').value,
+        why: document.getElementById('why').value
+      };
+      const titleParts = [fields.roleTitle, fields.company].filter(Boolean);
+      const title = titleParts.length ? `Capture: ${titleParts.join(' - ')}` : `Capture: ${fields.url}`;
+      const params = new URLSearchParams({ title, labels: 'inbox', body: buildIssueBody(fields) });
+      window.location.href = `${REPO_URL}/issues/new?${params.toString()}`;
+    });
+
+    function sourceCard(source) {
+      const tags = (source.tags || '').split(',').map(tag => tag.trim()).filter(Boolean);
+      const urlValue = source.url || '#';
+      const captureUrl = new URL(location.href);
+      captureUrl.searchParams.set('capture', urlValue);
+      captureUrl.searchParams.set('company', source.name || '');
+      return `<article class="source">
+        <div class="source-title">${esc(source.name || source.id)}</div>
+        <div><a href="${esc(urlValue)}" target="_blank" rel="noreferrer">${esc(urlValue)}</a></div>
+        ${source.notes ? `<div class="muted">${esc(source.notes)}</div>` : ''}
+        ${tags.length ? `<div class="chips">${tags.map(tag => `<span class="chip">${esc(tag)}</span>`).join('')}</div>` : ''}
+        <div class="actions"><a href="${esc(urlValue)}" target="_blank" rel="noreferrer">Open</a><a href="${esc(captureUrl.toString())}">Use in capture form</a></div>
+      </article>`;
+    }
+
+    function renderSources(sources) {
+      const container = document.getElementById('sources');
+      const filter = document.getElementById('source-filter');
+      function render() {
+        const query = filter.value.trim().toLowerCase();
+        const active = sources.filter(source => (source.status || 'active').toLowerCase() === 'active');
+        const matches = active.filter(source => !query || [source.name, source.url, source.tags, source.notes].join(' ').toLowerCase().includes(query));
+        container.className = '';
+        container.innerHTML = matches.length ? matches.map(sourceCard).join('') : '<div class="empty">No matching sources.</div>';
+      }
+      filter.addEventListener('input', render);
+      render();
+    }
+
+    function renderRecent(rows) {
+      const container = document.getElementById('recent-listings');
+      const recent = rows
+        .filter(row => row.id)
+        .sort((a, b) => String(b.captured_at).localeCompare(String(a.captured_at)))
+        .slice(0, 8);
+      container.className = '';
+      container.innerHTML = recent.length ? recent.map(row => {
+        const title = [row.role_title || 'Unknown role', row.company || 'Unknown company'].join(' - ');
+        const listingUrl = `${REPO_URL}/blob/main/${row.listing_path}`;
+        return `<article class="listing">
+          <div class="listing-title">${esc(title)}</div>
+          <div class="muted">${esc(row.captured_at || '')} · ${esc(row.status || '')}</div>
+          <div class="actions">
+            ${row.source_url ? `<a href="${esc(row.source_url)}" target="_blank" rel="noreferrer">Source</a>` : ''}
+            <a href="${esc(listingUrl)}" target="_blank" rel="noreferrer">Record</a>
+          </div>
+        </article>`;
+      }).join('') : '<div class="empty">No captures yet.</div>';
+    }
+
+    async function load() {
+      const params = new URLSearchParams(location.search);
+      if (params.has('capture')) document.getElementById('source-url').value = params.get('capture') || '';
+      if (params.has('company')) document.getElementById('company').value = params.get('company') || '';
+
+      try {
+        const sourcePayload = await fetch('data/job-sources.json', { cache: 'no-store' }).then(res => res.json());
+        renderSources(sourcePayload.sources || []);
+      } catch (error) {
+        document.getElementById('sources').textContent = 'Could not load job sources.';
+      }
+
+      try {
+        const indexText = await fetch('data/index.csv', { cache: 'no-store' }).then(res => res.text());
+        renderRecent(parseCsv(indexText));
+      } catch (error) {
+        document.getElementById('recent-listings').textContent = 'Could not load recent captures.';
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>

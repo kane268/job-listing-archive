@@ -1,0 +1,102 @@
+name: Capture listing
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Job listing URL
+        required: true
+        type: string
+      company:
+        description: Optional company override
+        required: false
+        type: string
+      role_title:
+        description: Optional role title override
+        required: false
+        type: string
+      why:
+        description: Optional public-safe note
+        required: false
+        type: string
+  issues:
+    types: [opened, edited, labeled]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: capture-listing-${{ github.event.issue.number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    name: Capture listing
+    if: github.event_name == 'workflow_dispatch' || (github.actor == 'kane268' && contains(github.event.issue.body, 'Source URL'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Capture workflow input
+        if: github.event_name == 'workflow_dispatch'
+        id: capture_dispatch
+        env:
+          CAPTURE_URL: ${{ inputs.url }}
+          CAPTURE_COMPANY: ${{ inputs.company }}
+          CAPTURE_ROLE_TITLE: ${{ inputs.role_title }}
+          CAPTURE_WHY: ${{ inputs.why }}
+        run: |
+          python3 scripts/capture_url.py "$CAPTURE_URL" \
+            --company "$CAPTURE_COMPANY" \
+            --role-title "$CAPTURE_ROLE_TITLE" \
+            --why "$CAPTURE_WHY" \
+            --issue-url "workflow_dispatch:${{ github.run_id }}"
+
+      - name: Capture issue
+        if: github.event_name == 'issues'
+        id: capture_issue
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+        run: |
+          issue_body_file="$RUNNER_TEMP/issue-body.md"
+          printf '%s' "$ISSUE_BODY" > "$issue_body_file"
+          python3 scripts/capture_url.py \
+            --issue-body-file "$issue_body_file" \
+            --issue-url "$ISSUE_URL"
+
+      - name: Test archive
+        run: python3 -m unittest discover -s tests
+
+      - name: Commit capture
+        run: |
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Capture job listing"
+          git push
+
+      - name: Close capture issue
+        if: github.event_name == 'issues'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          STATUS: ${{ steps.capture_issue.outputs.status }}
+          REASON: ${{ steps.capture_issue.outputs.reason }}
+          LISTING_PATH: ${{ steps.capture_issue.outputs.listing_path }}
+        run: |
+          if [[ "$STATUS" == "captured" ]]; then
+            message="Captured in \`$LISTING_PATH\`."
+          elif [[ -n "$LISTING_PATH" ]]; then
+            message="Skipped: $REASON. Existing listing: \`$LISTING_PATH\`."
+          else
+            message="Skipped: $REASON."
+          fi
+          gh issue edit "$ISSUE_NUMBER" --add-label ingested --remove-label inbox || true
+          gh issue close "$ISSUE_NUMBER" --comment "$message"
