@@ -32,32 +32,6 @@ nice_to_haves: []
 
 # Staff Engineer, Experimentation Platform - Stripe
 
-## Why I saved this
-
-TODO
-
-## Responsibilities
-
-TODO
-
-## Requirements
-
-### Explicitly required
-
-- TODO
-
-### Implied
-
-- TODO
-
-### Nice-to-have
-
-- TODO
-
-## My notes
-
-TODO
-
 ## Import notes
 
 - Original file: `Stripe Staff Engineer, Experimentation Platform.pdf`

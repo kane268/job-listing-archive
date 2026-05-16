@@ -31,31 +31,7 @@ nice_to_haves: []
 
 # Software Engineer, System Experience - Apple
 
-## Why I saved this
-
-TODO
-
-## Responsibilities
-
-TODO
-
-## Requirements
-
-### Explicitly required
-
-- TODO
-
-### Implied
-
-- TODO
-
-### Nice-to-have
-
-- TODO
-
-## My notes
-
-TODO
+Source: https://jobs.apple.com/en-us/details/200602358/software-engineer-system-experience
 
 ## Import notes
 

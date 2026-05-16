@@ -29,31 +29,7 @@ nice_to_haves: []
 
 # Job Application for Staff+ Software Engineer, Developer Productivity at Anthropi - Unknown company
 
-## Why I saved this
-
-TODO
-
-## Responsibilities
-
-TODO
-
-## Requirements
-
-### Explicitly required
-
-- TODO
-
-### Implied
-
-- TODO
-
-### Nice-to-have
-
-- TODO
-
-## My notes
-
-TODO
+Source: https://job-boards.greenhouse.io/anthropic/jobs/5110511008
 
 ## Import notes
 

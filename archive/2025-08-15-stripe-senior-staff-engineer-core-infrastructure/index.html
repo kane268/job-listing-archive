@@ -4,19 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="Captured text for Senior Staff Engineer, Core Infrastructure - Stripe">
+  <meta name="description" content="Captured Markdown for Senior Staff Engineer, Core Infrastructure - Stripe">
   <title>Senior Staff Engineer, Core Infrastructure - Stripe</title>
-  <style>:root { color-scheme: light dark; --bg: #fff; --fg: #111; --muted: #606060; --border: #d7d7d7; --surface: #f7f7f7; --accent: #111; --accent-fg: #fff; }
-@media (prefers-color-scheme: dark) { :root { --bg: #101010; --fg: #f3f3f3; --muted: #ababab; --border: #333; --surface: #191919; --accent: #f3f3f3; --accent-fg: #101010; } }
+  <style>:root { color-scheme: light dark; --bg: #fff; --fg: #111; --muted: #5f5f5f; --border: #d7d7d7; --surface: #f7f7f7; --accent: #111; --accent-fg: #fff; --danger: #9c5a00; }
+@media (prefers-color-scheme: dark) { :root { --bg: #101010; --fg: #f3f3f3; --muted: #ababab; --border: #333; --surface: #191919; --accent: #f3f3f3; --accent-fg: #101010; --danger: #e2a34a; } }
 * { box-sizing: border-box; }
 body { margin: 0 auto; max-width: 980px; padding: 18px 14px 40px; font: 16px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--fg); background: var(--bg); }
 a { color: inherit; }
 header { margin-bottom: 18px; }
 h1 { margin: 0 0 4px; font-size: clamp(1.65rem, 6vw, 2.35rem); line-height: 1.08; }
-h2 { margin: 0 0 10px; font-size: 1.1rem; }
+h2 { margin: 0; font-size: 1.1rem; }
 p { margin: 0 0 10px; }
 .muted { color: var(--muted); }
 .panel { border: 1px solid var(--border); border-radius: 10px; padding: 14px; background: var(--surface); }
+.panel-header { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .capture-form { display: grid; gap: 10px; }
 label { display: grid; gap: 6px; font-weight: 650; }
 input, button { width: 100%; border: 1px solid var(--border); border-radius: 8px; padding: 12px; font: inherit; }
@@ -29,11 +30,19 @@ button { background: var(--accent); color: var(--accent-fg); border-color: var(-
 .card-title { display: block; margin-bottom: 3px; font-weight: 750; }
 .url, .meta { display: block; color: var(--muted); font-size: .92rem; overflow-wrap: anywhere; }
 .empty { color: var(--muted); padding: 4px 0; }
-.backup { border-color: #b36b00; }
-.backup .card-title { color: #9c5a00; }
-pre { white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid var(--border); border-radius: 10px; padding: 14px; background: var(--surface); font: .92rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.backup { border-color: var(--danger); }
+.backup .card-title { color: var(--danger); }
+.action-link, .page-actions a { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; text-decoration: none; background: var(--bg); white-space: nowrap; }
 .page-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
-.page-actions a { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; text-decoration: none; background: var(--surface); }
+.markdown { border: 1px solid var(--border); border-radius: 10px; padding: 14px; background: var(--surface); }
+.markdown h1, .markdown h2, .markdown h3, .markdown h4 { line-height: 1.18; margin: 1.2em 0 .45em; }
+.markdown h1:first-child, .markdown h2:first-child, .markdown h3:first-child { margin-top: 0; }
+.markdown h1 { font-size: 1.55rem; }
+.markdown h2 { font-size: 1.25rem; }
+.markdown h3 { font-size: 1.08rem; }
+.markdown p { margin: 0 0 .9em; }
+.markdown ul { margin: .25em 0 1em; padding-left: 1.35em; }
+.markdown li { margin: .3em 0; }
 @media (min-width: 720px) { body { padding: 28px 24px 56px; } .capture-form { grid-template-columns: minmax(0, 1fr) auto; align-items: end; } button { width: auto; min-width: 160px; } .section-grid { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: start; } }</style>
 </head>
 <body>
@@ -46,308 +55,301 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid var(--bo
 
 <nav class="page-actions" aria-label="Listing links">
   
-  <a href="../../listings/2025/2025-08-15-stripe-senior-staff-engineer-core-infrastructure/listing.md">Markdown record</a>
-  <a href="../../listings/2025/2025-08-15-stripe-senior-staff-engineer-core-infrastructure/raw.txt">Plain text file</a>
+  <a href="https://github.com/kane268/job-listing-archive/blob/main/listings/2025/2025-08-15-stripe-senior-staff-engineer-core-infrastructure/listing.md" target="_blank" rel="noreferrer">View in GitHub</a>
+  <a href="../../listings/2025/2025-08-15-stripe-senior-staff-engineer-core-infrastructure/raw.txt">Raw capture</a>
+  <a href="https://github.com/kane268/job-listing-archive/issues/new?title=Extraction+issue%3A+Senior+Staff+Engineer%2C+Core+Infrastructure+-+Stripe&amp;labels=bug%2Cneeds-text-extraction&amp;body=%23%23%23+Listing%0A%0Ahttps%3A%2F%2Fkane268.github.io%2Fjob-listing-archive%2Farchive%2F2025-08-15-stripe-senior-staff-engineer-core-infrastructure%0A%0A%23%23%23+Source+URL%0A%0A_No+source+URL+captured_%0A%0A%23%23%23+GitHub+record%0A%0Ahttps%3A%2F%2Fgithub.com%2Fkane268%2Fjob-listing-archive%2Fblob%2Fmain%2Flistings%2F2025%2F2025-08-15-stripe-senior-staff-engineer-core-infrastructure%2Flisting.md%0A%0A%23%23%23+What+looks+wrong%3F%0A%0A" target="_blank" rel="noreferrer">Report extraction issue</a>
 </nav>
 
-<section aria-labelledby="text-title">
-  <h2 id="text-title">Captured text</h2>
-  <pre>--- Page 1 ---
-Roles at Stripe Role details/
-Senior Staff Engineer,
-Core Infrastructure
-Who we are
-About Stripe
-Stripe is a financial infrastructure platform for businesses. Millions of
-companies—from the world’s largest enterprises to the most
-ambitious startups—use Stripe to accept payments, grow their
-revenue, and accelerate new business opportunities. Our mission is
-to increase the GDP of the internet, and we have a staggering
-Office locations
-New York, South San Francisco HQ, Seattle, or Chicago
-Remote locations
-Remote in United States
-Te a m
-Infrastructure &amp; Corporate T ech
-Job type
-Full time
-Apply for this role 
-JOBS
-
---- Page 2 ---
-amount of work ahead. That means you have an unprecedented
-opportunity to put the global economy within everyone’s reach while
-doing the most important work of your career.
-At Stripe, we create infrastructure and tools that drive global
-economic and technological progress. We&#x27;re committed to the long
-haul, and our vision is guided by five key objectives:
-We have an immense amount of work ahead! At Stripe, you have a
-unique opportunity to make the global economy accessible to
-everyone while doing the most impactful work of your career!
-About the team
-The Infrastructure team at Stripe is responsible for core capabilities
-that empower all Stripe product teams to deliver exceptional
-Grow Internet-Enabled Commerce: We design APIs, products,
-and infrastructure that expand the internet economy,
-empowering businesses everywhere.
-Empower Upstarts: By simplifying operations for new companies
-and leveling the playing field, we enable more startups to launch
-and compete effectively against established players.
-Accelerate Globalization: The internet dissolves physical
-boundaries. We believe anyone, whether in Niger or New York,
-should have equal opportunities to start a business and access
-services seamlessly.
-Encourage Better Products: Our goal isn&#x27;t just more commerce;
-we aim to elevate the quality of products and services. We focus
-on how Stripe is utilized, striving to be a catalyst for innovation.
-Advance Developer Tools and Infrastructure: The way Stripe’s
-services are built and deployed is crucial. Millions of businesses,
-from major enterprises to ambitious startups, rely on Stripe to
-accept payments, grow their revenue, and unlock new
-opportunities. We provide best-in-class infrastructure and tools
-to support their success.
-
---- Page 3 ---
-services. We define and drive the vision for our platform, aiming for
-optimal durability, scale, and availability while carefully balancing
-cost and recovery time. With a scale growth of 50-60% YoY , we
-maintain Stripe’s six nines of availability, all while ensuring efficiency
-and reducing the operational load of our teams.
-At Stripe, we leverage a range of cutting-edge technologies to
-deliver exceptional deployment and scalability worldwide. Our
-Compute teams utilize Linux OS, Kubernetes, and advanced cloud
-computing, while our Storage teams manage one of the largest non-
-relational and relational storage systems, crucial to all data flows at
-Stripe. Our Networking teams have effectively shielded Stripe from
-numerous large-scale DDoS attacks and improved latency for both
-internal systems and our partners. We are dedicated to continuously
-developing new distributed infrastructure capabilities and scaling
-existing technologies. By maintaining strong ties to the open-source
-community, we ensure that we stay at the forefront of infrastructure
-innovation. Through collaboration with teams within Stripe and
-across the industry and the open-source community, we aim to
-advance the state of the art in durable, reliable, scalable, efficient,
-and automated infrastructure.
-What you’ll do
-As a Senior Staff Engineer, you will play a pivotal role in defining and
-driving the evolution of Stripe’s Core Infrastructure. Your expertise
-and influence will empower our teams and the business to scale
-effectively while achieving an exceptional price/performance ratio.
-You’ll collaborate with engineers across the company to design and
-build large-scale capabilities, all while enhancing our internal
-engineering standards, tooling, and processes.
-Responsibilities
-Lead the design, planning, construction, and maintenance of
-Compute, Storage, and Networking systems utilized throughout
-Stripe.
-
---- Page 4 ---
-Who you are
-We’re looking for someone with a strong background in compute
-and/or storage/databases and/or networking cloud infrastructure
-who meets the minimum requirements to be considered for the role.
-If you meet these requirements, you are encouraged to apply. The
-preferred qualifications are a bonus, not a requirement.
-Minimum requirements
-Stripe.  
-Facilitate technical discussions and decision-making across
-Core Infrastructure, various Infrastructure teams, and Stripe&#x27;s
-platform and product teams.  
-Mentor and cultivate the next generation of technical leaders at
-Stripe.  
-Influence and participate in roadmap planning and
-prioritization.  
-Debug production issues across services and various levels of
-the stack.  
-Focus on scaling and automating infrastructure services.  
-Spearhead initiatives to enhance reliability and observability.  
-Collaborate with the leadership team to identify current and
-future infrastructure needs across Stripe, understand specific
-requirements, and prioritize both short-term and long-term
-solutions.
-BS or MS in Computer Science or a related field.
-15+ years of professional experience in a software development
-or DevOps automation role.
-A strong engineering background in distributed infrastructure
-and/or platform services, including one or more of the following:
-
---- Page 5 ---
-Preferred qualifications
-This role is available either in an office or a remote location
-(typically, 35+ miles or 56+ km from a Stripe office).
-Office-assigned Stripes spend at least 50% of the time in a
-and/or platform services, including one or more of the following:
-storage, databases, compute, networking.
-Experience leading projects on a cross-team and company-wide
-scale.
-Experience optimizing the reliability and security of distributed
-systems.
-Experience scaling and migrating systems with little to no
-downtime.
-Experience mentoring engineers at various stages in their
-careers.
-Experience developing, maintaining, and debugging distributed
-systems.
-Experience driving a culture of operational excellence, with a
-deep understanding of metrics, alerts, and dashboards.
-Experience in a development team in AWS/Azure/OCI/Google
-Experience with AWS network components (VPC, security
-groups, DNS Route 53, NLB, gateways, etc.)
-Experience with databases (MongoDB, PostgreSQL, Cassandra,
-MySQL)
-Experience with Kubernetes
-Experience with T erraform
-Hybrid work at Stripe
-
---- Page 6 ---
-given month in their local office or with users. This hits a
-balance between bringing people together for in-person
-collaboration and learning from each other, while supporting
-flexibility about how to do this in a way that makes sense for
-individuals and their teams.
-A remote location, in most cases, is defined as being 35 miles
-(56 kilometers) or more from one of our offices. While you
-would be welcome to come into the office for team/business
-meetings, on-sites, meet-ups, and events, our expectation is
-you would regularly work from home rather than a Stripe
-office. Stripe does not cover the cost of relocating to a
-remote location. We encourage you to apply for roles that
-match the location where you currently or plan to live.
-The annual US base salary range for this role is $267,000 -
-$400,400. For sales roles, the range provided is the role’s On
-Target Earnings (&quot;OTE&quot;) range, meaning that the range
-includes both the sales commissions/sales bonuses target
-and annual base salary for the role. This salary range may be
-inclusive of several career levels at Stripe and will be
-narrowed during the interview process based on a number of
-factors, including the candidate’s experience, qualifications,
-and location. Applicants interested in this role and who are
-not located in the US may request the annual salary range for
-their location during the interview process.
-Additional benefits for this role may include: equity, company
-bonus or sales commissions/bonuses; 401(k) plan; medical,
-dental, and vision benefits; and wellness stipends.
-Pay and benefits
-
---- Page 7 ---
-Please find our California applicant personal information notice here.
-The application window will remain open for 100 days after the Job Post is
-published. However, this opportunity will remain open based on the needs of
-the business, which may cause the application window to close before or after
-the 100-day mark.
-At Stripe, we&#x27;re looking for people with passion, grit, and
-integrity. You&#x27;re encouraged to apply even if your
-experience doesn&#x27;t precisely match the job description.
-Your skills and passion will stand out—and set you apar t—
-especially if your career has taken some extraordinary
-twists and turns. At Stripe, we welcome diverse
-perspectives and people who think rigorously and aren&#x27;t
-afraid to challenge assumptions. Join us.
-Apply Now 
-We look forward to hearing from you
-United
-States
-(English)
-Products &amp;
-pricing
-Pricing
-Atlas
-Billing
-Solutions
-Startups
-Enterprises
-SaaS
-Platforms
-Resources
-Guides
-Customer
-stories
-Blog
-
---- Page 8 ---
-Sign in 
-Capital
-Checkout
-Climate
-Connect
-Data Pipeline
-Elements
-Financial
-Connections
-Identity
-Invoicing
-Issuing
-Link
-Payments
-Payment Links
-Payouts
-Radar
-Revenue
-Recognition
-Sigma
-Ta x
-Te r m i n a l
-Treasur y
-Ecommerce
-Marketplaces
-Crypto
-Creator
-economy
-AI companies
-Embedded
-finance
-Global
-businesses
-Finance
-automation
-Insurance
-Media and
-Entertainment
-Nonprofits
-Retail
-Integrations &amp;
-custom
-solutions
-Stripe App
-Marketplace
-Partner
-ecosystem
-Professional
-services
-Developers
-Documentation
-API reference
-API status
-API changelog
-Stripe Apps
-Annual
-conference
-Privacy &amp; terms
-Prohibited &amp;
-restricted
-businesses
-Licenses
-Sitemap
-Cookie settings
-Your privacy
-choices
-Coverage
-transparency
-More resources
-Company
-Jobs
-Newsroom
-Stripe Press
-Contact sales
-Support
-Get support
-Managed
-support plans
-CA residents:
-+1 888 926 2289
-© 2025 Stripe,
-Inc.</pre>
-</section>
+<main class="markdown" aria-label="Rendered listing Markdown">
+<p>--- Page 1 ---<br>
+Roles at Stripe Role details/<br>
+Senior Staff Engineer,<br>
+Core Infrastructure<br>
+Who we are<br>
+About Stripe<br>
+Stripe is a financial infrastructure platform for businesses. Millions of<br>
+companies—from the world’s largest enterprises to the most<br>
+ambitious startups—use Stripe to accept payments, grow their<br>
+revenue, and accelerate new business opportunities. Our mission is<br>
+to increase the GDP of the internet, and we have a staggering<br>
+Office locations<br>
+New York, South San Francisco HQ, Seattle, or Chicago<br>
+Remote locations<br>
+Remote in United States<br>
+Te a m<br>
+Infrastructure &amp; Corporate T ech<br>
+Job type<br>
+Full time<br>
+Apply for this role<br>
+JOBS</p>
+<p>--- Page 2 ---<br>
+amount of work ahead. That means you have an unprecedented<br>
+opportunity to put the global economy within everyone’s reach while<br>
+doing the most important work of your career.<br>
+At Stripe, we create infrastructure and tools that drive global<br>
+economic and technological progress. We&#x27;re committed to the long<br>
+haul, and our vision is guided by five key objectives:<br>
+We have an immense amount of work ahead! At Stripe, you have a<br>
+unique opportunity to make the global economy accessible to<br>
+everyone while doing the most impactful work of your career!<br>
+About the team<br>
+The Infrastructure team at Stripe is responsible for core capabilities<br>
+that empower all Stripe product teams to deliver exceptional<br>
+Grow Internet-Enabled Commerce: We design APIs, products,<br>
+and infrastructure that expand the internet economy,<br>
+empowering businesses everywhere.<br>
+Empower Upstarts: By simplifying operations for new companies<br>
+and leveling the playing field, we enable more startups to launch<br>
+and compete effectively against established players.<br>
+Accelerate Globalization: The internet dissolves physical<br>
+boundaries. We believe anyone, whether in Niger or New York,<br>
+should have equal opportunities to start a business and access<br>
+services seamlessly.<br>
+Encourage Better Products: Our goal isn&#x27;t just more commerce;<br>
+we aim to elevate the quality of products and services. We focus<br>
+on how Stripe is utilized, striving to be a catalyst for innovation.<br>
+Advance Developer Tools and Infrastructure: The way Stripe’s<br>
+services are built and deployed is crucial. Millions of businesses,<br>
+from major enterprises to ambitious startups, rely on Stripe to<br>
+accept payments, grow their revenue, and unlock new<br>
+opportunities. We provide best-in-class infrastructure and tools<br>
+to support their success.</p>
+<p>--- Page 3 ---<br>
+services. We define and drive the vision for our platform, aiming for<br>
+optimal durability, scale, and availability while carefully balancing<br>
+cost and recovery time. With a scale growth of 50-60% YoY , we<br>
+maintain Stripe’s six nines of availability, all while ensuring efficiency<br>
+and reducing the operational load of our teams.<br>
+At Stripe, we leverage a range of cutting-edge technologies to<br>
+deliver exceptional deployment and scalability worldwide. Our<br>
+Compute teams utilize Linux OS, Kubernetes, and advanced cloud<br>
+computing, while our Storage teams manage one of the largest non-<br>
+relational and relational storage systems, crucial to all data flows at<br>
+Stripe. Our Networking teams have effectively shielded Stripe from<br>
+numerous large-scale DDoS attacks and improved latency for both<br>
+internal systems and our partners. We are dedicated to continuously<br>
+developing new distributed infrastructure capabilities and scaling<br>
+existing technologies. By maintaining strong ties to the open-source<br>
+community, we ensure that we stay at the forefront of infrastructure<br>
+innovation. Through collaboration with teams within Stripe and<br>
+across the industry and the open-source community, we aim to<br>
+advance the state of the art in durable, reliable, scalable, efficient,<br>
+and automated infrastructure.<br>
+What you’ll do<br>
+As a Senior Staff Engineer, you will play a pivotal role in defining and<br>
+driving the evolution of Stripe’s Core Infrastructure. Your expertise<br>
+and influence will empower our teams and the business to scale<br>
+effectively while achieving an exceptional price/performance ratio.<br>
+You’ll collaborate with engineers across the company to design and<br>
+build large-scale capabilities, all while enhancing our internal<br>
+engineering standards, tooling, and processes.<br>
+Responsibilities<br>
+Lead the design, planning, construction, and maintenance of<br>
+Compute, Storage, and Networking systems utilized throughout<br>
+Stripe.</p>
+<p>--- Page 4 ---<br>
+Who you are<br>
+We’re looking for someone with a strong background in compute<br>
+and/or storage/databases and/or networking cloud infrastructure<br>
+who meets the minimum requirements to be considered for the role.<br>
+If you meet these requirements, you are encouraged to apply. The<br>
+preferred qualifications are a bonus, not a requirement.<br>
+Minimum requirements<br>
+Stripe.<br>
+Facilitate technical discussions and decision-making across<br>
+Core Infrastructure, various Infrastructure teams, and Stripe&#x27;s<br>
+platform and product teams.<br>
+Mentor and cultivate the next generation of technical leaders at<br>
+Stripe.<br>
+Influence and participate in roadmap planning and<br>
+prioritization.<br>
+Debug production issues across services and various levels of<br>
+the stack.<br>
+Focus on scaling and automating infrastructure services.<br>
+Spearhead initiatives to enhance reliability and observability.<br>
+Collaborate with the leadership team to identify current and<br>
+future infrastructure needs across Stripe, understand specific<br>
+requirements, and prioritize both short-term and long-term<br>
+solutions.<br>
+BS or MS in Computer Science or a related field.<br>
+15+ years of professional experience in a software development<br>
+or DevOps automation role.<br>
+A strong engineering background in distributed infrastructure<br>
+and/or platform services, including one or more of the following:</p>
+<p>--- Page 5 ---<br>
+Preferred qualifications<br>
+This role is available either in an office or a remote location<br>
+(typically, 35+ miles or 56+ km from a Stripe office).<br>
+Office-assigned Stripes spend at least 50% of the time in a<br>
+and/or platform services, including one or more of the following:<br>
+storage, databases, compute, networking.<br>
+Experience leading projects on a cross-team and company-wide<br>
+scale.<br>
+Experience optimizing the reliability and security of distributed<br>
+systems.<br>
+Experience scaling and migrating systems with little to no<br>
+downtime.<br>
+Experience mentoring engineers at various stages in their<br>
+careers.<br>
+Experience developing, maintaining, and debugging distributed<br>
+systems.<br>
+Experience driving a culture of operational excellence, with a<br>
+deep understanding of metrics, alerts, and dashboards.<br>
+Experience in a development team in AWS/Azure/OCI/Google<br>
+Experience with AWS network components (VPC, security<br>
+groups, DNS Route 53, NLB, gateways, etc.)<br>
+Experience with databases (MongoDB, PostgreSQL, Cassandra,<br>
+MySQL)<br>
+Experience with Kubernetes<br>
+Experience with T erraform<br>
+Hybrid work at Stripe</p>
+<p>--- Page 6 ---<br>
+given month in their local office or with users. This hits a<br>
+balance between bringing people together for in-person<br>
+collaboration and learning from each other, while supporting<br>
+flexibility about how to do this in a way that makes sense for<br>
+individuals and their teams.<br>
+A remote location, in most cases, is defined as being 35 miles<br>
+(56 kilometers) or more from one of our offices. While you<br>
+would be welcome to come into the office for team/business<br>
+meetings, on-sites, meet-ups, and events, our expectation is<br>
+you would regularly work from home rather than a Stripe<br>
+office. Stripe does not cover the cost of relocating to a<br>
+remote location. We encourage you to apply for roles that<br>
+match the location where you currently or plan to live.<br>
+The annual US base salary range for this role is $267,000 -<br>
+$400,400. For sales roles, the range provided is the role’s On<br>
+Target Earnings (&quot;OTE&quot;) range, meaning that the range<br>
+includes both the sales commissions/sales bonuses target<br>
+and annual base salary for the role. This salary range may be<br>
+inclusive of several career levels at Stripe and will be<br>
+narrowed during the interview process based on a number of<br>
+factors, including the candidate’s experience, qualifications,<br>
+and location. Applicants interested in this role and who are<br>
+not located in the US may request the annual salary range for<br>
+their location during the interview process.<br>
+Additional benefits for this role may include: equity, company<br>
+bonus or sales commissions/bonuses; 401(k) plan; medical,<br>
+dental, and vision benefits; and wellness stipends.<br>
+Pay and benefits</p>
+<p>--- Page 7 ---<br>
+Please find our California applicant personal information notice here.<br>
+The application window will remain open for 100 days after the Job Post is<br>
+published. However, this opportunity will remain open based on the needs of<br>
+the business, which may cause the application window to close before or after<br>
+the 100-day mark.<br>
+At Stripe, we&#x27;re looking for people with passion, grit, and<br>
+integrity. You&#x27;re encouraged to apply even if your<br>
+experience doesn&#x27;t precisely match the job description.<br>
+Your skills and passion will stand out—and set you apar t—<br>
+especially if your career has taken some extraordinary<br>
+twists and turns. At Stripe, we welcome diverse<br>
+perspectives and people who think rigorously and aren&#x27;t<br>
+afraid to challenge assumptions. Join us.<br>
+Apply Now<br>
+We look forward to hearing from you<br>
+United<br>
+States<br>
+(English)<br>
+Products &amp;<br>
+pricing<br>
+Pricing<br>
+Atlas<br>
+Billing<br>
+Solutions<br>
+Startups<br>
+Enterprises<br>
+SaaS<br>
+Platforms<br>
+Resources<br>
+Guides<br>
+Customer<br>
+stories<br>
+Blog</p>
+<p>--- Page 8 ---<br>
+Sign in<br>
+Capital<br>
+Checkout<br>
+Climate<br>
+Connect<br>
+Data Pipeline<br>
+Elements<br>
+Financial<br>
+Connections<br>
+Identity<br>
+Invoicing<br>
+Issuing<br>
+Link<br>
+Payments<br>
+Payment Links<br>
+Payouts<br>
+Radar<br>
+Revenue<br>
+Recognition<br>
+Sigma<br>
+Ta x<br>
+Te r m i n a l<br>
+Treasur y<br>
+Ecommerce<br>
+Marketplaces<br>
+Crypto<br>
+Creator<br>
+economy<br>
+AI companies<br>
+Embedded<br>
+finance<br>
+Global<br>
+businesses<br>
+Finance<br>
+automation<br>
+Insurance<br>
+Media and<br>
+Entertainment<br>
+Nonprofits<br>
+Retail<br>
+Integrations &amp;<br>
+custom<br>
+solutions<br>
+Stripe App<br>
+Marketplace<br>
+Partner<br>
+ecosystem<br>
+Professional<br>
+services<br>
+Developers<br>
+Documentation<br>
+API reference<br>
+API status<br>
+API changelog<br>
+Stripe Apps<br>
+Annual<br>
+conference<br>
+Privacy &amp; terms<br>
+Prohibited &amp;<br>
+restricted<br>
+businesses<br>
+Licenses<br>
+Sitemap<br>
+Cookie settings<br>
+Your privacy<br>
+choices<br>
+Coverage<br>
+transparency<br>
+More resources<br>
+Company<br>
+Jobs<br>
+Newsroom<br>
+Stripe Press<br>
+Contact sales<br>
+Support<br>
+Get support<br>
+Managed<br>
+support plans<br>
+CA residents:<br>
++1 888 926 2289<br>
+© 2025 Stripe,<br>
+Inc.</p>
+</main>
 
 </body>
 </html>

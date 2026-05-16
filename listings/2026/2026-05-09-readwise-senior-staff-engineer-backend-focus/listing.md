@@ -30,31 +30,7 @@ nice_to_haves: []
 
 # Senior/Staff Engineer (Backend Focus) - Readwise
 
-## Why I saved this
-
-TODO
-
-## Responsibilities
-
-TODO
-
-## Requirements
-
-### Explicitly required
-
-- TODO
-
-### Implied
-
-- TODO
-
-### Nice-to-have
-
-- TODO
-
-## My notes
-
-TODO
+Source: https://readwise.io/careers/senior-staff-engineer
 
 ## Import notes
 

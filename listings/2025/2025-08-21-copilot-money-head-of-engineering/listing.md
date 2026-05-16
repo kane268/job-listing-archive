@@ -30,31 +30,7 @@ nice_to_haves: []
 
 # Head of Engineering - Copilot Money
 
-## Why I saved this
-
-TODO
-
-## Responsibilities
-
-TODO
-
-## Requirements
-
-### Explicitly required
-
-- TODO
-
-### Implied
-
-- TODO
-
-### Nice-to-have
-
-- TODO
-
-## My notes
-
-TODO
+Source: https://jobs.ashbyhq.com/copilot-money/20a502a8-5260-4df3-a8ba-d0d5701bafc1
 
 ## Import notes
 

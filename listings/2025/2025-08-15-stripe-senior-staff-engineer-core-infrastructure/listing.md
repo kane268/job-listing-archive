@@ -32,32 +32,6 @@ nice_to_haves: []
 
 # Senior Staff Engineer, Core Infrastructure - Stripe
 
-## Why I saved this
-
-TODO
-
-## Responsibilities
-
-TODO
-
-## Requirements
-
-### Explicitly required
-
-- TODO
-
-### Implied
-
-- TODO
-
-### Nice-to-have
-
-- TODO
-
-## My notes
-
-TODO
-
 ## Import notes
 
 - Original file: `Stripe Senior Staff Engineer, Core Infrastructure.pdf`

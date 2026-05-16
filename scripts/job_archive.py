@@ -1263,44 +1263,19 @@ def render_yaml(data: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render_listing(data: dict[str, Any], import_notes: list[str], why: str = "TODO") -> str:
+def render_listing(data: dict[str, Any], import_notes: list[str], why: str = "") -> str:
     company = data.get("company") or "Unknown company"
     role = data.get("role_title") or "Unknown role"
-    why_text = why.strip() or "TODO"
+    source_url = data.get("source_url") or ""
     lines = [
         render_yaml(data).rstrip(),
         "",
         f"# {role} - {company}",
         "",
-        "## Why I saved this",
-        "",
-        why_text,
-        "",
-        "## Responsibilities",
-        "",
-        "TODO",
-        "",
-        "## Requirements",
-        "",
-        "### Explicitly required",
-        "",
-        "- TODO",
-        "",
-        "### Implied",
-        "",
-        "- TODO",
-        "",
-        "### Nice-to-have",
-        "",
-        "- TODO",
-        "",
-        "## My notes",
-        "",
-        "TODO",
-        "",
-        "## Import notes",
-        "",
     ]
+    if source_url:
+        lines.extend([f"Source: {source_url}", ""])
+    lines.extend(["## Import notes", ""])
     lines.extend(f"- {note}" for note in import_notes)
     lines.append("")
     return "\n".join(lines)

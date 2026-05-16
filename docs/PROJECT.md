@@ -42,6 +42,7 @@ Optional raw files sit beside it:
 raw.pdf     original PDF snapshot
 raw.html    original saved HTML page
 source.txt  original saved text file
+raw.md      generated Markdown extraction for web display
 raw.txt     generated text extraction
 ```
 
@@ -79,7 +80,7 @@ Use the GitHub Pages web UI:
 https://kane268.github.io/job-listing-archive/
 ```
 
-Paste a listing URL. The site opens a prefilled GitHub issue with an empty body and the URL in the title. GitHub Actions fetches the page, saves `raw.html`, extracts `raw.txt`, creates `listing.md`, rebuilds `data/index.csv`, rebuilds the static site, commits the result, labels the issue `ingested`, and closes it. If capture fails, Actions saves the URL in `data/captures.json` and the live site shows it as a backup for later parser fixes and re-capture.
+Paste a listing URL. The site opens a prefilled GitHub issue with an empty body, the URL in the title, and labels `inbox,capture`. GitHub Actions fetches the page, saves `raw.html`, extracts `raw.md` and `raw.txt`, creates `listing.md`, rebuilds `data/index.csv`, rebuilds the static site, commits the result, labels the issue `ingested`, and closes it. If capture fails, Actions saves the URL in `data/captures.json` and the live site shows it as a backup for later parser fixes and re-capture.
 
 Legacy PDF import remains available for old saved files, but PDF capture is no longer the normal path.
 

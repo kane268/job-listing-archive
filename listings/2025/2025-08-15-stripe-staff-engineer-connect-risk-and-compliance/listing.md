@@ -33,32 +33,6 @@ nice_to_haves: []
 
 # Staff Engineer, Connect Risk & Compliance - Stripe
 
-## Why I saved this
-
-TODO
-
-## Responsibilities
-
-TODO
-
-## Requirements
-
-### Explicitly required
-
-- TODO
-
-### Implied
-
-- TODO
-
-### Nice-to-have
-
-- TODO
-
-## My notes
-
-TODO
-
 ## Import notes
 
 - Original file: `Stripe Staff Engineer, Connect Risk & Compliance.pdf`

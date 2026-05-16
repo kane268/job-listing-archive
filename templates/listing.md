@@ -21,34 +21,10 @@ nice_to_haves: []
 
 # Role - Company
 
-## Why I saved this
-
-TODO
-
-## Responsibilities
-
-TODO
-
-## Requirements
-
-### Explicitly required
-
-- TODO
-
-### Implied
-
-- TODO
-
-### Nice-to-have
-
-- TODO
-
-## My notes
-
-TODO
+Source:
 
 ## Import notes
 
-- Original file: TODO
-- Raw artifact: TODO
-- Extracted text: TODO
+- Capture method:
+- Raw artifact:
+- Extracted Markdown:

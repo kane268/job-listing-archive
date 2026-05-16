@@ -30,32 +30,6 @@ nice_to_haves: []
 
 # Specialist: Full-Time, Part-Time, and Part-Time Temporary - Apple
 
-## Why I saved this
-
-TODO
-
-## Responsibilities
-
-TODO
-
-## Requirements
-
-### Explicitly required
-
-- TODO
-
-### Implied
-
-- TODO
-
-### Nice-to-have
-
-- TODO
-
-## My notes
-
-TODO
-
 ## Import notes
 
 - Original file: `US - Specialist Full-Time, Part-Time, and Part-Time Temporary - Jobs - Careers at Apple.pdf`

@@ -12,11 +12,11 @@ This is a public-safe personal archive of job listings. It started as a formal v
 ## Source of truth
 
 - Listings live in `listings/YYYY/<id>/listing.md`.
-- Raw listing evidence lives beside `listing.md` as `raw.pdf`, `raw.html`, `source.txt`, or generated `raw.txt`.
+- Raw listing evidence lives beside `listing.md` as `raw.pdf`, `raw.html`, `source.txt`, generated `raw.md`, or generated `raw.txt`.
 - Recurring places to look for jobs live in `data/job-sources.json`.
 - `data/index.csv` is generated from listing front matter. Do not hand-edit it.
 - `archive/<id>/index.html` and `index.html` are generated web pages. Do not hand-edit them. Regenerate with `mise run site` or `mise run check`.
-- `raw.txt` is generated evidence. Do not hand-edit it. Regenerate from the source file instead.
+- `raw.md` and `raw.txt` are generated evidence. Do not hand-edit them. Regenerate from the source file instead.
 
 ## Privacy and safety
 
