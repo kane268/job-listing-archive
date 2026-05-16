@@ -1,44 +1,24 @@
 {
   "sources": [
     {
-      "id": "anthropic",
       "name": "Anthropic",
-      "url": "https://www.anthropic.com/careers/jobs",
-      "type": "company-careers",
-      "status": "active",
-      "notes": "Roles and requirements at Anthropic."
+      "url": "https://www.anthropic.com/careers/jobs"
     },
     {
-      "id": "apple",
       "name": "Apple",
-      "url": "https://jobs.apple.com/en-us/search",
-      "type": "company-careers",
-      "status": "active",
-      "notes": "Apple jobs search."
+      "url": "https://jobs.apple.com/en-us/search"
     },
     {
-      "id": "github",
       "name": "GitHub",
-      "url": "https://www.github.careers/careers-home/jobs",
-      "type": "company-careers",
-      "status": "active",
-      "notes": "GitHub careers board."
+      "url": "https://www.github.careers/careers-home/jobs"
     },
     {
-      "id": "readwise",
       "name": "Readwise",
-      "url": "https://readwise.io/careers",
-      "type": "company-careers",
-      "status": "active",
-      "notes": "Small product company with remote roles."
+      "url": "https://readwise.io/careers"
     },
     {
-      "id": "stripe",
       "name": "Stripe",
-      "url": "https://stripe.com/jobs/search",
-      "type": "company-careers",
-      "status": "active",
-      "notes": "Stripe jobs search."
+      "url": "https://stripe.com/jobs/search"
     }
   ]
 }

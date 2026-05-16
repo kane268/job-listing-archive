@@ -214,7 +214,6 @@ def source_card(source: dict[str, str]) -> str:
     return f"""<a class="card" href="{esc(source.get('url'))}" target="_blank" rel="noreferrer">
   <span class="card-title">{esc(source.get('name') or source.get('id'))}</span>
   <span class="url">{esc(source.get('url'))}</span>
-  {f'<span class="meta">{esc(source.get("notes"))}</span>' if source.get('notes') else ''}
 </a>"""
 
 

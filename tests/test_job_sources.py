@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 import tempfile
 import unittest
@@ -17,42 +18,45 @@ from job_sources import (  # noqa: E402
 
 
 class JobSourceTests(unittest.TestCase):
-    def test_add_and_update_source(self) -> None:
+    def test_add_and_update_source_generates_id_without_storing_it(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
-            path = Path(temp) / "sources.csv"
+            path = Path(temp) / "sources.json"
             status, row = add_or_update_source(
-                "Anthropic",
-                "https://www.anthropic.com/careers/jobs",
+                "If This Is Company Name",
+                "https://example.com/jobs",
                 path=path,
             )
             self.assertEqual(status, "added")
-            self.assertEqual(row["id"], "anthropic")
+            self.assertEqual(row["id"], "if-this-is-company-name")
 
             status, row = add_or_update_source(
-                "Anthropic",
-                "https://www.anthropic.com/careers/jobs",
-                notes="Updated notes",
+                "If This Is Company Name",
+                "https://example.com/careers",
                 path=path,
             )
             self.assertEqual(status, "updated")
-            self.assertEqual(row["notes"], "Updated notes")
+            self.assertEqual(row["url"], "https://example.com/careers")
             self.assertEqual(len(read_sources(path)), 1)
 
-    def test_match_sources_defaults_to_active(self) -> None:
+            stored = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(stored, {"sources": [{"name": "If This Is Company Name", "url": "https://example.com/careers"}]})
+
+    def test_match_sources_defaults_to_all_saved_companies(self) -> None:
         rows = [
-            {"id": "active", "name": "Active", "url": "https://example.com", "status": "active", "type": "", "notes": ""},
-            {"id": "inactive", "name": "Inactive", "url": "https://inactive.example.com", "status": "inactive", "type": "", "notes": ""},
+            {"name": "Active", "url": "https://example.com"},
+            {"name": "Inactive", "url": "https://inactive.example.com"},
         ]
-        self.assertEqual([row["id"] for row in match_sources(rows, [])], ["active"])
+        self.assertEqual([row["id"] for row in match_sources(rows, [])], ["active", "inactive"])
         self.assertEqual([row["id"] for row in match_sources(rows, ["inactive"])], ["inactive"])
 
     def test_format_sources(self) -> None:
         rows = [
-            {"id": "stripe", "name": "Stripe", "url": "https://stripe.com/jobs/search", "status": "active", "type": "", "notes": ""},
+            {"name": "Stripe", "url": "https://stripe.com/jobs/search"},
         ]
         table = format_sources(rows)
         self.assertIn("Stripe", table)
         self.assertIn("https://stripe.com/jobs/search", table)
+        self.assertNotIn("status", table)
 
 
 if __name__ == "__main__":

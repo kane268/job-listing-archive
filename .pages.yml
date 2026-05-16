@@ -4,64 +4,27 @@ content:
     type: group
     items:
       - name: job_sources
-        label: Job Sources
+        label: Saved Companies
         type: file
         path: data/job-sources.json
         format: json
         fields:
           - name: sources
-            label: Sources
+            label: Companies
             type: object
             list:
               collapsible:
                 collapsed: true
                 summary: "{name}"
             fields:
-              - name: id
-                label: ID
-                type: string
-                required: true
-                description: Stable slug. Use lowercase words separated by hyphens.
               - name: name
-                label: Name
+                label: Company name
                 type: string
                 required: true
               - name: url
-                label: URL
+                label: Jobs URL
                 type: string
                 required: true
-              - name: type
-                label: Type
-                type: select
-                required: true
-                default: company-careers
-                options:
-                  values:
-                    - name: company-careers
-                      label: Company careers
-                    - name: job-board
-                      label: Job board
-                    - name: aggregator
-                      label: Aggregator
-                    - name: newsletter
-                      label: Newsletter
-                    - name: other
-                      label: Other
-              - name: status
-                label: Status
-                type: select
-                required: true
-                default: active
-                options:
-                  values:
-                    - name: active
-                      label: Active
-                    - name: inactive
-                      label: Inactive
-              - name: notes
-                label: Notes
-                type: text
-                default: ""
 
 settings:
   content:
