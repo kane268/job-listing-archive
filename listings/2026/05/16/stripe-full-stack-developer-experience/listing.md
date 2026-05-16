@@ -13,25 +13,26 @@ seniority: ""
 location: "Toronto"
 employment_type: "Full time"
 compensation: "CA$135,200 - CA$202,800"
-status: "extracted"
+status: "reviewed"
 source_type: "html"
 source_file_name: ""
-source_file_created_at: ""
-source_file_modified_at: ""
-source_file_created_at_basis: "url-fetch"
 source_file_sha256: "2f9062e87158a7424d02e3bc2b4ece6ac38c8e1f5ebf9538c2f4a470f81bda02"
-pdf_created_at: ""
-pdf_pages: ""
 tags:
   - "captured"
   - "developer-experience"
   - "platform"
   - "stripe"
   - "html"
-requirements: []
-nice_to_haves: []
+requirements:
+  - "2-12+ years of industry software engineering experience"
+  - "Strong coding skills in any programming language"
+  - "Strong collaboration across workstreams and peers"
+  - "High autonomy and entrepreneurial ownership"
+  - "Interest in generalist work across varying technologies and stacks"
+nice_to_haves:
+  - "Experience designing reliable, scalable, secure, and extensible platforms"
+  - "Ability to debug production issues across services and stack layers"
 ---
-
 # Full Stack Engineer, Developer Experience & Product Platform - Stripe
 
 Source: https://stripe.com/jobs/listing/full-stack-engineer-developer-experience-product-platform/6567104
@@ -41,7 +42,6 @@ Source: https://stripe.com/jobs/listing/full-stack-engineer-developer-experience
 - Captured from URL: https://stripe.com/jobs/listing/full-stack-engineer-developer-experience-product-platform/6567104
 - Fetched at: `2026-05-16T15:52:36+00:00`
 - HTTP status: `200`
-- Raw artifact: `raw.html`
-- Extracted Markdown: `raw.md`
-- Extracted text: `raw.txt`
+- Raw HTML: `raw.html`
+- Generated Markdown: `raw.md`
 - Capture issue: https://github.com/kane268/job-listing-archive/issues/4

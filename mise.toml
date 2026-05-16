@@ -1,8 +1,6 @@
 [tools]
 python = "3.12"
 
-[env]
-JOB_LISTINGS_SOURCE = "{{env.HOME}}/Library/Mobile Documents/com~apple~CloudDocs/Job Listings"
 
 [tasks.default]
 description = "Show the simple workflow"
@@ -13,21 +11,13 @@ description = "Show the simple workflow"
 alias = ["h"]
 run = "python3 scripts/workflow.py help"
 
-[tasks.setup]
-description = "Install Python package requirements"
-run = "python3 scripts/workflow.py setup"
-
-[tasks.import]
-description = "Import legacy files from the iCloud Job Listings folder"
-alias = ["i"]
-run = "python3 scripts/workflow.py import"
 
 [tasks.index]
 description = "Rebuild data/index.csv"
 run = "python3 scripts/workflow.py index"
 
 [tasks.site]
-description = "Rebuild static GitHub Pages site"
+description = "Rebuild static GitHub Pages site artifact"
 run = "python3 scripts/build_site.py"
 
 [tasks.validate-capture]
@@ -44,10 +34,6 @@ description = "Test, commit all changes, and push to GitHub"
 alias = ["s"]
 run = "python3 scripts/workflow.py save"
 
-[tasks.update]
-description = "Import legacy iCloud listings, test, commit, and push"
-alias = ["u"]
-run = "python3 scripts/workflow.py update"
 
 [tasks.status]
 description = "Show archive count and git status"

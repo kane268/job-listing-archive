@@ -11,9 +11,19 @@
       "homepage_url": "https://www.apple.com"
     },
     {
+      "name": "Copilot Money",
+      "url": "https://jobs.ashbyhq.com/copilot-money",
+      "homepage_url": "https://copilot.money"
+    },
+    {
       "name": "GitHub",
       "url": "https://www.github.careers/careers-home/jobs",
       "homepage_url": "https://github.com"
+    },
+    {
+      "name": "Readwise",
+      "url": "https://readwise.io/careers",
+      "homepage_url": "https://readwise.io"
     },
     {
       "name": "Reddit",

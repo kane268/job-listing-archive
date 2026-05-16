@@ -7,17 +7,18 @@ This is a public-safe personal archive of job listings. It started as a formal v
 - Keep capture fast and cleanup optional.
 - Keep Markdown files as the source of truth.
 - Do not turn this into a scraper, job-search CRM, or application tracker unless explicitly requested.
-- Preserve provenance: original file names, creation times, source URLs, checksums, raw artifacts, and import notes matter.
+- Preserve provenance: source URLs, checksums, raw HTML, generated Markdown, and import notes matter.
 
 ## Source of truth
 
 - Always pull latest `main` with `git pull --ff-only` before making changes. New listings may be added through the web UI and GitHub Actions.
 - Listings live in `listings/YYYY/MM/DD/<short-slug>/listing.md`.
-- Raw listing evidence lives beside `listing.md` as `raw.pdf`, `raw.html`, `source.txt`, generated `raw.md`, or generated `raw.txt`.
+- Raw listing evidence lives beside `listing.md` as `raw.html` when fetched HTML is available.
+- Generated readable listing evidence lives beside `listing.md` as `raw.md`.
 - Recurring places to look for jobs live in `data/job-sources.json`, with `name`, jobs `url`, and `homepage_url` for favicon source. Source IDs are generated from names.
 - `data/index.csv` is generated from listing front matter. Do not hand-edit it.
-- `archive/<id>/index.html` and `index.html` are generated web pages. Do not hand-edit them. Regenerate with `mise run site` or `mise run check`.
-- `raw.md` and `raw.txt` are generated evidence. Do not hand-edit them. Regenerate from the source file instead.
+- `_site/` is the generated local GitHub Pages artifact. Do not hand-edit it or commit it.
+- `raw.md` is generated evidence. Do not hand-edit it unless repairing historical generated output from its source evidence.
 
 ## Privacy and safety
 
@@ -32,34 +33,34 @@ This is a public-safe personal archive of job listings. It started as a formal v
 Prefer mise tasks for normal workflows:
 
 ```bash
-mise run update          # import legacy iCloud files, check, commit, push
-mise run import          # import legacy iCloud files only
-mise run save            # check, commit, push current changes
-mise run check           # validate tasks, rebuild index and site, run tests
-mise run site            # rebuild static GitHub Pages site
+mise run save             # check, commit, push current changes
+mise run check            # validate tasks, rebuild index/site artifact, run tests
+mise run site             # rebuild the local static GitHub Pages artifact
 mise run validate-capture # test live URL capture in a temp repo
-mise run sources         # list job sources
-mise run browse          # open active job source URLs
-mise run capture         # open web listing capture UI in manage mode
-mise run capture-source  # open source capture issue form
+mise run sources          # list job sources
+mise run browse           # open active job source URLs
+mise run capture          # open web listing capture UI in manage mode
+mise run capture-source   # open source capture issue form
 ```
 
 Run `mise run check` after changing scripts, metadata, templates, issue forms, generated site inputs, or docs that mention tasks.
 
-## Import behavior
+## Capture behavior
 
-- The iCloud source folder is configured by `JOB_LISTINGS_SOURCE` in `mise.toml`.
-- Imports skip already imported files using `source_file_sha256` from listing front matter.
-- Import scripts infer metadata from file names, source URLs, and extracted text. Treat this as best-effort.
-- If inference is wrong, edit `listing.md`, then run `mise run index` or `mise run save`.
+- URL capture is the only supported capture path.
+- Capture issues use the `capture` label. No secondary triage label is used.
+- GitHub Actions only acts on owner-created issues with the `capture` label.
+- Successful captures write `raw.html` when HTML was fetched, write `raw.md`, create `listing.md`, rebuild `data/index.csv`, and commit back to the repo.
+- Failed captures are saved in `data/captures.json` and shown in manage mode as parser-repair backups.
+- Successful captures are not stored in `data/captures.json`; listing metadata and `data/index.csv` already cover them.
 
 ## Issue workflow
 
-GitHub Issues are an inbox, not the permanent archive.
+GitHub Issues are a capture queue, not the permanent archive.
 
 Listing issues:
 
-1. New capture issues use the `inbox` and `capture` labels and keep the URL in the title.
+1. New capture issues use the `capture` label and keep the URL in the title.
 2. GitHub Actions only acts on owner-created issues with the `capture` label.
 3. Bug reports and markdown extraction issues should not use the `capture` label.
 4. GitHub Actions captures the URL or records a failed attempt in `data/captures.json`.
@@ -71,8 +72,6 @@ Source issues:
 1. New issues use the `source` label.
 2. Add or update `data/job-sources.json`.
 3. Close the issue once tracked.
-
-The `[job]` title prefix is not used anymore. Labels and issue forms are enough.
 
 ## Editing guidance
 

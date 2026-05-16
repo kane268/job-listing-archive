@@ -4,23 +4,7 @@ Read `docs/PROJECT.md` first if you need the project origin, data model, issue w
 
 ## Add a listing quickly
 
-Use the GitHub Pages capture page and paste only the listing URL. The site opens a prefilled GitHub issue with the URL in the title.
-
-## Add a saved file
-
-For legacy saved files, save PDFs or saved pages to `iCloud Drive / Job Listings`, then run:
-
-```bash
-mise run update
-```
-
-That imports new files, rebuilds the index, runs checks, commits, and pushes.
-
-If you only want to import without committing:
-
-```bash
-mise run import
-```
+Use the GitHub Pages capture page and paste only the listing URL. The site opens a prefilled GitHub issue with the URL in the title and the `capture` label.
 
 ## Add a place to look for jobs
 
@@ -28,7 +12,7 @@ Use `data/job-sources.json` for saved companies worth checking. Each entry shoul
 
 ```bash
 mise run sources
-mise run add-source "Anthropic" "https://www.anthropic.com/careers/jobs"
+mise run add-source "Anthropic" "https://www.anthropic.com/careers/jobs" --homepage-url "https://www.anthropic.com"
 ```
 
 On mobile, use the GitHub **Job source capture** issue form.
@@ -44,4 +28,4 @@ Open `listing.md` and fill in only what is useful:
 - nice-to-haves
 - public-safe notes
 
-Keep filtering fields in YAML. Keep interpretation and memory in the Markdown body. Avoid private notes because the repo and Pages site are public. Run `mise run site` after manual listing edits so the web copy stays current.
+Keep filtering fields in YAML-style front matter. Keep interpretation and memory in the Markdown body. Avoid private notes because the repo and Pages site are public. Run `mise run site` after manual listing edits when you want a local `_site/` preview, and `mise run save` when ready to validate, commit, and push.

@@ -80,6 +80,8 @@ def add_or_update_source(
     rows = read_sources(path)
     source_id = make_source_id(name)
     new_row = normalize_source_row({"name": name, "url": url, "homepage_url": homepage_url})
+    if not new_row["homepage_url"]:
+        raise ValueError("homepage_url is required")
 
     for index, row in enumerate(rows):
         if row.get("id") == source_id:
@@ -164,7 +166,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_parser = subparsers.add_parser("add", help="Add or update a saved company")
     add_parser.add_argument("name", help="Company name")
     add_parser.add_argument("url", help="Jobs or careers URL")
-    add_parser.add_argument("--homepage-url", default="", help="Company home page URL for icons")
+    add_parser.add_argument("--homepage-url", required=True, help="Company home page URL for icons")
     add_parser.set_defaults(func=add_cli)
 
     open_parser = subparsers.add_parser("open", help="Open saved companies")

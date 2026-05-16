@@ -8,14 +8,14 @@ on:
         required: true
         type: string
   issues:
-    types: [opened]
+    types: [opened, edited, reopened, labeled]
 
 permissions:
   contents: write
   issues: write
 
 concurrency:
-  group: capture-listing-main
+  group: job-archive-content-main
   cancel-in-progress: false
 
 jobs:
@@ -51,7 +51,7 @@ jobs:
             --issue-body-file "$issue_body_file" \
             --issue-url "$ISSUE_URL"
 
-      - name: Build site
+      - name: Build site artifact
         run: python3 scripts/build_site.py
 
       - name: Test archive
@@ -67,6 +67,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "Capture job listing"
+          git pull --rebase --autostash
           git push
 
       - name: Update capture issue
@@ -80,11 +81,11 @@ jobs:
         run: |
           if [[ "$STATUS" == "captured" ]]; then
             message="Captured in \`$LISTING_PATH\`."
-            gh issue edit "$ISSUE_NUMBER" --add-label ingested --remove-label inbox || true
+            gh issue edit "$ISSUE_NUMBER" --add-label ingested || true
             gh issue close "$ISSUE_NUMBER" --comment "$message"
           elif [[ -n "$LISTING_PATH" ]]; then
             message="Skipped: $REASON. Existing listing: \`$LISTING_PATH\`."
-            gh issue edit "$ISSUE_NUMBER" --add-label ingested --remove-label inbox || true
+            gh issue edit "$ISSUE_NUMBER" --add-label ingested || true
             gh issue close "$ISSUE_NUMBER" --comment "$message"
           else
             message="Capture did not produce a listing yet: $REASON. The URL is saved in data/captures.json and shown on the site as a backup."

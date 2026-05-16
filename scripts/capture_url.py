@@ -80,6 +80,20 @@ def capture_record_id(source_url: str) -> str:
     return slugify(normalized).removeprefix("https-").removeprefix("http-")[:96] or "capture"
 
 
+def remove_capture_record(source_url: str, root: str | Path = ROOT) -> None:
+    path = Path(root) / "data" / "captures.json"
+    records = load_capture_records(path)
+    normalized = normalize_source_url(source_url)
+    kept = [
+        record
+        for record in records
+        if record.get("id") != capture_record_id(source_url)
+        and normalize_source_url(record.get("source_url", "")) != normalized
+    ]
+    if len(kept) != len(records):
+        write_capture_records(kept, path)
+
+
 def upsert_capture_record(record: dict[str, Any], root: str | Path = ROOT) -> None:
     path = Path(root) / "data" / "captures.json"
     records = load_capture_records(path)
@@ -137,8 +151,6 @@ def main(argv: list[str] | None = None) -> int:
             "issue_url": args.issue_url,
             "status": "started",
             "reason": "",
-            "listing_path": "",
-            "listing_id": "",
         }
         try:
             result = ingest_url(source_url, root=args.repo_root, issue_url=args.issue_url, force=args.force, dry_run=args.dry_run)
@@ -153,13 +165,14 @@ def main(argv: list[str] | None = None) -> int:
             {
                 "status": status,
                 "reason": reason,
-                "listing_path": result.get("listing_path", ""),
-                "listing_id": result.get("id", ""),
                 "updated_at": now_iso(),
             }
         )
         if not args.dry_run:
-            upsert_capture_record(record, root=args.repo_root)
+            if status in {"failed", "started"}:
+                upsert_capture_record(record, root=args.repo_root)
+            else:
+                remove_capture_record(source_url, root=args.repo_root)
 
         if result.get("status") == "captured" and not args.dry_run:
             build_index(args.repo_root)

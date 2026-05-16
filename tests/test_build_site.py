@@ -17,6 +17,11 @@ class BuildSiteTests(unittest.TestCase):
         self.assertRegex(html, re.compile(r"<li>Parent\s*<ul>\s*<li>Child", re.S))
         self.assertRegex(html, re.compile(r"</ul>\s*</li>\s*<li>Sibling", re.S))
 
+    def test_markdown_renderer_drops_unsafe_links(self) -> None:
+        html = markdown_to_html("[click](javascript:alert)")
+        self.assertNotIn("javascript:", html)
+        self.assertIn(">click<", html)
+
 
 if __name__ == "__main__":
     unittest.main()

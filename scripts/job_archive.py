@@ -8,14 +8,12 @@ import csv
 import hashlib
 import html
 import json
-import logging
-import os
 import re
 import shutil
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
@@ -25,7 +23,6 @@ ROOT = Path(__file__).resolve().parents[1]
 LISTINGS_DIR = ROOT / "listings"
 INDEX_PATH = ROOT / "data" / "index.csv"
 
-SUPPORTED_SUFFIXES = {".pdf", ".txt", ".html", ".htm"}
 URL_RE = re.compile(r"https?://[^\s<>\"']+")
 DEFAULT_FETCH_USER_AGENT = "Mozilla/5.0 (compatible; JobListingArchive/1.0; +https://github.com/kane268/job-listing-archive)"
 MAX_FETCH_BYTES = 8 * 1024 * 1024
@@ -57,12 +54,7 @@ FRONTMATTER_ORDER = [
     "status",
     "source_type",
     "source_file_name",
-    "source_file_created_at",
-    "source_file_modified_at",
-    "source_file_created_at_basis",
     "source_file_sha256",
-    "pdf_created_at",
-    "pdf_pages",
     "tags",
     "requirements",
     "nice_to_haves",
@@ -86,11 +78,6 @@ INDEX_COLUMNS = [
 ]
 
 
-@dataclass(frozen=True)
-class FileTimes:
-    created_at: str
-    modified_at: str
-    created_at_basis: str
 
 
 @dataclass(frozen=True)
@@ -511,31 +498,6 @@ def infer_tags(role_title: str, company: str, role_family: str, seniority: str) 
     if company:
         tags.append(slugify(company))
     return sorted(set(tags), key=tags.index)
-
-
-def local_timestamp(ts: float) -> str:
-    return datetime.fromtimestamp(ts).astimezone().replace(microsecond=0).isoformat()
-
-
-def get_file_times(path: str | Path) -> FileTimes:
-    file_path = Path(path)
-    stat_result = file_path.stat()
-    birthtime = getattr(stat_result, "st_birthtime", None)
-    if birthtime and birthtime > 0:
-        created_at = local_timestamp(birthtime)
-        basis = "birthtime"
-    else:
-        created_at = local_timestamp(stat_result.st_mtime)
-        basis = "mtime"
-    return FileTimes(
-        created_at=created_at,
-        modified_at=local_timestamp(stat_result.st_mtime),
-        created_at_basis=basis,
-    )
-
-
-def captured_date_from_times(times: FileTimes) -> str:
-    return times.created_at[:10]
 
 
 def sha256_file(path: str | Path) -> str:
@@ -1207,73 +1169,6 @@ def html_capture_to_text(markup: str, metadata: dict[str, Any]) -> str:
     return text + ("\n" if text else "")
 
 
-def parse_pdf_date(value: Any) -> str:
-    if not value:
-        return ""
-    text = str(value)
-    if text.startswith("D:"):
-        text = text[2:]
-    match = re.match(
-        r"^(\d{4})(\d{2})(\d{2})(\d{2})?(\d{2})?(\d{2})?([Z+-])?(\d{2})?'?(\d{2})?'?",
-        text,
-    )
-    if not match:
-        return ""
-    year, month, day, hour, minute, second, tz_sign, tz_hour, tz_minute = match.groups()
-    hour = hour or "00"
-    minute = minute or "00"
-    second = second or "00"
-    tzinfo = None
-    if tz_sign == "Z":
-        tzinfo = timezone.utc
-    elif tz_sign in {"+", "-"}:
-        offset = timedelta(hours=int(tz_hour or 0), minutes=int(tz_minute or 0))
-        if tz_sign == "-":
-            offset = -offset
-        tzinfo = timezone(offset)
-    try:
-        parsed = datetime(
-            int(year),
-            int(month),
-            int(day),
-            int(hour),
-            int(minute),
-            int(second),
-            tzinfo=tzinfo,
-        )
-    except ValueError:
-        return ""
-    return parsed.isoformat()
-
-
-def extract_pdf_text_and_metadata(path: str | Path) -> tuple[str, dict[str, Any], str]:
-    try:
-        logging.getLogger("pypdf").setLevel(logging.ERROR)
-        from pypdf import PdfReader
-    except Exception as exc:  # pragma: no cover - depends on local environment
-        return "", {}, f"pypdf unavailable: {exc}"
-
-    try:
-        reader = PdfReader(str(path))
-        metadata = dict(reader.metadata or {})
-        pages = []
-        for index, page in enumerate(reader.pages, start=1):
-            page_text = page.extract_text() or ""
-            page_text = page_text.strip()
-            if page_text:
-                pages.append(f"--- Page {index} ---\n{page_text}")
-        text = "\n\n".join(pages).strip()
-        if text:
-            text += "\n"
-        pdf_metadata = {
-            "pdf_pages": len(reader.pages),
-            "pdf_created_at": parse_pdf_date(metadata.get("/CreationDate")),
-        }
-        return text, pdf_metadata, ""
-    except Exception as exc:  # pragma: no cover - depends on PDF shape
-        return "", {}, f"PDF text extraction failed: {exc}"
-
-
 def clean_url(url: str) -> str:
     url = html.unescape(url).strip()
     return url.rstrip(".,;:)]}\u201d\u2019\"'")
@@ -1487,13 +1382,29 @@ def listing_destination(root: Path, captured_at: str, listing_id: str) -> Path:
     return root / "listings" / year / month / day / listing_directory_slug(listing_id, captured_at)
 
 
+def unique_destination(root: Path, captured_at: str, listing_id: str, force: bool) -> tuple[str, Path]:
+    base = listing_destination(root, captured_at, listing_id)
+    if force or not base.exists():
+        return listing_id, base
+    counter = 2
+    while True:
+        candidate_id = f"{listing_id}-{counter}"
+        candidate = listing_destination(root, captured_at, candidate_id)
+        if not candidate.exists():
+            return candidate_id, candidate
+        counter += 1
+
+
 def parse_scalar(value: str) -> Any:
     value = value.strip()
     if value == "[]":
         return []
     if value.startswith('"') and value.endswith('"'):
-        inner = value[1:-1]
-        return bytes(inner, "utf-8").decode("unicode_escape")
+        try:
+            return json.loads(value)
+        except json.JSONDecodeError:
+            inner = value[1:-1]
+            return inner.replace('\\n', '\n').replace('\\"', '"').replace('\\\\', '\\')
     if value.startswith("'") and value.endswith("'"):
         return value[1:-1]
     if value.isdigit():
@@ -1584,129 +1495,6 @@ def build_index(root: str | Path = ROOT, index_path: str | Path | None = None) -
     return output_path
 
 
-def source_text_and_artifact(path: Path) -> tuple[str, str, str, dict[str, Any], str]:
-    suffix = path.suffix.lower()
-    if suffix == ".pdf":
-        text, pdf_metadata, warning = extract_pdf_text_and_metadata(path)
-        return text, "raw.pdf", "pdf", pdf_metadata, warning
-
-    original = path.read_text(encoding="utf-8", errors="replace")
-    if suffix in {".html", ".htm"} or looks_like_html(original):
-        return html_to_text(original), "raw.html", "html", {}, ""
-    return original if original.endswith("\n") else original + "\n", "source.txt", "text", {}, ""
-
-
-def unique_destination(root: Path, captured_at: str, listing_id: str, force: bool) -> tuple[str, Path]:
-    base = listing_destination(root, captured_at, listing_id)
-    if force or not base.exists():
-        return listing_id, base
-    counter = 2
-    while True:
-        candidate_id = f"{listing_id}-{counter}"
-        candidate = listing_destination(root, captured_at, candidate_id)
-        if not candidate.exists():
-            return candidate_id, candidate
-        counter += 1
-
-
-def ingest_file(path: str | Path, root: str | Path = ROOT, force: bool = False, dry_run: bool = False) -> dict[str, Any]:
-    source_path = Path(path)
-    root_path = Path(root)
-    if source_path.suffix.lower() not in SUPPORTED_SUFFIXES:
-        return {"source": str(source_path), "status": "skipped", "reason": "unsupported suffix"}
-
-    source_sha256 = sha256_file(source_path)
-    existing_listing = existing_source_sha256s(root_path).get(source_sha256)
-    if existing_listing and not force:
-        return {
-            "source": str(source_path),
-            "status": "skipped",
-            "reason": "already imported",
-            "listing_path": str(existing_listing),
-        }
-
-    times = get_file_times(source_path)
-    captured_at = captured_date_from_times(times)
-    inferred = infer_metadata_from_filename(source_path)
-    extracted_text, raw_artifact_name, source_type, pdf_metadata, extraction_warning = source_text_and_artifact(source_path)
-
-    raw_txt_name = "raw.txt" if extracted_text else ""
-    source_url = discover_source_url(extracted_text, inferred["role_title"])
-    inferred = enrich_metadata_from_text(inferred, extracted_text, source_url)
-    company = inferred["company"]
-    role_title = inferred["role_title"]
-    listing_id = make_listing_id(captured_at, company, role_title)
-    listing_id, destination = unique_destination(root_path, captured_at, listing_id, force)
-
-    location = infer_location(extracted_text)
-    employment_type = infer_employment_type(extracted_text)
-    status = "extracted" if extracted_text else "ingested"
-    tags = list(inferred["tags"])
-    if source_type not in tags:
-        tags.append(source_type)
-
-    metadata: dict[str, Any] = {
-        "id": listing_id,
-        "captured_at": captured_at,
-        "source_url": source_url,
-        "company": company,
-        "role_title": role_title,
-        "role_family": inferred["role_family"],
-        "seniority": inferred["seniority"],
-        "location": location,
-        "employment_type": employment_type,
-        "compensation": "",
-        "status": status,
-        "source_type": source_type,
-        "source_file_name": source_path.name,
-        "source_file_created_at": times.created_at,
-        "source_file_modified_at": times.modified_at,
-        "source_file_created_at_basis": times.created_at_basis,
-        "source_file_sha256": source_sha256,
-        "pdf_created_at": pdf_metadata.get("pdf_created_at", ""),
-        "pdf_pages": pdf_metadata.get("pdf_pages", ""),
-        "tags": tags,
-        "requirements": [],
-        "nice_to_haves": [],
-    }
-
-    import_notes = [
-        f"Original file: `{source_path.name}`",
-        f"Source file created at: `{times.created_at}` using `{times.created_at_basis}`",
-        f"Source file modified at: `{times.modified_at}`",
-        f"Raw artifact: `{raw_artifact_name}`",
-    ]
-    if raw_txt_name:
-        import_notes.append(f"Extracted text: `{raw_txt_name}`")
-    if source_url:
-        import_notes.append(f"Discovered source URL: {source_url}")
-    else:
-        import_notes.append("Source URL: not found in imported file")
-    if extraction_warning:
-        import_notes.append(f"Extraction warning: {extraction_warning}")
-
-    result = {
-        "source": str(source_path),
-        "status": "would-ingest" if dry_run else "ingested",
-        "id": listing_id,
-        "destination": str(destination),
-        "source_type": source_type,
-        "raw_artifact": raw_artifact_name,
-        "raw_text": raw_txt_name,
-    }
-    if dry_run:
-        return result
-
-    if force and destination.exists():
-        shutil.rmtree(destination)
-    destination.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source_path, destination / raw_artifact_name)
-    if extracted_text:
-        (destination / raw_txt_name).write_text(extracted_text, encoding="utf-8")
-    (destination / "listing.md").write_text(render_listing(metadata, import_notes), encoding="utf-8")
-    return result
-
-
 def relative_to_root(path: Path, root: Path) -> str:
     try:
         return path.relative_to(root).as_posix()
@@ -1782,8 +1570,8 @@ def ingest_url(
     listing_id = make_listing_id(captured_at, company, role_title)
     listing_id, destination = unique_destination(root_path, captured_at, listing_id, force)
 
-    source_type = "html" if is_html else "text"
-    raw_artifact_name = "raw.html" if is_html else "source.txt"
+    source_type = "html" if is_html else "markdown"
+    raw_artifact_name = "raw.html" if is_html else "raw.md"
     tags = [tag for tag in infer_tags(role_title, company, role_family, seniority) if tag != "imported"]
     tags.insert(0, "captured")
     if source_type not in tags:
@@ -1804,15 +1592,10 @@ def ingest_url(
         "location": location,
         "employment_type": employment_type,
         "compensation": compensation,
-        "status": "extracted" if extracted_text else "ingested",
+        "status": "extracted" if extracted_text else "captured",
         "source_type": source_type,
         "source_file_name": "",
-        "source_file_created_at": "",
-        "source_file_modified_at": "",
-        "source_file_created_at_basis": "url-fetch",
         "source_file_sha256": source_sha256,
-        "pdf_created_at": "",
-        "pdf_pages": "",
         "tags": tags,
         "requirements": [],
         "nice_to_haves": [],
@@ -1822,9 +1605,8 @@ def ingest_url(
         f"Captured from URL: {requested_url}",
         f"Fetched at: `{fetch.fetched_at}`",
         f"HTTP status: `{fetch.status}`",
-        f"Raw artifact: `{raw_artifact_name}`",
-        "Extracted Markdown: `raw.md`" if is_html and extracted_text else "Extracted Markdown: not available",
-        "Extracted text: `raw.txt`" if extracted_text else "Extracted text: not available",
+        "Raw HTML: `raw.html`" if is_html else "Raw HTML: not available",
+        "Generated Markdown: `raw.md`" if extracted_text else "Generated Markdown: not available",
     ]
     if fetch.final_url != requested_url:
         import_notes.append(f"Final URL: {fetch.final_url}")
@@ -1839,8 +1621,7 @@ def ingest_url(
         "listing_path": relative_to_root(destination / "listing.md", root_path),
         "source_type": source_type,
         "raw_artifact": raw_artifact_name,
-        "raw_markdown": "raw.md" if is_html and extracted_text else "",
-        "raw_text": "raw.txt" if extracted_text else "",
+        "raw_markdown": "raw.md" if extracted_text else "",
         "source_final_url": fetch.final_url,
     }
     if dry_run:
@@ -1849,53 +1630,12 @@ def ingest_url(
     if force and destination.exists():
         shutil.rmtree(destination)
     destination.mkdir(parents=True, exist_ok=True)
-    (destination / raw_artifact_name).write_bytes(fetch.body)
+    if is_html:
+        (destination / "raw.html").write_bytes(fetch.body)
     if extracted_text:
-        if is_html:
-            (destination / "raw.md").write_text(extracted_text, encoding="utf-8")
-        (destination / "raw.txt").write_text(extracted_text, encoding="utf-8")
+        (destination / "raw.md").write_text(extracted_text, encoding="utf-8")
     (destination / "listing.md").write_text(render_listing(metadata, import_notes, overrides.get("why", "")), encoding="utf-8")
     return result
-
-
-def iter_importable_files(source_dir: str | Path) -> list[Path]:
-    root = Path(source_dir)
-    if root.is_file():
-        return [root]
-    return sorted(path for path in root.iterdir() if path.is_file() and path.suffix.lower() in SUPPORTED_SUFFIXES)
-
-
-def ingest_paths(source_dir: str | Path, root: str | Path = ROOT, force: bool = False, dry_run: bool = False) -> list[dict[str, Any]]:
-    results = []
-    for path in iter_importable_files(source_dir):
-        results.append(ingest_file(path, root=root, force=force, dry_run=dry_run))
-    if not dry_run:
-        build_index(root)
-    return results
-
-
-def print_ingest_results(results: list[dict[str, Any]]) -> None:
-    for result in results:
-        status = result.get("status")
-        source_name = Path(result.get("source", "")).name
-        if "id" in result:
-            print(f"{status}: {source_name} -> {result['id']}")
-        elif result.get("listing_path"):
-            print(f"{status}: {source_name} ({result.get('reason', '')}: {result['listing_path']})")
-        else:
-            print(f"{status}: {source_name} ({result.get('reason', '')})")
-
-
-def ingest_cli(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Import saved job listing PDFs or text files.")
-    parser.add_argument("source", help="Source file or directory to import")
-    parser.add_argument("--repo-root", default=str(ROOT), help="Repository root")
-    parser.add_argument("--force", action="store_true", help="Overwrite matching generated destination")
-    parser.add_argument("--dry-run", action="store_true", help="Show what would be imported without writing files")
-    args = parser.parse_args(argv)
-    results = ingest_paths(args.source, root=args.repo_root, force=args.force, dry_run=args.dry_run)
-    print_ingest_results(results)
-    return 0
 
 
 def index_cli(argv: list[str] | None = None) -> int:

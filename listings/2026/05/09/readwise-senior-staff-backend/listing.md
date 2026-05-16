@@ -9,34 +9,32 @@ seniority: "senior-staff"
 location: "Remote"
 employment_type: "Full time"
 compensation: ""
-status: "extracted"
-source_type: "pdf"
-source_file_name: "Readwise.pdf"
-source_file_created_at: "2026-05-09T22:14:54-04:00"
-source_file_modified_at: "2026-05-09T22:14:55-04:00"
-source_file_created_at_basis: "birthtime"
-source_file_sha256: "a6505cf73a0694ba230decb0676355748570274e5e97418bfcb8af1fae3c4296"
-pdf_created_at: "2026-05-10T02:14:55+00:00"
-pdf_pages: 5
+status: "reviewed"
+source_type: "markdown"
+source_file_name: ""
+source_file_sha256: ""
 tags:
-  - "imported"
+  - "captured"
   - "backend"
   - "senior-staff"
   - "readwise"
-  - "pdf"
-requirements: []
-nice_to_haves: []
+  - "markdown"
+requirements:
+  - "Senior-or-higher backend or infrastructure production experience"
+  - "Python, Django, Postgres, Redis, Celery, or large-scale data systems experience"
+  - "Working hours with meaningful US or EU teammate overlap"
+  - "High autonomy from planning through shipping"
+nice_to_haves:
+  - "Experience working on large-scale complex applications"
+  - "Ability to contribute across TypeScript, React, or React Native when needed"
+  - "Systems architecture thinking across backend and product boundaries"
 ---
-
 # Senior/Staff Engineer (Backend Focus) - Readwise
 
 Source: https://readwise.io/careers/senior-staff-engineer
 
 ## Import notes
 
-- Original file: `Readwise.pdf`
-- Source file created at: `2026-05-09T22:14:54-04:00` using `birthtime`
-- Source file modified at: `2026-05-09T22:14:55-04:00`
-- Raw artifact: `raw.pdf`
-- Extracted text: `raw.txt`
+- Raw HTML: not available
+- Generated Markdown: `raw.md`
 - Discovered source URL: https://readwise.io/careers/senior-staff-engineer

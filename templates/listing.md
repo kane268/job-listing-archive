@@ -2,6 +2,10 @@
 id: "YYYY-MM-DD-company-role"
 captured_at: "YYYY-MM-DD"
 source_url: ""
+source_final_url: ""
+source_http_status: ""
+source_fetched_at: ""
+source_published_at: ""
 company: ""
 role_title: ""
 role_family: ""
@@ -10,10 +14,9 @@ location: ""
 employment_type: ""
 compensation: ""
 status: "captured"
-source_type: ""
+source_type: "html"
 source_file_name: ""
-source_file_created_at: ""
-source_file_modified_at: ""
+source_file_sha256: ""
 tags: []
 requirements: []
 nice_to_haves: []
@@ -25,6 +28,6 @@ Source:
 
 ## Import notes
 
-- Capture method:
-- Raw artifact:
-- Extracted Markdown:
+- Captured from URL:
+- Raw HTML: `raw.html`
+- Generated Markdown: `raw.md`

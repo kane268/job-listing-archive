@@ -3,17 +3,15 @@
 
 from __future__ import annotations
 
-import os
 import shutil
 import subprocess
 import sys
 import webbrowser
-from pathlib import Path
 
 from build_site import build_site
-from job_archive import ROOT, build_index, ingest_paths, listing_paths, print_ingest_results
+from job_archive import ROOT, build_index, listing_paths
+from validation import validate_archive
 
-DEFAULT_SOURCE = Path.home() / "Library/Mobile Documents/com~apple~CloudDocs/Job Listings"
 LARGE_FILE_LIMIT = 50 * 1024 * 1024
 
 
@@ -25,10 +23,6 @@ def run(command: list[str], *, check: bool = True) -> subprocess.CompletedProces
 
 def output(command: list[str]) -> str:
     return subprocess.check_output(command, cwd=ROOT, text=True).strip()
-
-
-def source_dir() -> Path:
-    return Path(os.environ.get("JOB_LISTINGS_SOURCE", str(DEFAULT_SOURCE))).expanduser()
 
 
 def has_staged_changes() -> bool:
@@ -55,9 +49,12 @@ def verify_archive() -> None:
     listings = listing_paths(ROOT)
     large_files = [path for path in (ROOT / "listings").rglob("*") if path.is_file() and path.stat().st_size > LARGE_FILE_LIMIT]
     print(f"Archive check: {len(listings)} listings")
+    errors = validate_archive(ROOT)
     if large_files:
-        joined = "\n".join(f"- {path.relative_to(ROOT)}" for path in large_files)
-        raise SystemExit(f"Files over 50 MiB should not be committed:\n{joined}")
+        errors.append("Files over 50 MiB should not be committed:\n" + "\n".join(f"- {path.relative_to(ROOT)}" for path in large_files))
+    if errors:
+        joined = "\n".join(f"- {error}" for error in errors)
+        raise SystemExit(f"Archive validation failed:\n{joined}")
 
 
 def cmd_help(_: list[str]) -> int:
@@ -71,11 +68,9 @@ Mobile:
   3. Create the prefilled GitHub issue so Actions can capture the page.
 
 Laptop:
-  mise run update          Import legacy iCloud files, rebuild the index, site, test, commit, and push.
-  mise run save            Rebuild the index and site, test, commit current changes, and push.
-  mise run import          Only import legacy iCloud files.
+  mise run save            Rebuild the index and site artifact, test, commit current changes, and push.
   mise run check           Run tests and archive checks.
-  mise run site            Rebuild the static web site.
+  mise run site            Rebuild the static web site artifact.
   mise run validate-capture Validate live URL capture against archived URLs.
   mise run capture         Open the web listing capture UI in manage mode.
   mise run sources         List places to look for jobs.
@@ -84,23 +79,11 @@ Laptop:
 
 Most days, use only this:
 
-  mise run update
+  mise run save
 """.strip()
     )
     return 0
 
-
-def cmd_import(_: list[str]) -> int:
-    source = source_dir()
-    if not source.exists():
-        raise SystemExit(f"Source folder does not exist: {source}")
-    print(f"Import source: {source}")
-    results = ingest_paths(source, root=ROOT)
-    print_ingest_results(results)
-    imported = sum(1 for result in results if result.get("status") == "ingested")
-    skipped = sum(1 for result in results if result.get("status") == "skipped")
-    print(f"Import summary: {imported} imported, {skipped} skipped")
-    return 0
 
 
 def cmd_index(_: list[str]) -> int:
@@ -136,10 +119,6 @@ def cmd_save(args: list[str]) -> int:
     return 0
 
 
-def cmd_update(args: list[str]) -> int:
-    cmd_import([])
-    return cmd_save(args)
-
 
 def cmd_status(_: list[str]) -> int:
     verify_archive()
@@ -147,10 +126,6 @@ def cmd_status(_: list[str]) -> int:
     run(["git", "status", "--short", "--branch"])
     return 0
 
-
-def cmd_setup(_: list[str]) -> int:
-    run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
-    return 0
 
 
 def repo_url() -> str:
@@ -197,13 +172,10 @@ def cmd_add_source(args: list[str]) -> int:
 
 COMMANDS = {
     "help": cmd_help,
-    "import": cmd_import,
     "index": cmd_index,
     "check": cmd_check,
     "save": cmd_save,
-    "update": cmd_update,
     "status": cmd_status,
-    "setup": cmd_setup,
     "capture": cmd_capture,
     "capture-source": cmd_capture_source,
     "sources": cmd_sources,

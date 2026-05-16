@@ -9,34 +9,31 @@ seniority: "staff"
 location: "Remote"
 employment_type: "Full time"
 compensation: ""
-status: "extracted"
-source_type: "pdf"
-source_file_name: "Job Application for Staff+ Software Engineer, Developer Productivity at Anthropi.pdf"
-source_file_created_at: "2026-05-11T03:45:19-04:00"
-source_file_modified_at: "2026-05-11T03:45:19-04:00"
-source_file_created_at_basis: "birthtime"
-source_file_sha256: "11c4dcbc9d32d3e21d5392aed24478fb4156a53c692ea3e52bb9e717b1b65067"
-pdf_created_at: "2026-05-11T07:45:19+00:00"
-pdf_pages: 13
+status: "reviewed"
+source_type: "markdown"
+source_file_name: ""
+source_file_sha256: ""
 tags:
-  - "imported"
+  - "captured"
   - "software-engineering"
   - "staff"
-  - "pdf"
+  - "markdown"
   - "anthropic"
-requirements: []
-nice_to_haves: []
+requirements:
+  - "Staff-level ownership of infrastructure technical strategy and roadmap"
+  - "Experience designing reliable distributed infrastructure or shared libraries"
+  - "Build, CI, package management, dependency, or language ecosystem tooling experience"
+  - "Bachelor degree or equivalent relevant education, training, or experience"
+nice_to_haves:
+  - "Developer productivity or monorepo infrastructure experience"
+  - "Interest in AI-assisted engineering workflows"
 ---
-
 # Staff+ Software Engineer, Developer Productivity - Anthropic
 
 Source: https://job-boards.greenhouse.io/anthropic/jobs/5110511008
 
 ## Import notes
 
-- Original file: `Job Application for Staff+ Software Engineer, Developer Productivity at Anthropi.pdf`
-- Source file created at: `2026-05-11T03:45:19-04:00` using `birthtime`
-- Source file modified at: `2026-05-11T03:45:19-04:00`
-- Raw artifact: `raw.pdf`
-- Extracted text: `raw.txt`
+- Raw HTML: not available
+- Generated Markdown: `raw.md`
 - Discovered source URL: https://job-boards.greenhouse.io/anthropic/jobs/5110511008

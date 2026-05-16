@@ -6,17 +6,13 @@ This repo started as a formal version of a personal habit: saving interesting te
 
 The goal is not to build a job-search CRM, scraper, or application tracker. The goal is a durable public-safe archive where interesting roles can be captured quickly, normalized later, and analyzed only when there is enough data.
 
-Initial imported files came from a local import folder configured outside the repository.
-
-Those files were mostly Safari-generated PDFs, plus one saved Apple page. The import scripts preserve original file names, macOS file creation times when available, PDF metadata when available, raw artifacts, extracted text, and a generated listing record.
-
 ## Design principles
 
 - Capture fast, normalize later.
 - Keep Markdown files as the source of truth.
-- Keep capture notes public-safe because the web workflow uses public GitHub Pages and Issues.
-- Treat fetched HTML, PDFs, and raw text as evidence.
-- Use GitHub Issues as the mobile URL inbox.
+- Keep capture notes public-safe because the workflow uses public GitHub Pages, GitHub Issues, and a public repository.
+- Treat fetched HTML and extracted Markdown as evidence.
+- Use GitHub Issues as the mobile URL queue.
 - Use Pages CMS for structured source maintenance, not primary quick capture.
 - Avoid scraping unless explicitly requested.
 - Prefer small scripts and generated CSVs over a database.
@@ -32,17 +28,16 @@ Each listing lives at:
 listings/YYYY/MM/DD/<short-slug>/listing.md
 ```
 
-Optional raw files sit beside it:
+Raw/generated files sit beside it:
 
 ```text
-raw.pdf     original PDF snapshot
-raw.html    original saved HTML page
-source.txt  original saved text file
-raw.md      generated Markdown extraction for web display
-raw.txt     generated text extraction
+raw.html    optional original fetched HTML evidence
+raw.md      generated readable Markdown extraction
 ```
 
-`listing.md` is the canonical human-editable record. It has YAML front matter for filtering and Markdown sections for interpretation, notes, and requirement review.
+`listing.md` is the canonical human-editable record. It has YAML-style front matter for filtering and Markdown sections for interpretation, notes, and requirement review.
+
+The legacy PDF/iCloud import path has been removed. Historical listings keep public-safe provenance in `listing.md`, but new capture is URL-first.
 
 ### Job sources
 
@@ -54,19 +49,17 @@ data/job-sources.json
 
 Each entry stores `name`, jobs `url`, and `homepage_url` for favicon source. Source IDs are generated from names, for example `If This Is Company Name` becomes `if-this-is-company-name`.
 
-Examples include company career pages such as Anthropic, GitHub, Stripe, Apple, and Readwise.
+### Generated data and site artifact
 
-### Generated data
+`data/index.csv` is generated from all `listing.md` files and is committed for easy analysis.
 
-`data/index.csv` is generated from all `listing.md` files. `archive/<id>/index.html` pages and the home page are generated from source files and `raw.md` when available, falling back to `raw.txt`.
-
-Rebuild generated data with:
+The static GitHub Pages site is generated into `_site/` and deployed as a Pages artifact. Generated Pages HTML is not committed. Rebuild generated data and the local site artifact with:
 
 ```bash
 mise run check
 ```
 
-Do not hand-edit generated index rows, generated archive pages, or generated `raw.txt`. Edit the relevant `listing.md`, source artifact, or extraction script, then rebuild.
+Do not hand-edit generated index rows or `_site/` files. Edit the relevant `listing.md`, source artifact, or extraction script, then rebuild.
 
 ## Current workflow
 
@@ -78,11 +71,9 @@ Use the GitHub Pages web UI in manage mode:
 https://kane268.github.io/job-listing-archive/?manage=1
 ```
 
-Public visitors see only listings. Manage mode is stored per browser and shows capture, saved companies, GitHub links, raw captures, and extraction issue links. Disable it with `?manage=0`.
+Public visitors see only listings. Manage mode is stored per browser and shows capture, saved companies, GitHub links, raw Markdown links, and extraction issue links. Disable it with `?manage=0`. Manage mode is not security; it only hides owner tools in the browser.
 
-Paste a listing URL. The site opens a prefilled GitHub issue with an empty body, the URL in the title, and labels `inbox,capture`. GitHub Actions fetches the page, saves `raw.html`, extracts `raw.md` and `raw.txt`, creates `listing.md`, rebuilds `data/index.csv`, rebuilds the static site, commits the result, labels the issue `ingested`, and closes it. If capture fails, Actions saves the URL in `data/captures.json` and manage mode shows it as a backup for later parser fixes and re-capture.
-
-Legacy PDF import remains available for old saved files, but PDF capture is no longer the normal path.
+Paste a listing URL. The site opens a prefilled GitHub issue with an empty body, the URL in the title, and the `capture` label. GitHub Actions fetches the page, saves `raw.html`, extracts `raw.md`, creates `listing.md`, rebuilds `data/index.csv`, commits the result, labels the issue `ingested`, and closes it. If capture fails, Actions saves the URL in `data/captures.json` and manage mode shows it as a backup for later parser fixes and re-capture.
 
 For a new source page, use the job source issue form:
 
@@ -95,24 +86,23 @@ https://github.com/kane268/job-listing-archive/issues/new?template=job-source.ym
 Most routine work should use:
 
 ```bash
-mise run update
+mise run save
 ```
 
-That imports legacy iCloud files, skips already imported files by SHA-256, rebuilds `data/index.csv`, runs checks, commits, and pushes.
+That rebuilds `data/index.csv`, builds the local `_site/` artifact, runs tests and archive validation, commits, rebases, and pushes.
 
 Useful commands:
 
 ```bash
-mise run import          # import legacy iCloud files only
-mise run save            # check, commit, and push current changes
-mise run check           # validate mise tasks, rebuild index and site, run tests
-mise run sources         # list job source pages
-mise run browse          # open active job source pages
-mise run add-source      # add or update a source
-mise run site            # rebuild static GitHub Pages site
+mise run save             # check, commit, and push current changes
+mise run check            # validate mise tasks, rebuild index/site artifact, run tests
+mise run sources          # list job source pages
+mise run browse           # open active job source pages
+mise run add-source       # add or update a source
+mise run site             # rebuild the local static site artifact
 mise run validate-capture # test live URL capture in a temp repo
-mise run capture         # open web listing capture UI in manage mode
-mise run capture-source  # open source capture issue form
+mise run capture          # open web listing capture UI in manage mode
+mise run capture-source   # open source capture issue form
 ```
 
 ## Data model
@@ -123,39 +113,45 @@ Important `listing.md` front matter fields:
 id: "2026-05-09-readwise-senior-staff-backend"
 captured_at: "2026-05-09"
 source_url: "https://readwise.io/careers/senior-staff-engineer"
+source_final_url: ""
+source_http_status: 200
+source_fetched_at: "2026-05-16T12:00:00+00:00"
+source_published_at: ""
 company: "Readwise"
 role_title: "Senior/Staff Engineer (Backend Focus)"
 role_family: "backend"
 seniority: "senior-staff"
 location: "Remote"
 employment_type: "Full time"
-status: "extracted"
-source_type: "pdf"
-source_file_name: "Readwise.pdf"
-source_file_created_at: "2026-05-09T22:14:54-04:00"
+compensation: ""
+status: "reviewed"
+source_type: "markdown"
+source_file_name: ""
 source_file_sha256: "..."
 tags:
-  - "imported"
+  - "captured"
   - "backend"
+requirements:
+  - "Senior-or-higher backend or infrastructure production experience"
+nice_to_haves: []
 ```
 
 Metadata is for filtering and grouping. The Markdown body is for memory, judgment, and notes.
 
 ## Status meanings
 
-- `captured`: saved quickly, not normalized yet
-- `ingested`: imported into the repo
-- `extracted`: raw text exists
+- `captured`: URL saved quickly, not normalized yet
+- `extracted`: readable Markdown exists
 - `reviewed`: requirements, tags, and notes reviewed
 - `archived`: no more action needed
 
 ## Issue workflow
 
-GitHub Issues are an inbox, not the permanent archive.
+GitHub Issues are a capture queue, not the permanent archive.
 
 Listing issues:
 
-1. New capture issues start with `inbox` and `capture`, and keep the URL in the title.
+1. New capture issues use the `capture` label and keep the URL in the title.
 2. GitHub Actions only acts on owner-created issues with the `capture` label.
 3. Bug reports and markdown extraction issues should not use the `capture` label.
 4. GitHub Actions captures the URL or records a failed attempt in `data/captures.json`.
@@ -168,18 +164,19 @@ Source issues:
 2. Add or update `data/job-sources.json`.
 3. Close the issue once the source is tracked.
 
-The `[job]` title prefix is no longer used. Labels and issue forms provide the categorization.
+The `[job]` title prefix is not used anymore. Labels and issue forms provide categorization.
 
 ## Script responsibilities
 
 ```text
-scripts/job_archive.py   core listing import, URL capture, extraction, metadata, index helpers
-scripts/capture_url.py   CLI wrapper used by GitHub Actions URL capture and backup records
-scripts/build_site.py    static GitHub Pages site generator
-scripts/ingest_pdfs.py   CLI wrapper for importing saved files
-scripts/build_index.py   CLI wrapper for rebuilding data/index.csv
-scripts/job_sources.py   CLI for data/job-sources.json
-scripts/workflow.py      mise task wrapper for common workflows
+scripts/job_archive.py          core URL capture, extraction, metadata, and index helpers
+scripts/capture_url.py          CLI wrapper used by GitHub Actions URL capture and backup records
+scripts/build_site.py           static GitHub Pages artifact generator
+scripts/build_index.py          CLI wrapper for rebuilding data/index.csv
+scripts/validation.py           archive and JSON data validation helpers
+scripts/job_sources.py          CLI for data/job-sources.json
+scripts/workflow.py             mise task wrapper for common workflows
+assets/                         site CSS and JavaScript copied into _site/
 ```
 
 Tests live in:
@@ -196,19 +193,16 @@ mise run check
 
 ## Known limitations
 
-- PDF extraction uses `pypdf`, so text can contain OCR or font extraction artifacts.
-- Source URLs are not always present in Safari PDFs.
-- Metadata inference is best-effort and should be reviewed.
+- Source metadata inference is best-effort and should be reviewed.
 - This repo intentionally does not scrape job boards.
-- Large PDFs should be avoided. The workflow checks for files over 50 MiB.
-- This repo is public for GitHub Pages, so capture URL-first and avoid personal notes in issues or listing bodies.
+- Capture URL-first and avoid personal notes because the repo and Pages site are public.
+- GitHub Pages is deployed from a limited artifact, but raw evidence in the repository is still public.
 
 ## Future directions
 
 Only add complexity after the archive has enough examples to justify it. Plausible future work:
 
-- Better conversion from GitHub issue to `listing.md`.
 - More robust extraction for saved HTML pages.
 - Requirement tagging and normalization.
-- Skill frequency reports from `data/index.csv` and raw text.
+- Skill frequency reports from `data/index.csv` and raw Markdown.
 - Optional browser bookmarklet or shortcut for faster capture.

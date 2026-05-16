@@ -32,7 +32,7 @@ def validate_url(url: str, root: Path, min_chars: int) -> None:
 
     destination = Path(result["destination"])
     metadata = parse_frontmatter(destination / "listing.md")
-    text_path = destination / "raw.txt"
+    text_path = destination / "raw.md"
     text = text_path.read_text(encoding="utf-8", errors="replace") if text_path.exists() else ""
     company = str(metadata.get("company") or "")
     role_title = str(metadata.get("role_title") or "")
@@ -40,7 +40,7 @@ def validate_url(url: str, root: Path, min_chars: int) -> None:
     if role_title_is_generic(role_title, company):
         raise AssertionError(f"{url}: generic role title: {role_title!r}")
     if len(text) < min_chars:
-        raise AssertionError(f"{url}: raw text too short: {len(text)} chars")
+        raise AssertionError(f"{url}: raw Markdown too short: {len(text)} chars")
 
     print(f"ok: {company or 'Unknown company'} - {role_title} ({len(text)} chars)")
 
@@ -48,7 +48,7 @@ def validate_url(url: str, root: Path, min_chars: int) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate live URL capture in a temporary repo.")
     parser.add_argument("urls", nargs="*", help="URLs to validate. Defaults to source URLs in data/index.csv.")
-    parser.add_argument("--min-chars", type=int, default=500, help="Minimum raw.txt length")
+    parser.add_argument("--min-chars", type=int, default=500, help="Minimum raw.md length")
     args = parser.parse_args(argv)
 
     urls = args.urls or index_urls()

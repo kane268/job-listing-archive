@@ -2,7 +2,7 @@
 
 Source: https://jobs.apple.com/en-us/details/200602358/software-engineer-system-experience  
 Role number: 200602358  
-Posted: Oct 31, 2025  
+Posted: May 01, 2025  
 Location: Cupertino, California, United States
 
 ## Summary

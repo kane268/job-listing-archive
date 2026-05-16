@@ -1,37 +1,3 @@
 {
-  "captures": [
-    {
-      "id": "github-careers-careers-home-jobs-5369-lang-en-us",
-      "source_url": "https://www.github.careers/careers-home/jobs/5369?lang=en-us",
-      "submitted_at": "2026-05-16T16:34:05+00:00",
-      "updated_at": "2026-05-16T16:34:06+00:00",
-      "issue_url": "https://github.com/kane268/job-listing-archive/issues/5",
-      "status": "captured",
-      "reason": "",
-      "listing_path": "listings/2026/05/16/github-staff-software-engineer/listing.md",
-      "listing_id": "2026-05-16-github-staff-software-engineer"
-    },
-    {
-      "id": "stripe-com-jobs-listing-full-stack-engineer-developer-experience-product-platform-6567104",
-      "source_url": "https://stripe.com/jobs/listing/full-stack-engineer-developer-experience-product-platform/6567104",
-      "submitted_at": "2026-05-16T15:52:36+00:00",
-      "updated_at": "2026-05-16T15:52:36+00:00",
-      "issue_url": "https://github.com/kane268/job-listing-archive/issues/4",
-      "status": "captured",
-      "reason": "",
-      "listing_path": "listings/2026/05/16/stripe-full-stack-developer-experience/listing.md",
-      "listing_id": "2026-05-16-stripe-full-stack-developer-experience"
-    },
-    {
-      "id": "stripe-com-jobs-listing-backend-engineer-developer-experience-product-platform-7292520",
-      "source_url": "https://stripe.com/jobs/listing/backend-engineer-developer-experience-product-platform/7292520",
-      "submitted_at": "2026-05-16T15:52:18+00:00",
-      "updated_at": "2026-05-16T15:52:18+00:00",
-      "issue_url": "https://github.com/kane268/job-listing-archive/issues/3",
-      "status": "captured",
-      "reason": "",
-      "listing_path": "listings/2026/05/16/stripe-backend-developer-experience-product/listing.md",
-      "listing_id": "2026-05-16-stripe-backend-developer-experience-product"
-    }
-  ]
+  "captures": []
 }

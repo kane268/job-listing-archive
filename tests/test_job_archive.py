@@ -19,13 +19,13 @@ from job_archive import (  # noqa: E402
     html_to_text,
     infer_company_from_url,
     infer_metadata_from_filename,
-    ingest_file,
     ingest_url,
     parse_frontmatter,
-    parse_pdf_date,
+    render_yaml,
     short_listing_slug,
     slugify,
 )
+from validation import validate_archive  # noqa: E402
 
 
 class JobArchiveTests(unittest.TestCase):
@@ -42,13 +42,13 @@ class JobArchiveTests(unittest.TestCase):
         self.assertEqual(short_listing_slug("GitHub", "Staff Software Engineer"), "github-staff-software-engineer")
 
     def test_infer_metadata_from_plain_filenames(self) -> None:
-        stripe = infer_metadata_from_filename("Stripe Staff Software Engineer, Data Movement.pdf")
+        stripe = infer_metadata_from_filename("Stripe Staff Software Engineer, Data Movement.html")
         self.assertEqual(stripe["company"], "Stripe")
         self.assertEqual(stripe["role_title"], "Staff Software Engineer, Data Movement")
         self.assertEqual(stripe["seniority"], "staff")
         self.assertEqual(stripe["role_family"], "data")
 
-        copilot = infer_metadata_from_filename("Head of Engineering @ Copilot Money.pdf")
+        copilot = infer_metadata_from_filename("Head of Engineering @ Copilot Money.html")
         self.assertEqual(copilot["company"], "Copilot Money")
         self.assertEqual(copilot["role_title"], "Head of Engineering")
         self.assertEqual(copilot["seniority"], "head")
@@ -129,7 +129,7 @@ class JobArchiveTests(unittest.TestCase):
             self.assertEqual(metadata["source_type"], "html")
             self.assertTrue((Path(result["destination"]) / "raw.html").exists())
             self.assertTrue((Path(result["destination"]) / "raw.md").exists())
-            self.assertTrue((Path(result["destination"]) / "raw.txt").exists())
+            self.assertFalse((Path(result["destination"]) / "raw.txt").exists())
 
     def test_extract_github_markdown_uses_job_posting_data(self) -> None:
         markup = """
@@ -224,62 +224,46 @@ class JobArchiveTests(unittest.TestCase):
         self.assertIn("Posted: Oct 31, 2025", metadata["markdown"])
         self.assertEqual(metadata["published_at"], "Oct 31, 2025")
 
-    def test_parse_pdf_date(self) -> None:
-        self.assertEqual(parse_pdf_date("D:20250815165320Z00'00'"), "2025-08-15T16:53:20+00:00")
+    def test_parse_frontmatter_preserves_unicode(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "listing.md"
+            path.write_text(render_yaml({"company": "São Paulo AI", "role_title": "Ingénieur"}) + "\n", encoding="utf-8")
+            metadata = parse_frontmatter(path)
+            self.assertEqual(metadata["company"], "São Paulo AI")
+            self.assertEqual(metadata["role_title"], "Ingénieur")
 
-    def test_ingest_text_file_can_infer_metadata_from_url_and_body(self) -> None:
+    def test_ingest_url_writes_html_and_markdown_without_raw_txt(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp) / "repo"
             root.mkdir()
-            source = Path(temp) / "Readwise.txt"
-            source.write_text(
-                """
-                Readwise
-                https://readwise.io/careers/senior-staff-engineer
-                Senior/Staff Engineer (Backend Focus)
-                Engineering Remote Full time
-                """,
+            body = b"""
+            <!doctype html>
+            <html><body>
+              <h1>Software Engineer</h1>
+              <a href="https://jobs.apple.com/app/en-us/apply/123456789-0000">Apply</a>
+              <p>Job type Full time Apply</p>
+            </body></html>
+            """
+            fetched = URLFetch(
+                requested_url="https://jobs.apple.com/en-us/details/123456789/software-engineer",
+                final_url="https://jobs.apple.com/en-us/details/123456789/software-engineer",
+                status=200,
+                content_type="text/html; charset=utf-8",
+                body=body,
                 encoding="utf-8",
+                fetched_at="2026-05-16T12:00:00+00:00",
             )
 
-            result = ingest_file(source, root=root)
-            metadata = parse_frontmatter(Path(result["destination"]) / "listing.md")
-            self.assertEqual(metadata["company"], "Readwise")
-            self.assertEqual(metadata["role_title"], "Senior/Staff Engineer (Backend Focus)")
-            self.assertEqual(metadata["seniority"], "senior-staff")
-            self.assertEqual(metadata["role_family"], "backend")
-            self.assertEqual(metadata["location"], "Remote")
-            self.assertEqual(metadata["employment_type"], "Full time")
-            self.assertEqual(metadata["source_url"], "https://readwise.io/careers/senior-staff-engineer")
-
-    def test_ingest_html_file_and_build_index(self) -> None:
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp) / "repo"
-            source_dir = Path(temp) / "source"
-            root.mkdir()
-            source_dir.mkdir()
-            source = source_dir / "Software Engineer - Jobs - Careers at Apple.txt"
-            source.write_text(
-                """
-                <!doctype html>
-                <html><body>
-                  <h1>Software Engineer</h1>
-                  <a href="https://jobs.apple.com/app/en-us/apply/123456789-0000">Apply</a>
-                  <p>Job type Full time Apply</p>
-                </body></html>
-                """,
-                encoding="utf-8",
-            )
-
-            result = ingest_file(source, root=root)
-            self.assertEqual(result["status"], "ingested")
-            duplicate = ingest_file(source, root=root)
+            result = ingest_url(fetched.requested_url, root=root, fetched=fetched)
+            self.assertEqual(result["status"], "captured")
+            duplicate = ingest_url(fetched.requested_url, root=root, fetched=fetched)
             self.assertEqual(duplicate["status"], "skipped")
-            self.assertEqual(duplicate["reason"], "already imported")
+            self.assertEqual(duplicate["reason"], "already captured URL")
             listing_path = Path(result["destination"]) / "listing.md"
             self.assertTrue(listing_path.exists())
             self.assertTrue((Path(result["destination"]) / "raw.html").exists())
-            self.assertTrue((Path(result["destination"]) / "raw.txt").exists())
+            self.assertTrue((Path(result["destination"]) / "raw.md").exists())
+            self.assertFalse((Path(result["destination"]) / "raw.txt").exists())
 
             metadata = parse_frontmatter(listing_path)
             self.assertEqual(metadata["company"], "Apple")
@@ -292,6 +276,66 @@ class JobArchiveTests(unittest.TestCase):
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0]["company"], "Apple")
             self.assertEqual(rows[0]["role_title"], "Software Engineer")
+
+    def test_validate_archive_rejects_obsolete_raw_txt(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "repo"
+            listing_dir = root / "listings" / "2026" / "05" / "16" / "example-role"
+            listing_dir.mkdir(parents=True)
+            metadata = {
+                "id": "2026-05-16-example-role",
+                "captured_at": "2026-05-16",
+                "source_url": "https://example.com/jobs/1",
+                "company": "Example",
+                "role_title": "Role",
+                "status": "extracted",
+                "source_type": "markdown",
+                "tags": [],
+                "requirements": [],
+                "nice_to_haves": [],
+            }
+            (listing_dir / "listing.md").write_text(render_yaml(metadata) + "\n# Role - Example\n", encoding="utf-8")
+            (listing_dir / "raw.md").write_text("# Role - Example\n", encoding="utf-8")
+            (listing_dir / "raw.txt").write_text("obsolete\n", encoding="utf-8")
+            (root / "data").mkdir()
+            (root / "data" / "job-sources.json").write_text(
+                json.dumps({"sources": [{"name": "Example", "url": "https://example.com/jobs", "homepage_url": "https://example.com"}]}),
+                encoding="utf-8",
+            )
+            (root / "data" / "captures.json").write_text(json.dumps({"captures": []}), encoding="utf-8")
+            self.assertTrue(any("raw.txt is obsolete" in error for error in validate_archive(root)))
+
+    def test_checked_in_github_fixture_extracts_structured_metadata(self) -> None:
+        markup = (REPO_ROOT / "listings/2026/05/16/github-staff-software-engineer/raw.html").read_text(
+            encoding="utf-8",
+            errors="replace",
+        )
+        metadata = extract_html_capture_metadata(markup, "https://www.github.careers/careers-home/jobs/5369?lang=en-us")
+        text = html_capture_to_text(markup, metadata)
+        self.assertEqual(metadata["company"], "GitHub")
+        self.assertEqual(metadata["role_title"], "Staff Software Engineer")
+        self.assertEqual(metadata["location"], "Remote, United States")
+        self.assertEqual(metadata["compensation"], "USD $140,400.00 - USD $372,300.00 /Yr")
+        self.assertIn("## Responsibilities", text)
+        self.assertNotIn("Skip to Main Content", text)
+
+    def test_checked_in_stripe_fixture_extracts_structured_metadata(self) -> None:
+        markup = (REPO_ROOT / "listings/2026/05/16/stripe-backend-developer-experience-product/raw.html").read_text(
+            encoding="utf-8",
+            errors="replace",
+        )
+        metadata = extract_html_capture_metadata(
+            markup,
+            "https://stripe.com/jobs/listing/backend-engineer-developer-experience-product-platform/7292520",
+        )
+        text = html_capture_to_text(markup, metadata)
+        self.assertEqual(metadata["company"], "Stripe")
+        self.assertEqual(metadata["role_title"], "Backend Engineer, Developer Experience & Product Platform")
+        self.assertEqual(metadata["location"], "Toronto")
+        self.assertEqual(metadata["compensation"], "CA$135,200 - CA$202,800")
+        self.assertIn("### Minimum requirements", text)
+        self.assertNotIn("Open mobile navigation", text)
+
 
 
 if __name__ == "__main__":
