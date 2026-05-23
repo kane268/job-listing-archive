@@ -32,8 +32,7 @@ body.is-owner-mode .owner-inline { display: inline-block !important; }
 .url, .meta { display: block; color: var(--muted); font-size: .92rem; overflow-wrap: anywhere; }
 .empty { color: var(--muted); padding: 4px 0; }
 .action-link, .page-actions a { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; text-decoration: none; background: var(--bg); white-space: nowrap; }
-.action-row, .page-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
-.page-actions { margin: 14px 0; }
+.page-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
 .title-row { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; align-items: start; }
 .title-row .icon { width: 50px; height: 50px; border-radius: 12px; }
 .title-row .card-kicker { margin-top: 2px; }
@@ -50,6 +49,4 @@ body.is-owner-mode .owner-inline { display: inline-block !important; }
 @media (min-width: 720px) { body { padding: 28px 24px 56px; } .section-grid { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: start; } }
 
 .owner-note { margin-top: 10px; font-size: .9rem; }
-.filter-form { margin: 0 0 10px; }
-.filter-form input { margin-top: 6px; }
 [hidden] { display: none !important; }

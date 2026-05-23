@@ -257,7 +257,6 @@ def layout(title: str, body: str, description: str = "Job listing archive", asse
   <link rel="stylesheet" href="{asset_prefix}assets/site.css">
   <script src="{asset_prefix}assets/relative-time.js" defer></script>
   <script src="{asset_prefix}assets/manage-mode.js" defer></script>
-  <script src="{asset_prefix}assets/archive-ui.js" defer></script>
 </head>
 <body>
 {body}
@@ -305,15 +304,6 @@ def build_index_page(sources: list[dict[str, str]], listings: list[dict[str, Any
   <p class="muted">Readable Markdown copies of saved job listings.</p>
 </header>
 
-<section class="panel owner-only owner-block" aria-labelledby="manage-title">
-  <div class="panel-header"><h2 id="manage-title">Manage archive</h2></div>
-  <p class="muted owner-note">Manage mode only hides owner tools in this browser. It is not access control; repository data remains public.</p>
-  <div class="action-row">
-    <a class="action-link" href="{PAGES_CMS_LISTINGS_NEW_URL}" target="_blank" rel="noreferrer">Add listing</a>
-    <a class="action-link" href="{PAGES_CMS_SOURCES_URL}" target="_blank" rel="noreferrer">Edit companies</a>
-  </div>
-</section>
-
 <div class="section-grid">
   <section class="panel owner-only owner-block" aria-labelledby="sources-title">
     <div class="panel-header">
@@ -328,11 +318,6 @@ def build_index_page(sources: list[dict[str, str]], listings: list[dict[str, Any
       <h2 id="listings-title">Listings</h2>
       <a class="action-link owner-only owner-inline" href="{PAGES_CMS_LISTINGS_NEW_URL}" target="_blank" rel="noreferrer">Add</a>
     </div>
-    <form id="listing-filter" class="filter-form" role="search">
-      <label>Filter listings
-        <input id="listing-filter-input" type="search" autocomplete="off" placeholder="Company, role, location, tag">
-      </label>
-    </form>
     <div class="stack">{listing_html}</div>
   </section>
 </div>
