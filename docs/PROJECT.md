@@ -4,17 +4,15 @@
 
 This repo started as a formal version of a personal habit: saving interesting tech job listings from Safari for later reference.
 
-The goal is not to build a job-search CRM, scraper, or application tracker. The goal is a durable public-safe archive where interesting roles can be captured quickly, normalized later, and analyzed only when there is enough data.
+The goal is not to build a job-search CRM, scraper, or application tracker. The goal is a durable public-safe archive where interesting roles can be saved quickly, normalized later, and analyzed only when there is enough data.
 
 ## Design principles
 
-- Capture fast, normalize later.
+- Save URLs fast, normalize later.
 - Keep Markdown files as the source of truth.
-- Keep capture notes public-safe because the workflow uses public GitHub Pages, GitHub Issues, and a public repository.
-- Treat fetched HTML and extracted Markdown as evidence.
-- Use GitHub Issues as the mobile URL queue.
-- Use Pages CMS for structured source maintenance.
-- Avoid scraping unless explicitly requested.
+- Keep notes public-safe because the workflow uses public GitHub Pages and a public repository.
+- Use Pages CMS for listing and source maintenance.
+- Avoid scraping or crawling unless explicitly requested.
 - Prefer small scripts and generated CSVs over a database.
 - Keep metadata useful but not burdensome.
 
@@ -22,22 +20,15 @@ The goal is not to build a job-search CRM, scraper, or application tracker. The 
 
 ### Job listings
 
-Each listing lives at:
+Each listing is a flat Markdown file:
 
 ```text
-listings/YYYY/MM/DD/<short-slug>/listing.md
+listings/<saved-date-or-generated-name>.md
 ```
 
-Raw/generated files sit beside it:
+The YAML front matter stores filtering metadata. The Markdown body stores the readable listing text fetched from the source URL. There are no sidecar `raw.html` or `raw.md` files in the current data model; historical fetched evidence is represented by source URLs, final URLs, fetched timestamps, HTTP status, and checksums when available.
 
-```text
-raw.html    optional original fetched HTML evidence
-raw.md      generated readable Markdown extraction
-```
-
-`listing.md` is the canonical human-editable record. It has YAML-style front matter for filtering and Markdown sections for interpretation, notes, and requirement review.
-
-The legacy PDF/iCloud import path has been removed. Historical listings keep public-safe provenance in `listing.md`, but new capture is URL-first.
+New listings begin as small Pages CMS files with a `source_url`, `saved_at`, and `status: queued`. GitHub Actions fetches queued listings and writes the extracted readable text directly into the body.
 
 ### Job sources
 
@@ -51,7 +42,7 @@ Each entry stores `name`, jobs `url`, and `homepage_url` for favicon source. Sou
 
 ### Generated data and site artifact
 
-`data/index.csv` is generated from all `listing.md` files and is committed for easy analysis.
+`data/index.csv` is generated from listing front matter and is committed for easy analysis.
 
 The static GitHub Pages site is generated into `_site/` and deployed as a Pages artifact. Generated Pages HTML is not committed. Rebuild generated data and the local site artifact with:
 
@@ -59,29 +50,27 @@ The static GitHub Pages site is generated into `_site/` and deployed as a Pages 
 mise run check
 ```
 
-Do not hand-edit generated index rows or `_site/` files. Edit the relevant `listing.md`, source artifact, or extraction script, then rebuild.
+Do not hand-edit generated index rows or `_site/` files. Edit the relevant listing, company source data, or script, then rebuild.
 
 ## Current workflow
 
-### Mobile capture
+### Add a listing
 
-Use the GitHub Pages web UI in manage mode:
+Use the GitHub Pages site in manage mode:
 
 ```text
 https://kane268.github.io/job-listing-archive/?manage=1
 ```
 
-Public visitors see only listings. Manage mode is stored per browser and shows capture, saved companies, GitHub links, raw Markdown links, and extraction issue links. Disable it with `?manage=0`. Manage mode is not security; it only hides owner tools in the browser.
+Public visitors see only listings. Manage mode is stored per browser and shows owner tools such as Add listing, Edit companies, listing edit links, and GitHub links. Disable it with `?manage=0`. Manage mode is not security; it only hides owner tools in the browser.
 
-Paste a listing URL. The site opens a prefilled GitHub issue with an empty body, the URL in the title, and the `capture` label. GitHub Actions fetches the page, saves `raw.html`, extracts `raw.md`, creates `listing.md`, rebuilds `data/index.csv`, commits the result, labels the issue `ingested`, and closes it. If capture fails, Actions saves the URL in `data/captures.json` and manage mode shows it as a backup for later parser fixes and re-capture.
+Click **Add listing** and save a new Pages CMS entry with the public job listing URL. GitHub Actions fetches queued listing URLs, extracts readable Markdown, updates the listing body and metadata, rebuilds `data/index.csv`, and commits back to `main`.
+
+If a fetch fails, the listing remains in `listings/` with `status: failed` and `fetch_error`. Fix the URL or parser, then set `status` back to `queued` in Pages CMS to retry.
 
 ### Source maintenance
 
-Use Pages CMS from the manage-mode **Saved companies** editor link, or use the job source issue form:
-
-```text
-https://github.com/kane268/job-listing-archive/issues/new?template=job-source.yml
-```
+Use Pages CMS from the manage-mode **Edit companies** link to edit `data/job-sources.json`.
 
 Local operator workflows are not supported for archive maintenance. Local commands are only for development validation and CI parity.
 
@@ -90,75 +79,51 @@ Local operator workflows are not supported for archive maintenance. Local comman
 ```bash
 mise run check            # validate mise tasks, rebuild index/site artifact, run tests
 mise run site             # rebuild the local static site artifact
-mise run validate-capture # test live URL capture in a temp repo
 ```
 
 ## Data model
 
-Important `listing.md` front matter fields:
+Important listing front matter fields:
 
 ```yaml
-id: "2026-05-09-readwise-senior-staff-backend"
-captured_at: "2026-05-09"
 source_url: "https://readwise.io/careers/senior-staff-engineer"
-source_final_url: ""
-source_http_status: 200
-source_fetched_at: "2026-05-16T12:00:00+00:00"
-source_published_at: ""
+saved_at: "2026-05-09"
+status: "reviewed"
 company: "Readwise"
-role_title: "Senior/Staff Engineer (Backend Focus)"
+title: "Senior/Staff Engineer (Backend Focus)"
+source_final_url: ""
+http_status: 200
+fetched_at: "2026-05-16T12:00:00+00:00"
+source_published_at: ""
 role_family: "backend"
 seniority: "senior-staff"
 location: "Remote"
 employment_type: "Full time"
 compensation: ""
-status: "reviewed"
-source_type: "markdown"
-source_file_name: ""
-source_file_sha256: ""
+content_type: "markdown"
+source_sha256: ""
 tags:
-  - "captured"
   - "backend"
 requirements:
   - "Senior-or-higher backend or infrastructure production experience"
 nice_to_haves: []
 ```
 
-Metadata is for filtering and grouping. The Markdown body is for memory, judgment, and notes.
+Metadata is for filtering and grouping. The Markdown body is the durable human-readable listing record.
 
 ## Status meanings
 
-- `captured`: URL saved quickly, not normalized yet
-- `extracted`: readable Markdown exists
-- `reviewed`: requirements, tags, and notes reviewed
+- `queued`: Pages CMS has saved a URL and GitHub Actions should fetch it
+- `fetched`: readable Markdown exists in the listing body
+- `failed`: the fetch attempt failed; set back to `queued` to retry
+- `reviewed`: requirements, tags, metadata, or notes reviewed
 - `archived`: no more action needed
-
-## Issue workflow
-
-GitHub Issues are a capture queue, not the permanent archive.
-
-Listing issues:
-
-1. New capture issues use the `capture` label and keep the URL in the title.
-2. GitHub Actions only acts on owner-created issues with the `capture` label.
-3. Bug reports and markdown extraction issues should not use the `capture` label.
-4. GitHub Actions captures the URL or records a failed attempt in `data/captures.json`.
-5. Successful or duplicate captures get label `ingested`.
-6. Failed captures stay open with `needs-text-extraction` until the parser is fixed and the URL is re-run.
-
-Source issues:
-
-1. New issue starts with `source`.
-2. Add or update `data/job-sources.json`.
-3. Close the issue once the source is tracked.
-
-The `[job]` title prefix is not used anymore. Labels and issue forms provide categorization.
 
 ## Script responsibilities
 
 ```text
-scripts/job_archive.py          core URL capture, extraction, metadata, and index helpers
-scripts/capture_url.py          CLI wrapper used by GitHub Actions URL capture and backup records
+scripts/job_archive.py          URL fetching, extraction, metadata, and index helpers
+scripts/enrich_listings.py      CLI used by GitHub Actions to fetch queued listing URLs
 scripts/build_site.py           static GitHub Pages artifact generator
 scripts/build_index.py          CLI wrapper for rebuilding data/index.csv
 scripts/validation.py           archive and JSON data validation helpers
@@ -182,9 +147,9 @@ mise run check
 ## Known limitations
 
 - Source metadata inference is best-effort and should be reviewed.
-- This repo intentionally does not scrape job boards.
-- Capture URL-first and avoid personal notes because the repo and Pages site are public.
-- GitHub Pages is deployed from a limited artifact, but raw evidence in the repository is still public.
+- This repo intentionally does not crawl job boards.
+- Listing URLs and notes must remain public-safe because the repo and Pages site are public.
+- Pages CMS commits small queued files first; the generated site may briefly show a queued listing before enrichment commits the fetched body.
 
 ## Future directions
 
@@ -192,5 +157,5 @@ Only add complexity after the archive has enough examples to justify it. Plausib
 
 - More robust extraction for saved HTML pages.
 - Requirement tagging and normalization.
-- Skill frequency reports from `data/index.csv` and raw Markdown.
-- Optional browser bookmarklet or shortcut for faster capture.
+- Skill frequency reports from `data/index.csv` and listing bodies.
+- Optional browser bookmarklet or shortcut for faster Pages CMS entry creation.

@@ -1,0 +1,63 @@
+name: Enrich listings
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Refetch every listing with a source_url
+        required: false
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - listings/*.md
+      - scripts/enrich_listings.py
+      - scripts/job_archive.py
+      - .github/workflows/enrich-listings.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: listing-enrichment-main
+  cancel-in-progress: false
+
+jobs:
+  enrich:
+    name: Fetch queued listings
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Enrich queued listings
+        env:
+          FORCE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.force == 'true' && '1' || '' }}
+        run: |
+          if [[ "$FORCE" == "1" ]]; then
+            python3 scripts/enrich_listings.py --force
+          else
+            python3 scripts/enrich_listings.py
+          fi
+
+      - name: Build index and site
+        run: |
+          python3 scripts/build_index.py
+          python3 scripts/build_site.py --output _site
+
+      - name: Test archive
+        run: python3 -m unittest discover -s tests
+
+      - name: Commit enriched listings
+        run: |
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Enrich job listings"
+          git pull --rebase --autostash
+          git push

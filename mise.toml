@@ -18,10 +18,6 @@ run = "python3 scripts/workflow.py index"
 description = "Rebuild static GitHub Pages site artifact"
 run = "python3 scripts/build_site.py"
 
-[tasks.validate-capture]
-description = "Validate live URL capture against archived source URLs"
-run = "python3 scripts/validate_url_capture.py"
-
 [tasks.check]
 description = "Run tests and archive checks"
 alias = ["c"]

@@ -1,3 +1,35 @@
+---
+source_url: "https://job-boards.greenhouse.io/anthropic/jobs/5110511008"
+saved_at: "2026-05-11"
+status: "reviewed"
+company: "Anthropic"
+title: "Staff+ Software Engineer, Developer Productivity"
+source_final_url: ""
+http_status: ""
+fetched_at: ""
+source_published_at: ""
+role_family: "software-engineering"
+seniority: "staff"
+location: "Remote"
+employment_type: "Full time"
+compensation: ""
+content_type: "markdown"
+source_sha256: ""
+tags:
+  - "software-engineering"
+  - "staff"
+  - "markdown"
+  - "anthropic"
+requirements:
+  - "Staff-level ownership of infrastructure technical strategy and roadmap"
+  - "Experience designing reliable distributed infrastructure or shared libraries"
+  - "Build, CI, package management, dependency, or language ecosystem tooling experience"
+  - "Bachelor degree or equivalent relevant education, training, or experience"
+nice_to_haves:
+  - "Developer productivity or monorepo infrastructure experience"
+  - "Interest in AI-assisted engineering workflows"
+---
+
 # Staff+ Software Engineer, Developer Productivity - Anthropic
 
 Source: https://job-boards.greenhouse.io/anthropic/jobs/5110511008  

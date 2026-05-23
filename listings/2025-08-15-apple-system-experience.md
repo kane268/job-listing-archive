@@ -1,3 +1,35 @@
+---
+source_url: "https://jobs.apple.com/en-us/details/200602358/software-engineer-system-experience"
+saved_at: "2025-08-15"
+status: "reviewed"
+company: "Apple"
+title: "Software Engineer, System Experience"
+source_final_url: ""
+http_status: ""
+fetched_at: ""
+source_published_at: "2025-05-01"
+role_family: "infra/platform"
+seniority: ""
+location: "Cupertino, California, United States"
+employment_type: "Full time"
+compensation: ""
+content_type: "html"
+source_sha256: "32ae53b6e4d74798c89aaf9e119b5d456ac42ee3eb36bcc93973875c54f20746"
+tags:
+  - "infra"
+  - "platform"
+  - "systems"
+  - "apple"
+  - "html"
+requirements:
+  - "Excellent Swift programming and design skills"
+  - "Exceptional problem solving, critical thinking, and communication skills"
+  - "Inter-process communication and systems development experience"
+  - "Deep understanding of optimization and performance issues across OS software layers"
+nice_to_haves:
+  - "Experience developing reusable APIs and frameworks"
+---
+
 # Software Engineer, System Experience - Apple
 
 Source: https://jobs.apple.com/en-us/details/200602358/software-engineer-system-experience  

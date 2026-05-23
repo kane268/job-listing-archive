@@ -1,3 +1,36 @@
+---
+source_url: "https://stripe.com/jobs/listing/backend-engineer-developer-experience-product-platform/7292520"
+saved_at: "2026-05-16"
+status: "reviewed"
+company: "Stripe"
+title: "Backend Engineer, Developer Experience & Product Platform"
+source_final_url: ""
+http_status: 200
+fetched_at: "2026-05-16T15:52:18+00:00"
+source_published_at: ""
+role_family: "developer-experience"
+seniority: ""
+location: "Toronto"
+employment_type: "Full time"
+compensation: "CA$135,200 - CA$202,800"
+content_type: "html"
+source_sha256: "bef08de928b8b455a00d92ec5121948e58609e7b21e95ec6880fbeda9c9b426b"
+tags:
+  - "developer-experience"
+  - "platform"
+  - "stripe"
+  - "html"
+requirements:
+  - "2-5 years of relevant engineering experience"
+  - "Backend infrastructure experience"
+  - "Experience building systems that scale"
+  - "Familiarity with AWS"
+  - "Experience with Java or Ruby"
+nice_to_haves:
+  - "Prior IAM experience"
+  - "Comfort with ambiguity and independently driving clarity"
+---
+
 # Backend Engineer, Developer Experience & Product Platform - Stripe
 
 Source: https://stripe.com/jobs/listing/backend-engineer-developer-experience-product-platform/7292520  

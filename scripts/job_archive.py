@@ -9,7 +9,6 @@ import hashlib
 import html
 import json
 import re
-import shutil
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -37,41 +36,39 @@ KNOWN_COMPANIES = [
 ]
 
 FRONTMATTER_ORDER = [
-    "id",
-    "captured_at",
     "source_url",
-    "source_final_url",
-    "source_http_status",
-    "source_fetched_at",
-    "source_published_at",
+    "saved_at",
+    "status",
     "company",
-    "role_title",
+    "title",
+    "source_final_url",
+    "http_status",
+    "fetched_at",
+    "source_published_at",
     "role_family",
     "seniority",
     "location",
     "employment_type",
     "compensation",
-    "status",
-    "source_type",
-    "source_file_name",
-    "source_file_sha256",
+    "content_type",
+    "source_sha256",
+    "fetch_error",
     "tags",
     "requirements",
     "nice_to_haves",
 ]
 
 INDEX_COLUMNS = [
-    "id",
-    "captured_at",
+    "saved_at",
     "company",
-    "role_title",
+    "title",
     "role_family",
     "seniority",
     "location",
     "employment_type",
     "compensation",
     "status",
-    "source_type",
+    "content_type",
     "source_url",
     "tags",
     "listing_path",
@@ -1315,24 +1312,6 @@ def render_yaml(data: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render_listing(data: dict[str, Any], import_notes: list[str], why: str = "") -> str:
-    company = data.get("company") or "Unknown company"
-    role = data.get("role_title") or "Unknown role"
-    source_url = data.get("source_url") or ""
-    lines = [
-        render_yaml(data).rstrip(),
-        "",
-        f"# {role} - {company}",
-        "",
-    ]
-    if source_url:
-        lines.extend([f"Source: {source_url}", ""])
-    lines.extend(["## Import notes", ""])
-    lines.extend(f"- {note}" for note in import_notes)
-    lines.append("")
-    return "\n".join(lines)
-
-
 def short_listing_slug(company: str, role_title: str) -> str:
     company_slug = slugify(company) or "company"
     role_tokens = slugify(clean_role_title(role_title, company)).split("-")
@@ -1357,42 +1336,6 @@ def short_listing_slug(company: str, role_title: str) -> str:
         concise_tokens = role_tokens
     role_slug = "-".join(concise_tokens[:4]) or "role"
     return f"{company_slug}-{role_slug}"
-
-
-def make_listing_id(captured_at: str, company: str, role_title: str) -> str:
-    return f"{captured_at}-{short_listing_slug(company, role_title)}"
-
-
-def listing_date_parts(captured_at: str) -> tuple[str, str, str]:
-    try:
-        parsed = datetime.strptime(captured_at, "%Y-%m-%d")
-    except ValueError:
-        parsed = datetime.now().astimezone()
-    return f"{parsed.year:04d}", f"{parsed.month:02d}", f"{parsed.day:02d}"
-
-
-def listing_directory_slug(listing_id: str, captured_at: str) -> str:
-    prefix = f"{captured_at}-"
-    slug = listing_id[len(prefix) :] if listing_id.startswith(prefix) else listing_id
-    return slugify(slug) or "listing"
-
-
-def listing_destination(root: Path, captured_at: str, listing_id: str) -> Path:
-    year, month, day = listing_date_parts(captured_at)
-    return root / "listings" / year / month / day / listing_directory_slug(listing_id, captured_at)
-
-
-def unique_destination(root: Path, captured_at: str, listing_id: str, force: bool) -> tuple[str, Path]:
-    base = listing_destination(root, captured_at, listing_id)
-    if force or not base.exists():
-        return listing_id, base
-    counter = 2
-    while True:
-        candidate_id = f"{listing_id}-{counter}"
-        candidate = listing_destination(root, captured_at, candidate_id)
-        if not candidate.exists():
-            return candidate_id, candidate
-        counter += 1
 
 
 def parse_scalar(value: str) -> Any:
@@ -1443,24 +1386,54 @@ def parse_frontmatter(path: str | Path) -> dict[str, Any]:
     return data
 
 
+def split_listing_file(path: str | Path) -> tuple[dict[str, Any], str]:
+    text = Path(path).read_text(encoding="utf-8")
+    if not text.startswith("---\n"):
+        return {}, text
+    end = text.find("\n---\n", 4)
+    if end == -1:
+        return {}, text
+    return parse_frontmatter(path), text[end + 5 :]
+
+
+def write_listing_file(path: str | Path, metadata: dict[str, Any], body: str = "") -> Path:
+    listing_path = Path(path)
+    listing_path.parent.mkdir(parents=True, exist_ok=True)
+    normalized_body = body.strip()
+    text = render_yaml(metadata)
+    if normalized_body:
+        text += "\n" + normalized_body + "\n"
+    listing_path.write_text(text, encoding="utf-8")
+    return listing_path
+
+
 def listing_paths(root: str | Path = ROOT) -> list[Path]:
     listings_root = Path(root) / "listings"
-    return sorted(listings_root.glob("**/listing.md"))
+    flat_listings = sorted(path for path in listings_root.glob("*.md") if path.is_file())
+    legacy_listings = sorted(listings_root.glob("**/listing.md"))
+    return sorted(flat_listings + legacy_listings)
+
+
+def listing_slug(path: str | Path) -> str:
+    listing_path = Path(path)
+    if listing_path.name == "listing.md":
+        return listing_path.parent.name
+    return listing_path.stem
 
 
 def existing_source_sha256s(root: str | Path = ROOT) -> dict[str, Path]:
-    """Return already imported source checksums mapped to their listing files."""
+    """Return already fetched source checksums mapped to listing files."""
     checksums: dict[str, Path] = {}
     for listing_path in listing_paths(root):
         metadata = parse_frontmatter(listing_path)
-        checksum = metadata.get("source_file_sha256", "")
+        checksum = metadata.get("source_sha256") or metadata.get("source_file_sha256", "")
         if checksum:
             checksums[str(checksum)] = listing_path
     return checksums
 
 
 def existing_source_urls(root: str | Path = ROOT) -> dict[str, Path]:
-    """Return captured source URLs mapped to their listing files."""
+    """Return source URLs mapped to listing files."""
     urls: dict[str, Path] = {}
     for listing_path in listing_paths(root):
         metadata = parse_frontmatter(listing_path)
@@ -1469,6 +1442,18 @@ def existing_source_urls(root: str | Path = ROOT) -> dict[str, Path]:
             if value:
                 urls[normalize_source_url(str(value))] = listing_path
     return urls
+
+
+def listing_metadata_value(metadata: dict[str, Any], column: str) -> Any:
+    legacy_keys = {
+        "saved_at": "captured_at",
+        "title": "role_title",
+        "content_type": "source_type",
+    }
+    value = metadata.get(column, "")
+    if value in (None, "") and column in legacy_keys:
+        value = metadata.get(legacy_keys[column], "")
+    return value
 
 
 def build_index(root: str | Path = ROOT, index_path: str | Path | None = None) -> Path:
@@ -1486,13 +1471,137 @@ def build_index(root: str | Path = ROOT, index_path: str | Path | None = None) -
                 tags = metadata.get("tags", [])
                 row[column] = ",".join(tags) if isinstance(tags, list) else str(tags)
             else:
-                row[column] = metadata.get(column, "")
+                row[column] = listing_metadata_value(metadata, column)
         rows.append(row)
+    rows.sort(key=lambda row: (row.get("saved_at", ""), row.get("company", ""), row.get("title", "")), reverse=True)
     with output_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=INDEX_COLUMNS, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     return output_path
+
+
+def listing_filename(saved_at: str, company: str, title: str) -> str:
+    prefix = saved_at if re.fullmatch(r"\d{4}-\d{2}-\d{2}", saved_at or "") else datetime.now().astimezone().date().isoformat()
+    return f"{prefix}-{short_listing_slug(company, title)}.md"
+
+
+def unique_listing_path(root: Path, filename: str, force: bool = False) -> Path:
+    listings_root = root / "listings"
+    listings_root.mkdir(parents=True, exist_ok=True)
+    target = listings_root / filename
+    if force or not target.exists():
+        return target
+    stem = target.stem
+    suffix = target.suffix
+    counter = 2
+    while True:
+        candidate = listings_root / f"{stem}-{counter}{suffix}"
+        if not candidate.exists():
+            return candidate
+        counter += 1
+
+
+def fetched_listing_metadata(
+    source_url: str,
+    fetch: URLFetch,
+    *,
+    existing: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], str]:
+    existing = existing or {}
+    requested_url = clean_url(source_url)
+    raw = fetch.text()
+    is_html = "html" in fetch.content_type.lower() or looks_like_html(raw)
+    page_metadata = extract_html_capture_metadata(raw, fetch.final_url or requested_url) if is_html else {}
+    body = html_capture_to_text(raw, page_metadata) if is_html else raw if raw.endswith("\n") else raw + "\n"
+
+    company = normalize_spaces(str(existing.get("company") or "")) or page_metadata.get("company", "") or infer_company_from_url(fetch.final_url or requested_url)
+    title = normalize_spaces(str(existing.get("title") or existing.get("role_title") or "")) or page_metadata.get("role_title", "")
+    title = infer_role_title_from_text(body, title, company, fetch.final_url or requested_url)
+    title = clean_role_title(title, company)
+
+    role_family = normalize_spaces(str(existing.get("role_family") or "")) or infer_role_family(title, company)
+    seniority = normalize_spaces(str(existing.get("seniority") or "")) or infer_seniority(title)
+    location = normalize_spaces(str(existing.get("location") or "")) or page_metadata.get("location", "") or infer_location(body)
+    employment_type = normalize_spaces(str(existing.get("employment_type") or "")) or page_metadata.get("employment_type", "") or infer_employment_type(body)
+    compensation = normalize_spaces(str(existing.get("compensation") or "")) or page_metadata.get("compensation", "")
+    content_type = "html" if is_html else "markdown"
+    existing_tags = existing.get("tags", [])
+    tags = existing_tags if isinstance(existing_tags, list) and existing_tags else infer_tags(title, company, role_family, seniority)
+
+    metadata: dict[str, Any] = dict(existing)
+    metadata.update(
+        {
+            "source_url": requested_url,
+            "saved_at": str(existing.get("saved_at") or existing.get("captured_at") or datetime.now().astimezone().date().isoformat()),
+            "status": "fetched" if body.strip() else "failed",
+            "company": company,
+            "title": title,
+            "source_final_url": fetch.final_url if fetch.final_url != requested_url else str(existing.get("source_final_url") or ""),
+            "http_status": fetch.status,
+            "fetched_at": fetch.fetched_at,
+            "source_published_at": page_metadata.get("published_at", existing.get("source_published_at", "")),
+            "role_family": role_family,
+            "seniority": seniority,
+            "location": location,
+            "employment_type": employment_type,
+            "compensation": compensation,
+            "content_type": content_type,
+            "source_sha256": hashlib.sha256(fetch.body).hexdigest(),
+            "fetch_error": "",
+            "tags": tags,
+            "requirements": existing.get("requirements", []) if isinstance(existing.get("requirements", []), list) else [],
+            "nice_to_haves": existing.get("nice_to_haves", []) if isinstance(existing.get("nice_to_haves", []), list) else [],
+        }
+    )
+    return metadata, body
+
+
+def should_enrich_listing(metadata: dict[str, Any], body: str, *, force: bool = False) -> bool:
+    if force:
+        return bool(metadata.get("source_url"))
+    status = str(metadata.get("status") or "").strip().lower()
+    if status in {"queued", "failed"}:
+        return bool(metadata.get("source_url"))
+    return bool(metadata.get("source_url")) and not body.strip()
+
+
+def enrich_listing_file(path: str | Path, *, force: bool = False, fetched: URLFetch | None = None) -> dict[str, Any]:
+    listing_path = Path(path)
+    metadata, body = split_listing_file(listing_path)
+    source_url = clean_url(str(metadata.get("source_url") or ""))
+    if not source_url.startswith(("http://", "https://")):
+        metadata["status"] = "failed"
+        metadata["fetch_error"] = "source_url must start with http or https"
+        write_listing_file(listing_path, metadata, body)
+        return {"status": "failed", "path": str(listing_path), "reason": metadata["fetch_error"]}
+    if not should_enrich_listing(metadata, body, force=force):
+        return {"status": "skipped", "path": str(listing_path), "reason": "not queued"}
+
+    try:
+        fetch = fetched or fetch_url(source_url)
+    except Exception as exc:  # noqa: BLE001 - preserve fetch failures in the listing file.
+        metadata["status"] = "failed"
+        metadata["fetch_error"] = str(exc)
+        write_listing_file(listing_path, metadata, body)
+        return {"status": "failed", "path": str(listing_path), "reason": str(exc)}
+
+    if fetch.status >= 400:
+        metadata.update(
+            {
+                "status": "failed",
+                "http_status": fetch.status,
+                "fetched_at": fetch.fetched_at,
+                "source_final_url": fetch.final_url if fetch.final_url != source_url else str(metadata.get("source_final_url") or ""),
+                "fetch_error": f"HTTP {fetch.status}",
+            }
+        )
+        write_listing_file(listing_path, metadata, body)
+        return {"status": "failed", "path": str(listing_path), "reason": f"HTTP {fetch.status}"}
+
+    enriched_metadata, enriched_body = fetched_listing_metadata(source_url, fetch, existing=metadata)
+    write_listing_file(listing_path, enriched_metadata, enriched_body)
+    return {"status": "fetched", "path": str(listing_path), "title": enriched_metadata.get("title", "")}
 
 
 def relative_to_root(path: Path, root: Path) -> str:
@@ -1507,11 +1616,11 @@ def ingest_url(
     root: str | Path = ROOT,
     *,
     overrides: dict[str, str] | None = None,
-    issue_url: str = "",
     force: bool = False,
     dry_run: bool = False,
     fetched: URLFetch | None = None,
 ) -> dict[str, Any]:
+    """Fetch a URL into a flat Pages CMS friendly listing file."""
     root_path = Path(root)
     requested_url = clean_url(source_url)
     if not requested_url.startswith(("http://", "https://")):
@@ -1523,7 +1632,7 @@ def ingest_url(
         return {
             "source": requested_url,
             "status": "skipped",
-            "reason": "already captured URL",
+            "reason": "already fetched URL",
             "listing_path": relative_to_root(existing_listing, root_path),
         }
 
@@ -1536,7 +1645,7 @@ def ingest_url(
         return {
             "source": requested_url,
             "status": "skipped",
-            "reason": "already captured final URL",
+            "reason": "already fetched final URL",
             "listing_path": relative_to_root(existing_listing, root_path),
         }
 
@@ -1546,95 +1655,27 @@ def ingest_url(
         return {
             "source": requested_url,
             "status": "skipped",
-            "reason": "already captured content",
+            "reason": "already fetched content",
             "listing_path": relative_to_root(existing_listing, root_path),
         }
 
-    overrides = overrides or {}
-    raw = fetch.text()
-    is_html = "html" in fetch.content_type.lower() or looks_like_html(raw)
-    page_metadata = extract_html_capture_metadata(raw, fetch.final_url or requested_url) if is_html else {}
-    extracted_text = html_capture_to_text(raw, page_metadata) if is_html else raw if raw.endswith("\n") else raw + "\n"
-
-    company = normalize_spaces(overrides.get("company", "")) or page_metadata.get("company", "") or infer_company_from_url(fetch.final_url or requested_url)
-    role_title = normalize_spaces(overrides.get("role_title", "")) or page_metadata.get("role_title", "")
-    role_title = infer_role_title_from_text(extracted_text, role_title, company, fetch.final_url or requested_url)
-    role_title = clean_role_title(role_title, company)
-
-    role_family = normalize_spaces(overrides.get("role_family", "")) or infer_role_family(role_title, company)
-    seniority = normalize_spaces(overrides.get("seniority", "")) or infer_seniority(role_title)
-    location = page_metadata.get("location", "") or infer_location(extracted_text)
-    employment_type = page_metadata.get("employment_type", "") or infer_employment_type(extracted_text)
-    compensation = page_metadata.get("compensation", "")
-    captured_at = datetime.now().astimezone().date().isoformat()
-    listing_id = make_listing_id(captured_at, company, role_title)
-    listing_id, destination = unique_destination(root_path, captured_at, listing_id, force)
-
-    source_type = "html" if is_html else "markdown"
-    raw_artifact_name = "raw.html" if is_html else "raw.md"
-    tags = [tag for tag in infer_tags(role_title, company, role_family, seniority) if tag != "imported"]
-    tags.insert(0, "captured")
-    if source_type not in tags:
-        tags.append(source_type)
-
-    metadata: dict[str, Any] = {
-        "id": listing_id,
-        "captured_at": captured_at,
-        "source_url": requested_url,
-        "source_final_url": fetch.final_url if fetch.final_url != requested_url else "",
-        "source_http_status": fetch.status,
-        "source_fetched_at": fetch.fetched_at,
-        "source_published_at": page_metadata.get("published_at", ""),
-        "company": company,
-        "role_title": role_title,
-        "role_family": role_family,
-        "seniority": seniority,
-        "location": location,
-        "employment_type": employment_type,
-        "compensation": compensation,
-        "status": "extracted" if extracted_text else "captured",
-        "source_type": source_type,
-        "source_file_name": "",
-        "source_file_sha256": source_sha256,
-        "tags": tags,
-        "requirements": [],
-        "nice_to_haves": [],
-    }
-
-    import_notes = [
-        f"Captured from URL: {requested_url}",
-        f"Fetched at: `{fetch.fetched_at}`",
-        f"HTTP status: `{fetch.status}`",
-        "Raw HTML: `raw.html`" if is_html else "Raw HTML: not available",
-        "Generated Markdown: `raw.md`" if extracted_text else "Generated Markdown: not available",
-    ]
-    if fetch.final_url != requested_url:
-        import_notes.append(f"Final URL: {fetch.final_url}")
-    if issue_url:
-        import_notes.append(f"Capture issue: {issue_url}")
-
+    existing = dict(overrides or {})
+    if "role_title" in existing and "title" not in existing:
+        existing["title"] = existing["role_title"]
+    metadata, body = fetched_listing_metadata(requested_url, fetch, existing=existing)
+    filename = listing_filename(str(metadata.get("saved_at") or ""), str(metadata.get("company") or ""), str(metadata.get("title") or ""))
+    listing_path = unique_listing_path(root_path, filename, force=force)
     result = {
         "source": requested_url,
-        "status": "would-capture" if dry_run else "captured",
-        "id": listing_id,
-        "destination": str(destination),
-        "listing_path": relative_to_root(destination / "listing.md", root_path),
-        "source_type": source_type,
-        "raw_artifact": raw_artifact_name,
-        "raw_markdown": "raw.md" if extracted_text else "",
+        "status": "would-fetch" if dry_run else "fetched",
+        "destination": str(listing_path),
+        "listing_path": relative_to_root(listing_path, root_path),
+        "content_type": metadata.get("content_type", ""),
         "source_final_url": fetch.final_url,
     }
     if dry_run:
         return result
-
-    if force and destination.exists():
-        shutil.rmtree(destination)
-    destination.mkdir(parents=True, exist_ok=True)
-    if is_html:
-        (destination / "raw.html").write_bytes(fetch.body)
-    if extracted_text:
-        (destination / "raw.md").write_text(extracted_text, encoding="utf-8")
-    (destination / "listing.md").write_text(render_listing(metadata, import_notes, overrides.get("why", "")), encoding="utf-8")
+    write_listing_file(listing_path, metadata, body)
     return result
 
 

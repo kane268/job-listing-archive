@@ -1,3 +1,37 @@
+---
+source_url: "https://www.github.careers/careers-home/jobs/5369?lang=en-us"
+saved_at: "2026-05-16"
+status: "reviewed"
+company: "GitHub"
+title: "Staff Software Engineer"
+source_final_url: ""
+http_status: 200
+fetched_at: "2026-05-16T16:34:06+00:00"
+source_published_at: "2026-05-08T21:53:00+0000"
+role_family: "software-engineering"
+seniority: "staff"
+location: "Remote, United States"
+employment_type: "Full time"
+compensation: "USD $140,400.00 - USD $372,300.00 /Yr"
+content_type: "html"
+source_sha256: "e207962259dd61317a526ae69dcdae07e4a84c5d06924ad80786f2ceae12b45d"
+tags:
+  - "software-engineering"
+  - "staff"
+  - "github"
+  - "html"
+requirements:
+  - "9+ years software engineering experience, or equivalent degree-adjusted experience"
+  - "Production coding experience in languages such as Go, Ruby, Python, JavaScript, Java, C#, C++, C, or Rust"
+  - "Experience designing and operating cloud services, including infrastructure and deployment concerns"
+  - "Ability to own architecture, reliability, testing, security, and compliance for billing systems"
+nice_to_haves:
+  - "Hands-on experience building and operating Go services at scale"
+  - "React or JavaScript frontend experience"
+  - "Metered billing, budgeting controls, invoicing, or transactional systems experience"
+  - "Experience mentoring engineers and leading technical decisions across teams"
+---
+
 # Staff Software Engineer - GitHub
 
 Source: https://www.github.careers/careers-home/jobs/5369?lang=en-us

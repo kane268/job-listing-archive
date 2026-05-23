@@ -3,6 +3,120 @@ content:
     label: Archive Data
     type: group
     items:
+      - name: listings
+        label: Job Listings
+        type: collection
+        path: listings
+        format: yaml-frontmatter
+        subfolders: false
+        filename:
+          template: "{year}-{month}-{day}-{hour}{minute}{second}.md"
+          field: false
+        view:
+          primary: title
+          fields:
+            - saved_at
+            - status
+            - company
+            - title
+          search:
+            - source_url
+            - company
+            - title
+            - location
+            - tags
+          sort:
+            - saved_at
+            - status
+            - company
+            - title
+          default:
+            sort: saved_at
+            order: desc
+        fields:
+          - name: source_url
+            label: Job listing URL
+            type: string
+            required: true
+            description: Paste the public job listing URL. GitHub Actions will fetch it and place the readable listing text in the Markdown body.
+          - name: saved_at
+            label: Saved date
+            type: date
+            required: true
+            options:
+              format: yyyy-MM-dd
+          - name: status
+            label: Status
+            type: select
+            required: true
+            default: queued
+            options:
+              values:
+                - name: queued
+                  label: Queued for fetch
+                - name: fetched
+                  label: Fetched
+                - name: failed
+                  label: Fetch failed
+                - name: reviewed
+                  label: Reviewed
+                - name: archived
+                  label: Archived
+          - name: fetch_error
+            label: Fetch error
+            type: text
+            default: ""
+            readonly: true
+          - name: company
+            label: Company
+            type: string
+            default: ""
+          - name: title
+            label: Role title
+            type: string
+            default: ""
+          - name: location
+            label: Location
+            type: string
+            default: ""
+          - name: role_family
+            label: Role family
+            type: string
+            default: ""
+          - name: seniority
+            label: Seniority
+            type: string
+            default: ""
+          - name: employment_type
+            label: Employment type
+            type: string
+            default: ""
+          - name: compensation
+            label: Compensation
+            type: string
+            default: ""
+          - name: tags
+            label: Tags
+            type: string
+            list: true
+            default: []
+          - name: requirements
+            label: Requirements
+            type: string
+            list: true
+            default: []
+          - name: nice_to_haves
+            label: Nice-to-haves
+            type: string
+            list: true
+            default: []
+          - name: body
+            label: Listing Markdown
+            type: rich-text
+            options:
+              format: markdown
+              switcher: true
+
       - name: job_sources
         label: Saved Companies
         type: file

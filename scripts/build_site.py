@@ -5,19 +5,18 @@ from __future__ import annotations
 
 import argparse
 import html
-import json
 import re
 import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Iterable
-from urllib.parse import urlencode, urlparse
+from urllib.parse import quote, urlencode, urlparse
 
-from job_archive import ROOT, clean_role_title, infer_company_from_url, listing_paths, parse_frontmatter
+from job_archive import ROOT, clean_role_title, infer_company_from_url, listing_paths, listing_slug, parse_frontmatter, split_listing_file
 from job_sources import active_sources, read_sources
 
 REPO_URL = "https://github.com/kane268/job-listing-archive"
-PAGES_URL = "https://kane268.github.io/job-listing-archive"
+PAGES_CMS_LISTINGS_NEW_URL = "https://app.pagescms.org/kane268/job-listing-archive/main/collection/listings/new"
 PAGES_CMS_SOURCES_URL = "https://app.pagescms.org/kane268/job-listing-archive/main/file/job_sources"
 URL_RE = re.compile(r"https?://[^\s<>)]+")
 ICON_URL_OVERRIDES = {
@@ -50,8 +49,8 @@ def format_absolute_date(value: str) -> str:
 def capture_time_html(value: str) -> str:
     fallback = format_absolute_date(value)
     if re.fullmatch(r"\d{4}-\d{2}-\d{2}", value or ""):
-        return f'Captured <relative-time datetime="{esc(value)}" title="{esc(fallback)}">{esc(fallback)}</relative-time>'
-    return f"Captured {esc(fallback)}"
+        return f'Saved <relative-time datetime="{esc(value)}" title="{esc(fallback)}">{esc(fallback)}</relative-time>'
+    return f"Saved {esc(fallback)}"
 
 
 def icon_url_for_host(host: str, size: int = 256) -> str:
@@ -89,22 +88,13 @@ def url_label(url: str, *, include_path: bool = False) -> str:
     return f"{host}{path}" if path else host
 
 
-def read_capture_records(root: str | Path = ROOT) -> list[dict[str, Any]]:
-    capture_ledger = Path(root) / "data" / "captures.json"
-    if not capture_ledger.exists():
-        return []
-    payload = json.loads(capture_ledger.read_text(encoding="utf-8"))
-    records = payload.get("captures", payload) if isinstance(payload, dict) else payload
-    return [record for record in records if isinstance(record, dict) and record.get("status") in {"failed", "started"}] if isinstance(records, list) else []
-
-
 def read_listing_text(listing_path: Path) -> str:
-    raw_md = listing_path.parent / "raw.md"
-    if raw_md.exists():
-        return raw_md.read_text(encoding="utf-8", errors="replace").strip()
-    text = listing_path.read_text(encoding="utf-8", errors="replace")
-    end = text.find("\n---\n", 4) if text.startswith("---\n") else -1
-    return text[end + 5 :].strip() if end != -1 else text.strip()
+    _, body = split_listing_file(listing_path)
+    return body.strip()
+
+
+def pages_cms_listing_edit_url(listing_path: str) -> str:
+    return f"https://app.pagescms.org/kane268/job-listing-archive/main/collection/listings/edit/{quote(listing_path, safe='')}"
 
 
 def listing_records(root: str | Path = ROOT, company_homepages: dict[str, str] | None = None) -> list[dict[str, Any]]:
@@ -113,31 +103,31 @@ def listing_records(root: str | Path = ROOT, company_homepages: dict[str, str] |
     records = []
     for listing_path in listing_paths(root_path):
         metadata = parse_frontmatter(listing_path)
-        listing_id = str(metadata.get("id") or listing_path.parent.name)
+        listing_id = listing_slug(listing_path)
         source_url = str(metadata.get("source_url") or "")
         company = str(metadata.get("company") or "") or infer_company_from_url(source_url) or "Unknown company"
-        role = clean_role_title(str(metadata.get("role_title") or "Unknown role"), company)
-        raw_path = listing_path.parent / "raw.md"
+        role = clean_role_title(str(metadata.get("title") or metadata.get("role_title") or "Queued listing"), company)
+        saved_at = str(metadata.get("saved_at") or metadata.get("captured_at") or "")
+        listing_rel_path = listing_path.relative_to(root_path).as_posix()
         records.append(
             {
                 "id": listing_id,
                 "title": f"{role} - {company}",
                 "role": role,
                 "company": company,
-                "captured_at": str(metadata.get("captured_at") or ""),
-                "captured_time_html": capture_time_html(str(metadata.get("captured_at") or "")),
+                "saved_at": saved_at,
+                "saved_time_html": capture_time_html(saved_at),
                 "status": str(metadata.get("status") or ""),
                 "source_url": source_url,
                 "icon_url": icon_url_for_source(company, source_url, company_homepages.get(company.casefold(), "")),
-                "listing_path": listing_path.relative_to(root_path).as_posix(),
-                "listing_dir_path": listing_path.parent.relative_to(root_path).as_posix(),
-                "raw_markdown_path": raw_path.relative_to(root_path).as_posix(),
+                "listing_path": listing_rel_path,
+                "edit_url": pages_cms_listing_edit_url(listing_rel_path),
                 "search_text": " ".join(str(part) for part in [company, role, metadata.get("role_family", ""), metadata.get("seniority", ""), metadata.get("location", ""), metadata.get("tags", "")]),
                 "page_path": site_path("archive", listing_id, ""),
                 "text": read_listing_text(listing_path),
             }
         )
-    return sorted(records, key=lambda item: (item["captured_at"], item["id"]), reverse=True)
+    return sorted(records, key=lambda item: (item["saved_at"], item["id"]), reverse=True)
 
 
 def safe_markdown_href(href: str) -> str:
@@ -292,7 +282,7 @@ def source_card(source: dict[str, str]) -> str:
 def listing_card(record: dict[str, Any]) -> str:
     href = site_path(record["page_path"])
     source_label = url_label(record.get("source_url", ""))
-    meta_html = f"<span>{record['captured_time_html']}</span>"
+    meta_html = f"<span>{record['saved_time_html']}</span>"
     if source_label:
         meta_html += f"<span class=\"source-host\">{esc(source_label)}</span>"
     return f"""<a class="card listing-card" href="{esc(href)}" data-search="{esc(record.get('search_text', ''))}">
@@ -305,33 +295,9 @@ def listing_card(record: dict[str, Any]) -> str:
 </a>"""
 
 
-def backup_card(record: dict[str, Any]) -> str:
-    source = record.get("source_url", "")
-    issue = record.get("issue_url", "")
-    href = issue or source or REPO_URL
-    reason = record.get("reason") or "Capture did not produce a listing yet."
-    return f"""<a class="card backup" href="{esc(href)}" target="_blank" rel="noreferrer">
-  <span class="icon attention-icon" aria-hidden="true">!</span>
-  <span class="card-content">
-    <span class="card-title">Capture needs attention</span>
-    <span class="card-subtitle">{esc(url_label(source, include_path=True) or source)}</span>
-    <span class="card-meta-row"><span>{esc(reason)}</span></span>
-  </span>
-</a>"""
-
-
-def build_index_page(sources: list[dict[str, str]], listings: list[dict[str, Any]], captures: list[dict[str, Any]]) -> str:
+def build_index_page(sources: list[dict[str, str]], listings: list[dict[str, Any]]) -> str:
     source_html = "\n".join(source_card(source) for source in active_sources(sources)) or '<p class="empty">No saved companies yet.</p>'
-    listing_html = "\n".join(listing_card(record) for record in listings) or '<p class="empty">No captures yet.</p>'
-    failed = [record for record in captures if record.get("status") in {"failed", "started"}]
-    backup_html = ""
-    if failed:
-        backup_html = f"""
-<section class="panel owner-only owner-block" style="margin-top:14px" aria-labelledby="backup-title">
-  <div class="panel-header"><h2 id="backup-title">Capture backups</h2></div>
-  <p class="muted">These URLs were saved even though capture did not finish. Fix the parser, then re-run capture.</p>
-  <div class="stack">{' '.join(backup_card(record) for record in failed)}</div>
-</section>"""
+    listing_html = "\n".join(listing_card(record) for record in listings) or '<p class="empty">No listings yet.</p>'
 
     body = f"""
 <header>
@@ -339,15 +305,13 @@ def build_index_page(sources: list[dict[str, str]], listings: list[dict[str, Any
   <p class="muted">Readable Markdown copies of saved job listings.</p>
 </header>
 
-<section class="panel owner-only owner-block" aria-labelledby="capture-title">
-  <div class="panel-header"><h2 id="capture-title">Capture URL</h2></div>
-  <form id="capture-form" class="capture-form" data-repo-url="{REPO_URL}">
-    <label>Listing URL
-      <input id="source-url" name="url" type="url" inputmode="url" autocomplete="url" placeholder="https://..." required>
-    </label>
-    <button type="submit">Create issue</button>
-  </form>
+<section class="panel owner-only owner-block" aria-labelledby="manage-title">
+  <div class="panel-header"><h2 id="manage-title">Manage archive</h2></div>
   <p class="muted owner-note">Manage mode only hides owner tools in this browser. It is not access control; repository data remains public.</p>
+  <div class="action-row">
+    <a class="action-link" href="{PAGES_CMS_LISTINGS_NEW_URL}" target="_blank" rel="noreferrer">Add listing</a>
+    <a class="action-link" href="{PAGES_CMS_SOURCES_URL}" target="_blank" rel="noreferrer">Edit companies</a>
+  </div>
 </section>
 
 <div class="section-grid">
@@ -360,7 +324,10 @@ def build_index_page(sources: list[dict[str, str]], listings: list[dict[str, Any
   </section>
 
   <section class="panel listings-panel" aria-labelledby="listings-title">
-    <div class="panel-header"><h2 id="listings-title">Listings</h2></div>
+    <div class="panel-header">
+      <h2 id="listings-title">Listings</h2>
+      <a class="action-link owner-only owner-inline" href="{PAGES_CMS_LISTINGS_NEW_URL}" target="_blank" rel="noreferrer">Add</a>
+    </div>
     <form id="listing-filter" class="filter-form" role="search">
       <label>Filter listings
         <input id="listing-filter-input" type="search" autocomplete="off" placeholder="Company, role, location, tag">
@@ -369,36 +336,16 @@ def build_index_page(sources: list[dict[str, str]], listings: list[dict[str, Any
     <div class="stack">{listing_html}</div>
   </section>
 </div>
-{backup_html}
 
 """
     return layout("Job listing archive", body)
 
 
-def report_issue_url(record: dict[str, Any]) -> str:
-    body = f"""### Listing
-
-{PAGES_URL}/{record['page_path']}
-
-### Source URL
-
-{record.get('source_url') or '_No source URL captured_'}
-
-### GitHub folder
-
-{REPO_URL}/tree/main/{record['listing_dir_path']}
-
-### What looks wrong?
-
-"""
-    return f"{REPO_URL}/issues/new?{urlencode({'title': f'Extraction issue: {record["title"]}', 'labels': 'bug,needs-text-extraction', 'body': body})}"
-
-
 def build_listing_page(record: dict[str, Any]) -> str:
     source_link = f'<a href="{esc(record["source_url"])}" target="_blank" rel="noreferrer">Source</a>' if record.get("source_url") else ""
-    github_link = f'{REPO_URL}/tree/main/{record["listing_dir_path"]}'
-    raw_link = f'{REPO_URL}/blob/main/{record["raw_markdown_path"]}'
-    rendered_markdown = re.sub(r"^# .+\n+", "", record.get("text") or "No captured text available.", count=1)
+    github_link = f'{REPO_URL}/blob/main/{record["listing_path"]}'
+    edit_link = record.get("edit_url", "")
+    rendered_markdown = re.sub(r"^# .+\n+", "", record.get("text") or "No fetched listing text available yet.", count=1)
     body = f"""
 <header>
   <p><a href="../../">Job listing archive</a></p>
@@ -407,23 +354,22 @@ def build_listing_page(record: dict[str, Any]) -> str:
     <div>
       <span class="card-kicker">{esc(record['company'])}</span>
       <h1>{esc(record['role'])}</h1>
-      <p class="muted">{record['captured_time_html']}</p>
+      <p class="muted">{record['saved_time_html']}</p>
     </div>
   </div>
 </header>
 
 <nav class="page-actions owner-only owner-flex" aria-label="Listing links">
   {source_link}
-  <a href="{esc(github_link)}" target="_blank" rel="noreferrer">View in GitHub</a>
-  <a href="{esc(raw_link)}" target="_blank" rel="noreferrer">Raw Markdown</a>
-  <a href="{esc(report_issue_url(record))}" target="_blank" rel="noreferrer">Report extraction issue</a>
+  <a href="{esc(edit_link)}" target="_blank" rel="noreferrer">Edit in Pages CMS</a>
+  <a href="{esc(github_link)}" target="_blank" rel="noreferrer">View Markdown</a>
 </nav>
 
 <main class="markdown" aria-label="Rendered listing Markdown">
 {markdown_to_html(rendered_markdown)}
 </main>
 """
-    return layout(record["title"], body, f"Captured Markdown for {record['title']}", asset_prefix="../..")
+    return layout(record["title"], body, f"Saved Markdown for {record['title']}", asset_prefix="../..")
 
 
 def copy_assets(root_path: Path, site_dir: Path) -> None:
@@ -439,7 +385,6 @@ def build_site(root: str | Path = ROOT, output_dir: str | Path | None = None) ->
     site_dir = Path(output_dir) if output_dir else root_path / "_site"
     sources = read_sources(root_path / "data" / "job-sources.json")
     listings = listing_records(root_path, company_homepage_map(sources))
-    captures = read_capture_records(root_path)
 
     if site_dir.exists():
         shutil.rmtree(site_dir)
@@ -454,7 +399,7 @@ def build_site(root: str | Path = ROOT, output_dir: str | Path | None = None) ->
         page_dir.mkdir(parents=True, exist_ok=True)
         (page_dir / "index.html").write_text(build_listing_page(record), encoding="utf-8")
 
-    (site_dir / "index.html").write_text(build_index_page(sources, listings, captures), encoding="utf-8")
+    (site_dir / "index.html").write_text(build_index_page(sources, listings), encoding="utf-8")
     return site_dir
 
 

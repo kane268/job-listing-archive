@@ -1,3 +1,36 @@
+---
+source_url: "https://stripe.com/jobs/listing/full-stack-engineer-developer-experience-product-platform/6567104"
+saved_at: "2026-05-16"
+status: "reviewed"
+company: "Stripe"
+title: "Full Stack Engineer, Developer Experience & Product Platform"
+source_final_url: ""
+http_status: 200
+fetched_at: "2026-05-16T15:52:36+00:00"
+source_published_at: ""
+role_family: "developer-experience"
+seniority: ""
+location: "Toronto"
+employment_type: "Full time"
+compensation: "CA$135,200 - CA$202,800"
+content_type: "html"
+source_sha256: "2f9062e87158a7424d02e3bc2b4ece6ac38c8e1f5ebf9538c2f4a470f81bda02"
+tags:
+  - "developer-experience"
+  - "platform"
+  - "stripe"
+  - "html"
+requirements:
+  - "2-12+ years of industry software engineering experience"
+  - "Strong coding skills in any programming language"
+  - "Strong collaboration across workstreams and peers"
+  - "High autonomy and entrepreneurial ownership"
+  - "Interest in generalist work across varying technologies and stacks"
+nice_to_haves:
+  - "Experience designing reliable, scalable, secure, and extensible platforms"
+  - "Ability to debug production issues across services and stack layers"
+---
+
 # Full Stack Engineer, Developer Experience & Product Platform - Stripe
 
 Source: https://stripe.com/jobs/listing/full-stack-engineer-developer-experience-product-platform/6567104  

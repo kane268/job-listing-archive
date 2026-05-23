@@ -39,7 +39,6 @@ Job Listing Archive validation commands
 
   mise run check            Validate tasks, rebuild generated data, build _site, and run tests.
   mise run site             Rebuild the local static site artifact in _site/.
-  mise run validate-capture Validate live URL capture against archived URLs in a temp repo.
 """.strip()
     )
     return 0

@@ -1,3 +1,35 @@
+---
+source_url: "https://jobs.ashbyhq.com/copilot-money/20a502a8-5260-4df3-a8ba-d0d5701bafc1"
+saved_at: "2025-08-21"
+status: "reviewed"
+company: "Copilot Money"
+title: "Head of Engineering"
+source_final_url: ""
+http_status: ""
+fetched_at: ""
+source_published_at: ""
+role_family: "engineering-management"
+seniority: "head"
+location: "New York City"
+employment_type: "Full time"
+compensation: ""
+content_type: "markdown"
+source_sha256: ""
+tags:
+  - "engineering-management"
+  - "head"
+  - "copilot-money"
+  - "markdown"
+requirements:
+  - "Lead day-to-day engineering management for the full engineering team"
+  - "Partner closely with the CTO on technical and organizational execution"
+  - "Support iOS, Web, and Backend engineers across New York City and Santiago"
+  - "Evolve engineering practices while maintaining high product delivery velocity"
+nice_to_haves:
+  - "Experience scaling a small fast-moving product engineering organization"
+  - "Interest in AI-assisted engineering practices"
+---
+
 # Head of Engineering - Copilot Money
 
 Source: https://jobs.ashbyhq.com/copilot-money/20a502a8-5260-4df3-a8ba-d0d5701bafc1  
