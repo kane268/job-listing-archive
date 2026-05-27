@@ -15,6 +15,7 @@ from job_archive import (  # noqa: E402
     build_index,
     discover_source_url,
     enrich_listing_file,
+    extract_a24_labs_bundle_capture,
     extract_html_capture_metadata,
     html_capture_to_text,
     html_to_text,
@@ -128,6 +129,33 @@ class JobArchiveTests(unittest.TestCase):
             self.assertEqual(metadata["title"], "Staff+ Software Engineer, Developer Productivity")
             self.assertEqual(metadata["content_type"], "html")
             self.assertIn("Build developer tooling", text)
+
+    def test_extract_a24_labs_bundle_markdown_from_react_route(self) -> None:
+        bundle = '''
+        Hz={path:"/jobs/devops",title:"A24 Labs Careers - DevOps Engineer"},
+        $z=()=>P.jsxDEV("article",{children:[
+          P.jsxDEV("p",{children:"A24 Labs Careers"}),
+          P.jsxDEV("h1",{children:"DevOps Engineer | SRE | Platform Engineer"}),
+          P.jsxDEV("p",{children:"A24 Labs is a technology startup within A24 Films."}),
+          P.jsxDEV("p",{children:[P.jsxDEV("strong",{children:"Compensation:"})," $150k - $230k, plus bonus."]}),
+          P.jsxDEV("p",{children:[P.jsxDEV("strong",{children:"Location:"})," Most of the labs team works from our New York office."]}),
+          P.jsxDEV("h2",{children:"Required Skills & Experience"}),
+          P.jsxDEV("ul",{children:[
+            P.jsxDEV("li",{children:"Strong hands-on experience operating production systems on AWS"}),
+            P.jsxDEV("li",{children:"CI/CD pipeline with GitHub Actions"})
+          ]})
+        ]}),Iz={path:"/jobs/designer",title:"A24 Labs Careers - Senior Web/Product Designer"}
+        '''
+        metadata = extract_a24_labs_bundle_capture(bundle, "https://labs.a24films.com/jobs/devops")
+        text = metadata["markdown"]
+        self.assertEqual(metadata["company"], "A24 Labs")
+        self.assertEqual(metadata["role_title"], "DevOps Engineer | SRE | Platform Engineer")
+        self.assertEqual(metadata["role_family"], "infra/platform")
+        self.assertEqual(metadata["location"], "New York office")
+        self.assertEqual(metadata["compensation"], "$150k - $230k")
+        self.assertIn("# DevOps Engineer | SRE | Platform Engineer - A24 Labs", text)
+        self.assertIn("## Required Skills & Experience", text)
+        self.assertIn("- CI/CD pipeline with GitHub Actions", text)
 
     def test_extract_github_markdown_uses_job_posting_data(self) -> None:
         markup = """

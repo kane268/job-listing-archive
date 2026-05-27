@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import csv
 import hashlib
 import html
@@ -33,6 +34,7 @@ KNOWN_COMPANIES = [
     "Apple",
     "Privy",
     "Readwise",
+    "A24 Labs",
 ]
 
 FRONTMATTER_ORDER = [
@@ -257,6 +259,8 @@ def clean_role_title(value: str, company: str = "") -> str:
     """Normalize common job board page titles into just the role title."""
     title = strip_listing_suffixes(value)
     title = re.sub(r"^Job Application for\s+", "", title, flags=re.IGNORECASE).strip()
+    if company:
+        title = re.sub(rf"^{re.escape(company)}\s+Careers\s*[-|]\s*", "", title, flags=re.IGNORECASE).strip()
 
     if " @ " in title:
         role, embedded_company = [part.strip() for part in title.split(" @ ", 1)]
@@ -350,6 +354,7 @@ def infer_company_from_url(source_url: str) -> str:
     path_parts = [part for part in parsed.path.split("/") if part]
 
     known_hosts = {
+        "labs.a24films.com": "A24 Labs",
         "anthropic.com": "Anthropic",
         "apple.com": "Apple",
         "jobs.apple.com": "Apple",
@@ -461,7 +466,7 @@ def infer_role_family(role_title: str, company: str = "") -> str:
         return "backend"
     if "data" in title:
         return "data"
-    if any(term in title for term in ["infrastructure", "platform", "system", "sre", "reliability"]):
+    if any(term in title for term in ["devops", "infrastructure", "platform", "system", "sre", "reliability"]):
         return "infra/platform"
     if any(term in title for term in ["risk", "compliance", "security"]):
         return "security/compliance"
@@ -480,6 +485,8 @@ def infer_tags(role_title: str, company: str, role_family: str, seniority: str) 
     keyword_tags = {
         "infrastructure": "infrastructure",
         "platform": "platform",
+        "devops": "devops",
+        "sre": "sre",
         "system": "systems",
         "data": "data",
         "developer experience": "developer-experience",
@@ -799,6 +806,387 @@ def markdown_join(parts: list[str]) -> str:
     return "\n\n".join(part.strip() for part in parts if part and part.strip()).strip() + "\n"
 
 
+A24_LABS_LIST_HEADINGS = {
+    "Core Responsibilities",
+    "Example Projects You'd Work On",
+    "Nice-to-Have Skills",
+    "Qualifications",
+    "Required Skills & Experience",
+}
+
+
+def decode_js_string_literal(literal: str) -> str:
+    try:
+        if literal.startswith('"'):
+            return str(json.loads(literal))
+        if literal.startswith("'"):
+            return str(ast.literal_eval(literal))
+    except (SyntaxError, ValueError, json.JSONDecodeError):
+        pass
+    return literal[1:-1].replace(r"\'", "'").replace(r'\"', '"').replace(r"\n", "\n")
+
+
+def read_js_string_literal(source: str, offset: int) -> tuple[str, int]:
+    quote = source[offset]
+    index = offset + 1
+    escaped = False
+    while index < len(source):
+        char = source[index]
+        if escaped:
+            escaped = False
+        elif char == "\\":
+            escaped = True
+        elif char == quote:
+            return decode_js_string_literal(source[offset : index + 1]), index + 1
+        index += 1
+    return "", offset + 1
+
+
+def find_matching_js(source: str, offset: int, opener: str, closer: str) -> int:
+    depth = 0
+    index = offset
+    while index < len(source):
+        char = source[index]
+        if char in {'"', "'", "`"}:
+            _, index = read_js_string_literal(source, index)
+            continue
+        if char == opener:
+            depth += 1
+        elif char == closer:
+            depth -= 1
+            if depth == 0:
+                return index
+        index += 1
+    return -1
+
+
+def split_top_level_js_expressions(source: str) -> list[str]:
+    parts: list[str] = []
+    start = 0
+    index = 0
+    paren_depth = 0
+    bracket_depth = 0
+    brace_depth = 0
+    while index < len(source):
+        char = source[index]
+        if char in {'"', "'", "`"}:
+            _, index = read_js_string_literal(source, index)
+            continue
+        if char == "(":
+            paren_depth += 1
+        elif char == ")" and paren_depth:
+            paren_depth -= 1
+        elif char == "[":
+            bracket_depth += 1
+        elif char == "]" and bracket_depth:
+            bracket_depth -= 1
+        elif char == "{":
+            brace_depth += 1
+        elif char == "}" and brace_depth:
+            brace_depth -= 1
+        elif char == "," and paren_depth == bracket_depth == brace_depth == 0:
+            parts.append(source[start:index])
+            start = index + 1
+        index += 1
+    parts.append(source[start:])
+    return parts
+
+
+def extract_compiled_react_children_text(source: str) -> list[str]:
+    tokens: list[str] = []
+    index = 0
+    while True:
+        children_index = source.find("children:", index)
+        if children_index == -1:
+            break
+        value_index = children_index + len("children:")
+        while value_index < len(source) and source[value_index].isspace():
+            value_index += 1
+        values, end_index = extract_compiled_react_children_value(source, value_index)
+        tokens.extend(values)
+        index = end_index if end_index > children_index else children_index + len("children:")
+    return tokens
+
+
+def extract_compiled_react_children_value(source: str, offset: int) -> tuple[list[str], int]:
+    while offset < len(source) and source[offset].isspace():
+        offset += 1
+    if offset >= len(source):
+        return [], offset
+    char = source[offset]
+    if char in {'"', "'", "`"}:
+        value, end = read_js_string_literal(source, offset)
+        return [value], end
+    if char == "[":
+        end = find_matching_js(source, offset, "[", "]")
+        if end == -1:
+            return [], offset + 1
+        tokens: list[str] = []
+        for part in split_top_level_js_expressions(source[offset + 1 : end]):
+            part_offset = 0
+            while part_offset < len(part) and part[part_offset].isspace():
+                part_offset += 1
+            if part_offset >= len(part):
+                continue
+            if part[part_offset] in {'"', "'", "`"}:
+                value, _ = read_js_string_literal(part, part_offset)
+                tokens.append(value)
+            elif part[part_offset] == "[":
+                values, _ = extract_compiled_react_children_value(part, part_offset)
+                tokens.extend(values)
+            elif "children:" in part:
+                tokens.extend(extract_compiled_react_children_text(part))
+        return tokens, end + 1
+
+    match = re.match(r"[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\s*\(", source[offset:])
+    if match:
+        call_start = offset + match.group(0).rfind("(")
+        end = find_matching_js(source, call_start, "(", ")")
+        if end != -1:
+            return extract_compiled_react_children_text(source[offset : end + 1]), end + 1
+    return [], offset + 1
+
+
+def same_origin_script_urls(markup: str, source_url: str) -> list[str]:
+    source_host = urlparse(source_url).netloc.lower()
+    urls: list[str] = []
+    for match in re.finditer(r"<script\b(?P<attrs>[^>]*)>", markup, flags=re.I | re.S):
+        attrs = match.group("attrs")
+        src_match = re.search(r"\bsrc\s*=\s*(['\"])(.*?)\1", attrs, flags=re.I | re.S)
+        if not src_match:
+            continue
+        url = urljoin(source_url, html.unescape(src_match.group(2)))
+        parsed = urlparse(url)
+        if parsed.scheme in {"http", "https"} and parsed.netloc.lower() == source_host and url not in urls:
+            urls.append(url)
+    return urls
+
+
+def fetch_text_asset(url: str, *, timeout: int = 20, max_bytes: int = MAX_FETCH_BYTES) -> str:
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": DEFAULT_FETCH_USER_AGENT,
+            "Accept": "application/javascript,text/javascript,text/plain,*/*;q=0.5",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
+    )
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        body = response.read(max_bytes + 1)
+        if len(body) > max_bytes:
+            raise ValueError(f"Response is larger than {max_bytes} bytes")
+        encoding = response.headers.get_content_charset() or "utf-8"
+        return body.decode(encoding, errors="replace")
+
+
+def extract_a24_labs_asset_texts(markup: str, source_url: str) -> list[str]:
+    texts: list[str] = []
+    for script_url in same_origin_script_urls(markup, source_url):
+        if not urlparse(script_url).path.endswith(".js"):
+            continue
+        try:
+            texts.append(fetch_text_asset(script_url))
+        except Exception:
+            continue
+    return texts
+
+
+def extract_a24_labs_route_segment(bundle: str, source_url: str) -> str:
+    route_path = urlparse(source_url).path.rstrip("/") or "/"
+    needles = [f'path:"{route_path}"', f'ogUrl:"{source_url.rstrip("/")}"']
+    start = next((index for needle in needles if (index := bundle.find(needle)) != -1), -1)
+    if start == -1:
+        return ""
+    suffix = bundle[start + 1 :]
+    next_route = re.search(r",[A-Za-z_$][\w$]*=\{path:\"", suffix)
+    end = start + 1 + next_route.start() if next_route else len(bundle)
+    return bundle[start:end]
+
+
+def cleaned_a24_labs_tokens(tokens: list[str]) -> list[str]:
+    cleaned: list[str] = []
+    previous = ""
+    for value in tokens:
+        text = normalize_spaces(value)
+        if not text or text == previous:
+            continue
+        cleaned.append(value)
+        previous = text
+    return cleaned
+
+
+def a24_labs_role_title_from_tokens(tokens: list[str], fallback: str = "") -> str:
+    for value in tokens:
+        text = normalize_spaces(value)
+        if text in {"A24 Labs", "A24 Labs Careers", "Open Roles"}:
+            continue
+        if text.startswith("A24 Labs Careers"):
+            continue
+        if 2 <= len(text) <= 140:
+            return clean_role_title(text, "A24 Labs")
+    return clean_role_title(fallback, "A24 Labs")
+
+
+def a24_labs_compensation_from_tokens(tokens: list[str]) -> str:
+    text = normalize_spaces(" ".join(normalize_spaces(value) for value in tokens))
+    match = re.search(r"\$[\d,]+k?\s*(?:-|to)\s*\$[\d,]+k?", text, flags=re.I)
+    return normalize_spaces(match.group(0).replace(" to ", " - ")) if match else ""
+
+
+def a24_labs_location_from_tokens(tokens: list[str]) -> str:
+    normalized = [normalize_spaces(value) for value in tokens]
+    for index, value in enumerate(normalized):
+        if value == "Location:" and index + 1 < len(normalized):
+            location_text = normalized[index + 1]
+            if "new york" in location_text.lower():
+                return "New York office"
+            if re.search(r"\bremote\b", location_text, flags=re.I):
+                return "Remote"
+            return location_text
+    for value in normalized:
+        lowered = value.lower()
+        if "new york" in lowered and "remote" in lowered:
+            return "Remote or New York office"
+        if "new york" in lowered:
+            return "New York office"
+        if re.search(r"\bremote\b", lowered):
+            return "Remote"
+    return ""
+
+
+def a24_labs_token_starts_paragraph(value: str) -> bool:
+    return value.startswith(
+        (
+            "*Our target",
+            "A24 is an acclaimed",
+            "A24 is seeking",
+            "Our target",
+            "Please note",
+            "To apply",
+            "We are looking",
+            "While we are open",
+            "You are ",
+            "You'll ",
+        )
+    )
+
+
+def a24_labs_markdown_from_tokens(tokens: list[str], source_url: str, role_title: str, location: str, compensation: str) -> str:
+    header = [f"# {role_title} - A24 Labs", "", f"Source: {source_url}"]
+    if location:
+        header.append(f"Location: {location}")
+    if compensation:
+        header.append(f"Compensation: {compensation}")
+
+    blocks = ["\n".join(header)]
+    list_items: list[str] = []
+    list_mode = False
+
+    def flush_list() -> None:
+        nonlocal list_items
+        if list_items:
+            blocks.append("\n".join(f"- {item}" for item in list_items))
+            list_items = []
+
+    index = 0
+    while index < len(tokens):
+        raw_value = tokens[index]
+        value = normalize_spaces(raw_value)
+        if not value or value in {"A24 Labs", "A24 Labs Careers", role_title}:
+            index += 1
+            continue
+        if value in A24_LABS_LIST_HEADINGS:
+            flush_list()
+            blocks.append(f"## {value}")
+            list_mode = True
+            index += 1
+            continue
+        if list_mode:
+            if a24_labs_token_starts_paragraph(value) or value in {"Compensation:", "Location:"}:
+                flush_list()
+                list_mode = False
+                continue
+            list_items.append(value)
+            index += 1
+            continue
+        if value in {"Compensation:", "Location:"}:
+            label = value.rstrip(":")
+            fragments: list[str] = []
+            next_index = index + 1
+            while next_index < len(tokens):
+                next_value = normalize_spaces(tokens[next_index])
+                if next_value in A24_LABS_LIST_HEADINGS or next_value in {"Compensation:", "Location:"}:
+                    break
+                fragments.append(tokens[next_index])
+                next_index += 1
+                if label == "Location" or next_value.endswith((".", ").")):
+                    break
+            label_value = normalize_spaces("".join(fragments))
+            label_value = label_value.replace("(*see more below).", "(see more below).")
+            label_value = label_value.replace("(*see more below)", "(see more below)")
+            if label_value:
+                blocks.append(f"**{label}:** {label_value}")
+            index = next_index
+            continue
+        if value.startswith("Please note"):
+            paragraph = raw_value
+            next_index = index + 1
+            while next_index < len(tokens):
+                next_value = normalize_spaces(tokens[next_index])
+                if next_value in A24_LABS_LIST_HEADINGS or next_value in {"Compensation:", "Location:"}:
+                    break
+                if next_value.startswith(("*Our target", "seth at", "zeke at")):
+                    break
+                paragraph += tokens[next_index]
+                next_index += 1
+                if paragraph.rstrip().endswith("."):
+                    break
+            blocks.append(normalize_spaces(paragraph))
+            index = next_index
+            continue
+        if value.startswith("*Our target"):
+            blocks.append(f"\\{value}")
+        else:
+            blocks.append(value)
+        index += 1
+    flush_list()
+    return markdown_join(blocks)
+
+
+def extract_a24_labs_bundle_capture(bundle: str, source_url: str) -> dict[str, Any]:
+    if urlparse(source_url).netloc.lower() != "labs.a24films.com" or "/jobs/" not in urlparse(source_url).path:
+        return {}
+    segment = extract_a24_labs_route_segment(bundle, source_url)
+    if not segment:
+        return {}
+    tokens = cleaned_a24_labs_tokens(extract_compiled_react_children_text(segment))
+    if not tokens:
+        return {}
+    title_match = re.search(r'title:"((?:\\.|[^"\\])*)"', segment)
+    fallback_title = decode_js_string_literal(f'"{title_match.group(1)}"') if title_match else ""
+    role_title = a24_labs_role_title_from_tokens(tokens, fallback_title)
+    if not role_title:
+        return {}
+    location = a24_labs_location_from_tokens(tokens)
+    compensation = a24_labs_compensation_from_tokens(tokens)
+    return {
+        "company": "A24 Labs",
+        "role_title": role_title,
+        "role_family": infer_role_family(role_title, "A24 Labs"),
+        "location": location,
+        "compensation": compensation,
+        "markdown": a24_labs_markdown_from_tokens(tokens, source_url, role_title, location, compensation),
+    }
+
+
+def extract_a24_labs_capture(markup: str, source_url: str) -> dict[str, Any]:
+    parsed = urlparse(source_url)
+    if parsed.netloc.lower() != "labs.a24films.com" or "/jobs/" not in parsed.path:
+        return {}
+    bundle = "\n".join([markup, *extract_a24_labs_asset_texts(markup, source_url)])
+    return extract_a24_labs_bundle_capture(bundle, source_url)
+
+
 def extract_greenhouse_capture(markup: str, source_url: str) -> dict[str, Any]:
     data = extract_balanced_json_after(markup, "window.__remixContext")
     loader = data.get("state", {}).get("loaderData", {}) if isinstance(data, dict) else {}
@@ -1084,10 +1472,14 @@ def extract_github_capture(markup: str, source_url: str) -> dict[str, Any]:
 
 
 def extract_structured_capture(markup: str, source_url: str) -> dict[str, Any]:
-    host = urlparse(source_url).netloc.lower()
-    if "github.careers" in host and "/jobs/" in urlparse(source_url).path:
+    parsed = urlparse(source_url)
+    host = parsed.netloc.lower()
+    path = parsed.path
+    if "labs.a24films.com" in host and "/jobs/" in path:
+        return extract_a24_labs_capture(markup, source_url)
+    if "github.careers" in host and "/jobs/" in path:
         return extract_github_capture(markup, source_url)
-    if "stripe.com" in host and "/jobs/listing/" in urlparse(source_url).path:
+    if "stripe.com" in host and "/jobs/listing/" in path:
         return extract_stripe_capture(markup, source_url)
     if "greenhouse.io" in host:
         return extract_greenhouse_capture(markup, source_url)
@@ -1122,6 +1514,7 @@ def extract_html_capture_metadata(markup: str, source_url: str = "") -> dict[str
     return {
         "title": title,
         "role_title": role_title,
+        "role_family": structured.get("role_family", ""),
         "company": company,
         "description": description,
         "description_plain": description_plain,
@@ -1520,7 +1913,7 @@ def fetched_listing_metadata(
     title = infer_role_title_from_text(body, title, company, fetch.final_url or requested_url)
     title = clean_role_title(title, company)
 
-    role_family = normalize_spaces(str(existing.get("role_family") or "")) or infer_role_family(title, company)
+    role_family = normalize_spaces(str(existing.get("role_family") or "")) or page_metadata.get("role_family", "") or infer_role_family(title, company)
     seniority = normalize_spaces(str(existing.get("seniority") or "")) or infer_seniority(title)
     location = normalize_spaces(str(existing.get("location") or "")) or page_metadata.get("location", "") or infer_location(body)
     employment_type = normalize_spaces(str(existing.get("employment_type") or "")) or page_metadata.get("employment_type", "") or infer_employment_type(body)
